@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Free Visual Routine Timer for Kids, Classrooms &amp; Home</title>
+<meta name="description" content="Build a free visual routine timer with picture symbols. Project a classroom timer, print a routine wheel, or customize morning and bedtime schedules. No account needed." />
+<link rel="canonical" href="https://routines.getadhd.care/" />
+<meta name="theme-color" content="#3b6e8f" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Routine Visual Timer" />
+<meta property="og:title" content="Free Visual Routine Timer for Kids, Classrooms &amp; Home" />
+<meta property="og:description" content="Create picture-based routines, use a fullscreen visual timer, and print a routine wheel. Free, with no account needed." />
+<meta property="og:url" content="https://routines.getadhd.care/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Free Visual Routine Timer" />
+<meta name="twitter:description" content="Picture-based routines for mornings, classrooms, and bedtime. Project, print, save, and share." />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="css/style.css" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "@id": "https://routines.getadhd.care/#app",
+  "name": "Routine Visual Timer",
+  "url": "https://routines.getadhd.care/",
+  "description": "A free picture-based routine timer for kids, teachers, and parents, with fullscreen projection, printable wheels, and morning, classroom, and bedtime routines.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any device with a modern web browser",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Applied Behavioral Health Practice"
+  },
+  "featureList": [
+    "Visual routine builder",
+    "Fullscreen timer",
+    "Printable routine wheel",
+    "Flexible schedule",
+    "Quiet mode",
+    "Routine import and export"
+  ]
+}
+</script>
+</head>
+<body data-view="builder">
+<a class="skip-link" href="#routine-builder">Skip to routine builder</a>
+
+<header class="app-header no-print">
+  <h1>Routine Visual Timer</h1>
+  <nav class="view-tabs">
+    <button class="view-tab active" data-view="builder">Builder</button>
+    <button class="view-tab" data-view="print">Print Preview</button>
+    <button class="view-tab" data-view="projection">Projection</button>
+  </nav>
+</header>
+
+<main id="main-content">
+<!-- ===================== BUILDER VIEW ===================== -->
+<section id="routine-builder" class="view-panel active" data-view="builder" tabindex="-1">
+  <p class="app-intro">A free visual timer for kids, teachers, and parents. Build a picture-based schedule, project your routine, or print a wheel. No account needed.</p>
+  <div class="builder-layout">
+    <div class="builder-left">
+      <h2>1. Choose a mode</h2>
+      <div id="categoryTabs" class="category-tabs"></div>
+      <div class="preset-controls">
+        <label for="presetSelect">Ready-made routine</label>
+        <select id="presetSelect"><option value="morning">Morning · 30 min</option><option value="classroom">Classroom · 60 min</option><option value="bedtime">Bedtime · 30 min</option></select>
+        <button id="usePresetBtn" class="secondary-btn">Use routine</button>
+      </div>
+      <p class="hint">Replaces the current steps. Save your routine first if you want to keep it.</p>
+
+      <h2>2. Add steps</h2>
+      <p class="hint">Click a suggestion to add it, or add a custom step and search any ARASAAC symbol.</p>
+      <div id="suggestionChips" class="suggestion-chips"></div>
+
+      <div id="stepList" class="step-list"></div>
+      <button id="addBlankStepBtn" class="secondary-btn">+ Add custom step</button>
+
+      <h2>3. Total time</h2>
+      <div class="totals-row">
+        <label><input type="checkbox" id="autoTotalCheckbox" checked /> Auto (sum of steps: <span id="stepSumDisplay">0 min</span>)</label>
+        <label class="total-input-label">
+          Total routine time
+          <input type="number" id="totalMinutesInput" min="1" />
+          min
+        </label>
+      </div>
+      <p id="overflowWarning" class="warning" hidden>Steps add up to more than the total time — the wheel is scaled to fit the steps instead.</p>
+
+      <h2>4. Save &amp; load</h2>
+      <div class="save-load-row">
+        <input type="text" id="routineNameInput" placeholder="Name this routine…" />
+        <button id="saveRoutineBtn" class="secondary-btn">💾 Save</button>
+      </div>
+      <div class="save-load-row">
+        <select id="savedRoutinesSelect"></select>
+        <button id="loadRoutineBtn" class="secondary-btn">Load</button>
+        <button id="deleteRoutineBtn" class="secondary-btn">Delete</button>
+      </div>
+      <div class="save-load-row">
+        <button id="exportRoutineBtn" class="secondary-btn">Export routine</button>
+        <button id="importRoutineBtn" class="secondary-btn">Import routine</button>
+        <input id="importRoutineInput" type="file" accept=".json,application/json" hidden />
+      </div>
+      <p class="hint">Export the current routine as a file to share or back up. Import opens a routine without changing your saved library.</p>
+      <p id="saveStatus" class="save-status" role="status" hidden></p>
+    </div>
+
+    <div class="builder-right">
+      <div id="builderWheel" class="wheel-holder"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRINT VIEW ===================== -->
+<section class="view-panel" data-view="print">
+  <div class="print-toolbar no-print">
+    <button id="printBtn" class="primary-btn">Print / Save as PDF</button>
+    <span class="toolbar-label">Theme</span>
+    <select id="printThemeSelect" class="theme-select"></select>
+    <span class="toolbar-divider"></span>
+    <span class="toolbar-label">Text size</span>
+    <div id="printFontScaleButtons" class="font-scale-buttons"></div>
+    <span class="toolbar-label">Icon size</span>
+    <div id="printIconScaleButtons" class="font-scale-buttons"></div>
+    <button id="printResetPositions" class="secondary-btn">Reset positions</button>
+    <p class="hint">Drag icons or labels to reposition them, or focus one and use arrow keys. Save your routine to keep positions.</p>
+    <p class="hint">
+      Set paper to <strong>US Letter</strong> and scale to <strong>100% / Actual size</strong> for exact 3.5in / 7in circles.
+      Also uncheck <strong>Headers and footers</strong> (under "More settings") — otherwise the browser prints its own title/URL bar over the page margins.
+    </p>
+  </div>
+
+  <div class="print-page">
+    <h2 id="printRoutineTitle" class="print-title"></h2>
+    <div id="printWheel" class="wheel-holder print-wheel-holder"></div>
+
+    <p class="affiliate-disclosure">This page includes an affiliate link to TimeTimer. If you purchase through it, I may earn a commission at no extra cost to you.</p>
+
+    <a href="https://bit.ly/3Plh1Y4" target="_blank" rel="noopener sponsored" class="corner-brand corner-brand-left">
+      <img src="https://cdn.refersion.com/5890/creatives/03-08-22-09-48-16_TT_Affilaite_Color_RGB.png" alt="TimeTimer" class="sponsor-banner" />
+      <span class="sponsor-caption">Works best with TimeTimer TWIST</span>
+    </a>
+
+    <a href="https://routines.getadhd.care" target="_blank" rel="noopener" class="corner-brand corner-brand-right">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=https%3A%2F%2Froutines.getadhd.care" alt="QR code to routines.getadhd.care" class="brand-qr" />
+      <span class="brand-text">
+        <span class="brand-wordmark">Applied Behavioral Health Practice</span>
+        <span class="brand-caption">More free routines at routines.getadhd.care</span>
+      </span>
+    </a>
+
+    <p class="arasaac-credit">Symbols © Government of Aragón, created by Sergio Palao, used under CC BY-NC-SA (ARASAAC.org)</p>
+  </div>
+</section>
+
+<!-- ===================== PROJECTION VIEW ===================== -->
+<section class="view-panel" data-view="projection">
+  <details class="projection-settings no-print" id="projectionSettings">
+  <summary>Customize timer</summary>
+  <div class="projection-toolbar">
+    <button id="startTimerBtn" class="primary-btn">▶ Start</button>
+    <button id="pauseTimerBtn" class="secondary-btn">⏸ Pause</button>
+    <button id="resetTimerBtn" class="secondary-btn">⟲ Reset</button>
+    <button id="nextStepBtn" class="secondary-btn" hidden>Next step →</button>
+    <label><input id="flexibleCheckbox" type="checkbox" /> Flexible schedule</label>
+    <details class="sound-options"><summary>Sound options</summary>
+      <label><input id="quietCheckbox" type="checkbox" checked /> Quiet mode</label>
+      <label><input id="soundChime" type="checkbox" checked /> Step chime</label>
+      <label><input id="soundTick" type="checkbox" checked /> Final countdown ticks</label>
+      <label><input id="soundVictory" type="checkbox" checked /> Completion sound</label>
+    </details>
+    <p id="scheduleHint" class="hint" role="status">Timed: steps advance automatically.</p>
+    <label><input type="checkbox" id="showClockCheckbox" checked /> Show clock</label>
+    <button id="projectionResetPositions" class="secondary-btn">Reset positions</button>
+    <span class="hint">Drag icons or labels; use arrow keys for fine adjustments.</span>
+    <button id="fullscreenBtn" class="secondary-btn">⛶ Full screen</button>
+    <span class="toolbar-divider"></span>
+    <span class="toolbar-label">Timer color</span>
+    <div id="discColorSwatches" class="disc-color-swatches"></div>
+    <span class="toolbar-divider"></span>
+    <span class="toolbar-label">Theme</span>
+    <select id="themeSelect" class="theme-select"></select>
+    <span class="toolbar-divider"></span>
+    <span class="toolbar-label">Text size</span>
+    <div id="fontScaleButtons" class="font-scale-buttons"></div>
+    <span class="toolbar-label">Icon size</span>
+    <div id="projIconScaleButtons" class="font-scale-buttons"></div>
+    <span class="toolbar-label">Text color</span>
+    <input type="color" id="fontColorInput" class="font-color-input" value="#ffffff" title="Text color" />
+    <button id="fontColorResetBtn" class="secondary-btn small-btn" title="Reset text color to theme default">Auto</button>
+  </div>
+  </details>
+  <div id="projectionStage" class="projection-stage">
+    <details id="stageControls" class="stage-controls no-print" open>
+      <summary>Timer controls</summary>
+      <div class="stage-control-buttons">
+      <button id="stagePlayBtn" class="primary-btn">▶ Play</button>
+      <button id="stagePauseBtn" class="secondary-btn">⏸ Pause</button>
+      <button id="stageNextBtn" class="secondary-btn" hidden>Next step →</button>
+      <button id="stageQuietBtn" class="secondary-btn" aria-pressed="true">Quiet mode on</button>
+      <button id="stageInfoBtn" class="secondary-btn" aria-pressed="false">Show current step</button>
+      <button id="stageFullscreenBtn" class="secondary-btn">⛶ Full screen</button>
+      <button id="exitFullscreenBtn" class="secondary-btn">Exit full screen</button>
+      </div>
+    </details>
+    <div class="projection-wheel-frame">
+      <div id="projectionWheel" class="wheel-holder projection-wheel-holder"></div>
+    </div>
+    <div class="projection-current" hidden>
+      <div id="projCurrentIcon" class="proj-current-icon"></div>
+      <div class="proj-current-text">
+        <div id="projCurrentName" class="proj-current-name">Ready to start</div>
+        <div id="projCurrentTime" class="proj-current-time"></div>
+        <div id="projNextLabel" class="proj-next-label"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="routine-guide no-print" aria-labelledby="guide-title">
+  <h2 id="guide-title">A visual schedule that works on screen or paper</h2>
+  <p>Turn everyday activities into a picture-based routine. Each section of the circle represents a step, and the timer shows progress through the schedule. Choose a ready-made routine or add your own steps, symbols, and durations.</p>
+  <nav class="guide-links" aria-label="Routine ideas">
+    <a href="guides/morning-routine/">Morning routine for kids</a>
+    <a href="guides/classroom-timer/">Classroom visual timer</a>
+    <a href="guides/bedtime-routine/">Bedtime routine for kids</a>
+  </nav>
+  <h2>How to make a routine timer</h2>
+  <ol>
+    <li>Choose Morning, Classroom, or Bedtime, or add custom steps in the builder.</li>
+    <li>Set a duration and picture symbol for each activity. Choose a theme and adjust text or icon sizes.</li>
+    <li>Open Projection for a live timer, or Print Preview to print the routine wheel or save it as a PDF.</li>
+    <li>Save in this browser, or export a routine file to share with another parent or teacher.</li>
+  </ol>
+  <h2>Ways to use your visual timer</h2>
+  <p><strong>At home:</strong> start with getting dressed, breakfast, and brushing teeth. For bedtime, try a bath, pajamas, a book, and settling down. Adjust the minutes to fit your household.</p>
+  <p><strong>In the classroom:</strong> project the wheel for circle time, reading, writing, cleanup, and recess. Use quiet mode for silent transitions or choose individual sound cues.</p>
+  <p><strong>For flexible days:</strong> turn on Flexible schedule. The timer holds on the current activity until you press Next step, even if the planned time has elapsed.</p>
+  <h2>Frequently asked questions</h2>
+  <details><summary>Is this visual routine timer free?</summary><p>Yes. You can build, project, print, save, and export routines without an account. The printable page includes an optional affiliate link.</p></details>
+  <details><summary>Can I print a visual routine?</summary><p>Yes. Open Print Preview and choose Print / Save as PDF. Use US Letter paper at 100% or Actual size, with browser headers and footers turned off. The outer circle is 7 inches across and the center is 3.5 inches across.</p></details>
+  <details><summary>Can I use the timer without sound or text?</summary><p>Quiet mode is on by default. You can turn individual sounds on when you want them. Choose No text in either view for picture-only step labels, and hide the clock in Projection if you prefer.</p></details>
+  <details><summary>Where are my saved routines stored?</summary><p>Saved routines stay in this browser on this device. Export a JSON routine file for a backup or to move a routine to another device. Importing opens the file; press Save to keep it in that browser.</p></details>
+  <details><summary>Does it work offline?</summary><p>The timer runs in your browser, but picture searches, fonts, and QR images need internet access when they are not already cached.</p></details>
+  <p class="creator-credit">Created by Applied Behavioral Health Practice. Picture symbols are from <a href="https://arasaac.org" rel="noopener" target="_blank">ARASAAC</a>.</p>
+</section>
+<noscript><p class="noscript-note">Enable JavaScript to build and run a timer. You can still read the <a href="guides/morning-routine/">morning</a>, <a href="guides/classroom-timer/">classroom</a>, and <a href="guides/bedtime-routine/">bedtime routine guides</a>.</p></noscript>
+</main>
+<!-- ===================== ICON PICKER MODAL ===================== -->
+<div id="iconModal" class="modal no-print" hidden>
+  <div class="modal-content">
+    <div class="modal-header">
+      <input type="text" id="iconSearchInput" placeholder="Search ARASAAC symbols… (e.g. brush teeth)" />
+      <button id="iconModalClose" class="secondary-btn">Close</button>
+    </div>
+    <div id="iconResults" class="icon-results"></div>
+  </div>
+</div>
+
+<footer class="app-footer no-print">
+  Pictogram symbols by <a href="https://arasaac.org" target="_blank" rel="noopener">ARASAAC</a> (Sergio Palao), licensed CC BY-NC-SA.
+</footer>
+
+<script src="js/arasaac.js"></script>
+<script src="js/wheel.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
