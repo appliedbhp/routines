@@ -408,3 +408,31 @@ body[data-view="projection"] .routine-guide, body[data-view="print"] .routine-gu
   .view-panel[data-view="print"] { overflow-x: auto; }
   .projection-stage { min-height: 240px; }
 }
+
+/* Booking stays within the safe area and is excluded from printed PDFs. */
+.consultation-button {
+  position: fixed;
+  left: max(1rem, env(safe-area-inset-left));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  max-width: calc(100vw - 2rem);
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 999px;
+  background: #28536e;
+  color: white;
+  font: 600 0.9rem/1.35 system-ui, sans-serif;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+}
+.consultation-button svg { flex-shrink: 0; }
+.consultation-button:hover { background: #1b3e55; }
+.consultation-button:focus-visible { outline: 3px solid #e5a93b; outline-offset: 3px; }
+@media screen {
+  .app-footer { padding-bottom: 5.5rem; }
+  .guide-page { padding-bottom: 6rem; }
+}
