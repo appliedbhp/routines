@@ -436,3 +436,27 @@ body[data-view="projection"] .routine-guide, body[data-view="print"] .routine-gu
   .app-footer { padding-bottom: 5.5rem; }
   .guide-page { padding-bottom: 6rem; }
 }
+
+/* Practice branding: Lora wordmark with a compact, readable letter spacing. */
+:root { --brand-blue: #3185fc; }
+.app-header { gap: 1rem; flex-wrap: wrap; }
+.brand-lockup { display: flex; align-items: center; gap: 0.5rem; min-width: 0; color: #111; text-decoration: none; }
+.brand-header-logo { width: 72px; height: 72px; object-fit: contain; flex-shrink: 0; }
+.brand-header-text { display: flex; flex-direction: column; min-width: 0; }
+.brand-practice-name { font-family: 'Lora', Georgia, serif; font-size: clamp(1.1rem, 2.1vw, 1.65rem); font-weight: 500; line-height: 1.2; letter-spacing: -0.045em; }
+.app-header .brand-app-title { margin: 0.3rem 0 0; font: 600 0.85rem/1.3 system-ui, sans-serif; color: #526274; letter-spacing: 0.01em; }
+.view-tabs { flex-wrap: wrap; }
+.view-tab, .category-tab { border-color: var(--brand-blue); color: #185db4; }
+.view-tab.active, .category-tab.active { background: var(--brand-blue); border-color: var(--brand-blue); color: #071b36; font-weight: 700; }
+.view-tab:hover, .category-tab:hover { background: #e7f0ff; }
+.view-tab.active:hover, .category-tab.active:hover { background: #579bff; }
+.view-tab:focus-visible, .category-tab:focus-visible, .brand-lockup:focus-visible { outline: 3px solid var(--brand-blue); outline-offset: 3px; }
+.guide-links a { color: #185db4; background: #e7f0ff; border: 1px solid var(--brand-blue); }
+.builder-right { top: 7rem; }
+@media (max-width: 700px) {
+  .brand-header-logo { width: 52px; height: 52px; }
+  .brand-lockup { gap: 0.35rem; }
+  .brand-practice-name { font-size: 1.12rem; }
+  .app-header .brand-app-title { font-size: 0.75rem; }
+  .app-header .view-tabs { width: 100%; }
+}
