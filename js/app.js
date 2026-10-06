@@ -7,7 +7,7 @@ const CATEGORIES = {
 
 // TimeTimer affiliate — required by the Refersion program terms.
 const AFFILIATE_URL = "https://bit.ly/3Plh1Y4";
-const QR_IMAGE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(AFFILIATE_URL)}`;
+const QR_IMAGE_URL = "assets/qr/timetimer.png";
 
 const PROJECTION_INNER_RADIUS = 1.3; // in — smaller hub than the print spec, for the clock + countdown
 const PRINT_OUTER_MARGIN = 0.08; // in — room for the full outline stroke on every side
@@ -421,8 +421,8 @@ function renderPrintView() {
     iconScale: state.printIconScale,
     centerMode: "qr",
     qrImageUrl: QR_IMAGE_URL,
-    qrSize: 0.85,
-    qrCaptionLines: ["Works best with", "TimeTimer TWIST"],
+    qrSize: 1.65,
+    qrCaptionLines: [],
   });
 }
 

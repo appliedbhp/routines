@@ -301,7 +301,7 @@ const Wheel = (() => {
     } else if (centerMode === "qr" && opts.qrImageUrl) {
       const qrSize = opts.qrSize || Math.min(1.1, R1 * 0.65);
       const qrX = CX - qrSize / 2;
-      const qrY = CY - qrSize / 2 - 0.16;
+      const qrY = CY - qrSize / 2 - ((opts.qrCaptionLines || []).length ? 0.16 : 0);
       parts.push(`<image href="${opts.qrImageUrl}" x="${qrX.toFixed(3)}" y="${qrY.toFixed(3)}" width="${qrSize}" height="${qrSize}" class="wheel-qr" />`);
       const lines = opts.qrCaptionLines || [];
       lines.forEach((line, i) => {
