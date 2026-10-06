@@ -422,7 +422,7 @@ function renderPrintView() {
     centerMode: "qr",
     qrImageUrl: QR_IMAGE_URL,
     qrSize: 1.65,
-    qrCaptionLines: [],
+    qrCaptionLines: ["Works best with TimeTimer TWIST"],
   });
 }
 
@@ -868,6 +868,16 @@ function fitProjection() {
 }
 
 const PRESETS = {
+  "after-school": {"name": "After School Routine", "category": "tasks", "steps": [["Put Away Backpack", 3], ["Snack", 10], ["Movement Break", 10], ["Homework", 15], ["Pack for Tomorrow", 5]]},
+  "homework": {"name": "Homework Routine", "category": "tasks", "steps": [["Gather Supplies", 3], ["Choose a Task", 2], ["Work", 15], ["Stretch Break", 5], ["Check Work", 5], ["Put Away Supplies", 3]]},
+  "preschool": {"name": "Preschool Morning", "category": "morning", "steps": [["Use Toilet", 3], ["Get Dressed", 5], ["Breakfast", 10], ["Brush Teeth", 3], ["Shoes", 4]]},
+  "wind-down": {"name": "Evening Wind Down", "category": "evening", "steps": [["Tidy Up", 5], ["Pajamas", 5], ["Brush Teeth", 3], ["Read Together", 10], ["Quiet Breathing", 2]]},
+  "leaving-home": {"name": "Leaving Home", "category": "morning", "steps": [["Use Toilet", 3], ["Water Bottle", 2], ["Check Bag", 3], ["Shoes", 4], ["Coat", 3]]},
+  "bedroom": {"name": "Bedroom Tidy", "category": "chores", "steps": [["Make Bed", 3], ["Put Clothes in Hamper", 3], ["Put Away Toys", 5], ["Clear Desk", 4], ["Put Away Books", 3]]},
+  "kitchen": {"name": "Kitchen Helper", "category": "chores", "steps": [["Clear Table", 3], ["Sort Dishes", 3], ["Wipe Table", 4], ["Sweep Floor", 5], ["Wash Hands", 2]]},
+  "laundry": {"name": "Laundry Routine", "category": "chores", "steps": [["Collect Clothes", 5], ["Sort Clothes", 5], ["Fold Clean Clothes", 10], ["Put Clothes Away", 5]]},
+  "weekly-reset": {"name": "Weekly Room Reset", "category": "chores", "steps": [["Put Away Toys", 8], ["Sort Books", 5], ["Put Clothes Away", 7], ["Wipe Surfaces", 5], ["Sweep Floor", 5]]},
+
   morning: { name: "Morning Routine", category: "morning", steps: [["Make Bed", 3], ["Get Dressed", 5], ["Breakfast", 10], ["Brush Teeth", 3], ["Backpack", 5], ["Put On Shoes", 4]] },
   classroom: { name: "Classroom Routine", category: "tasks", steps: [["Circle Time", 10], ["Reading", 15], ["Writing", 15], ["Clean Up", 5], ["Recess", 15]] },
   bedtime: { name: "Bedtime Routine", category: "evening", steps: [["Bath", 10], ["Pajamas", 5], ["Brush Teeth", 3], ["Read", 10], ["Go to Bed", 2]] },

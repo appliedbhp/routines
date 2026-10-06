@@ -53,8 +53,9 @@ before any commercial deployment.
 
 ## Routines and sharing
 
-Choose Morning (30 minutes), Classroom (60 minutes), or Bedtime (30 minutes)
-in Builder and press **Use routine**. This replaces current steps; save or
+Choose one of 12 examples in Builder and press **Use routine**: Morning,
+Classroom, Bedtime, After School, Homework, Preschool Morning, Evening Wind Down,
+Leaving Home, Bedroom Tidy, Kitchen Helper, Laundry, or Weekly Room Reset. This replaces current steps; save or
 export a custom routine first. Presets are editable and load symbols as they
 become available.
 
@@ -139,3 +140,18 @@ and structured data do not guarantee rankings, rich results, or traffic.
 
 Guidance used: [Google's developer SEO guide](https://developers.google.com/search/docs/fundamentals/get-started-developers)
 and [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics).
+
+## Weekly chore charts
+
+Open **Create a weekly chore chart** in Builder for daily home helpers, bedroom
+tidying, family chores, classroom jobs, daily independence, or a blank chart.
+Edit chore names, add or remove rows (up to 10), and check off each day. Charts
+print on landscape US Letter. Use **Save chart** to keep named charts in this browser, and **Load chart**
+to restore them. **Export chart** downloads a JSON file; **Import chart** opens
+an exported file without adding it to your saved library until you press Save.
+Files preserve chart names, person/team, week, chore labels, pictogram IDs,
+and daily checkmarks. Invalid files leave the open chart unchanged.
+
+Chore charts automatically suggest ARASAAC picture symbols. Click a picture to
+search for a replacement or remove it. Icons are included in print output;
+an internet connection is needed to find and load symbols.

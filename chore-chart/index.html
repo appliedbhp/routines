@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Printable Weekly Chore Charts | Applied Behavioral Health Practice</title>
+<meta name="description" content="Make an editable weekly chore chart for bedroom tidying, household tasks, or classroom jobs. Check off chores online or print your chart.">
+<link rel="canonical" href="https://routines.getadhd.care/chore-chart/">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#17283f;font:16px system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:32px 24px}a{color:#0756b5}h1{font-size:clamp(26px,4vw,40px);margin:24px 0 8px}.intro{line-height:1.6;color:#4b5b70}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:24px 0}button,select,input{font:inherit;border:1px solid #b7c6d8;border-radius:8px;padding:10px;background:white;color:inherit}button{cursor:pointer}button.primary{background:#0756b5;color:white;border-color:#0756b5}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f0a020;outline-offset:3px}.sheet{background:white;padding:24px;border:1px solid #d5dfeb;border-radius:14px}.details{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:20px}.details label{flex:1;min-width:190px}.details input{display:block;width:100%;margin-top:6px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:660px}th,td{border:1px solid #ccd6e3;padding:12px;text-align:center}th{background:#eaf1fb}th:first-child,td:first-child{text-align:left;width:34%}td:first-child input{width:100%;border-color:transparent;padding:6px}input[type=checkbox]{width:24px;height:24px;accent-color:#0756b5}.remove{border:0;padding:2px 7px;font-size:20px}.chore-cell{display:flex;align-items:center;gap:4px}.sheet-footer{display:flex;justify-content:space-between;gap:24px;margin-top:24px;align-items:flex-end}.qr{width:90px;height:90px;display:block}.credit{font-size:13px;color:#4b5b70}.hint{font-size:14px;color:#4b5b70;line-height:1.5}.chart-name{font-size:24px;margin:0 0 20px}#status{min-height:20px;font-size:14px}
+@page{size:letter landscape;margin:0.4in}@media print{body{background:white;font-size:12px}main{padding:0;max-width:none}.no-print{display:none!important}.sheet{border:0;padding:0}.details input{border:0;padding:0}.table-wrap{overflow:visible}table{min-width:0}th,td{padding:8px}input[type=checkbox]{appearance:none;border:1px solid #59697e;border-radius:3px;width:18px;height:18px;padding:0;display:inline-block}input[type=checkbox]:checked::after{content:'✓';font-size:16px;display:block;line-height:16px}.sheet-footer{margin-top:16px}.qr{width:0.75in;height:0.75in}tr{break-inside:avoid}input{color:#17283f}th{print-color-adjust:exact}}
+
+.chore-cell>input{min-width:0;flex:1}.chore-icon{width:52px;height:52px;flex-shrink:0;padding:4px;display:grid;place-items:center}.chore-icon img{width:100%;height:100%;object-fit:contain}.chore-icon span{font-size:12px;color:#4b5b70}.icon-picker{max-width:600px;width:calc(100% - 32px);border:1px solid #b7c6d8;border-radius:14px;padding:24px}.icon-picker::backdrop{background:#17283f88}.icon-search{display:flex;gap:8px;flex-wrap:wrap}.icon-search input{flex:1;min-width:140px}.icon-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;max-height:330px;overflow:auto;margin:16px 0}.icon-choice{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px}.icon-choice img{width:60px;height:60px;object-fit:contain}.picker-actions{display:flex;gap:10px;justify-content:flex-end}.symbol-credit{margin:8px 0 0;font-size:11px}
+@media print{.chore-icon{width:36px;height:36px;padding:0;border:0;background:transparent}.chore-icon span{display:none}.icon-picker{display:none}.chore-cell{gap:8px}th,td{padding:5px}.details{margin-bottom:12px}.chart-name{margin-bottom:12px}.sheet-footer{margin-top:12px}}
+</style>
+</head>
+<body><main>
+<a class="no-print" href="../">← Visual routine timer</a>
+<h1 class="no-print">A little progress, every day.</h1>
+<p class="intro no-print">Choose an example, edit the chores to fit your home or classroom, and check them off together. Print a fresh chart each week.</p>
+<div class="controls no-print"><label for="example">Example chart</label><select id="example"><option value="daily">Daily home helpers</option><option value="bedroom">Bedroom tidy</option><option value="family">Family household chores</option><option value="classroom">Classroom jobs</option><option value="selfcare">Daily independence</option><option value="blank">Blank chart</option></select><button id="load">Use example</button><button id="add">Add chore</button><button id="clear">Clear checkmarks</button><button id="print" class="primary">Print chart</button></div>
+<p class="hint no-print">Using an example replaces the current chores and checkmarks. Save charts in this browser, or export a file to back them up or share. Import opens a chart; press Save to add it to your library. Choose tasks that fit the person's abilities, and provide help or supervision as needed.</p>
+<div class="controls no-print" aria-label="Save and share charts">
+<label for="chartName">Chart name</label><input id="chartName" value="My weekly chore chart" maxlength="100">
+<button id="saveChart" class="primary">Save chart</button>
+<label for="savedCharts">Saved charts</label><select id="savedCharts"><option value="">Choose a saved chart</option></select>
+<button id="loadChart">Load chart</button><button id="deleteChart">Delete saved chart</button>
+<button id="exportChart">Export chart</button><button id="importChart">Import chart</button>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+</div>
+<p class="hint no-print">Saved charts belong to this browser. Export a chart file to move it to another device. Files include names, dates, pictures, and checkmarks.</p>
+<p id="status" class="no-print" role="status"></p>
+<section class="sheet" aria-label="Weekly chore chart"><h2 class="chart-name">My weekly chore chart</h2><div class="details"><label>Name or team<input id="personName" maxlength="200" aria-label="Name or team" placeholder="Write a name"></label><label>Week of<input id="weekOf" maxlength="200" aria-label="Week of" placeholder="Write the starting date"></label></div>
+<div class="table-wrap"><table><caption class="no-print" style="text-align:left;padding-bottom:10px">Edit each chore, click its picture to change the symbol, and check the days it is completed.</caption><thead><tr><th scope="col">Chore</th><th scope="col">Mon</th><th scope="col">Tue</th><th scope="col">Wed</th><th scope="col">Thu</th><th scope="col">Fri</th><th scope="col">Sat</th><th scope="col">Sun</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="sheet-footer"><div><p class="credit">Applied Behavioral Health Practice<br>Choose a manageable goal and celebrate effort.</p><p class="symbol-credit">Picture symbols © Government of Aragón, by Sergio Palao / <a href="https://arasaac.org">ARASAAC</a>, CC BY-NC-SA.</p></div><a href="https://routines.getadhd.care"><img class="qr" src="../assets/qr/routines.png" alt="Routines website QR code"></a></div></section>
+</main>
+<dialog id="iconPicker" class="icon-picker no-print" aria-labelledby="pickerTitle">
+<h2 id="pickerTitle">Choose a chore picture</h2>
+<form id="iconSearchForm" class="icon-search"><label class="hint" for="iconSearch">Search symbols</label><input id="iconSearch" placeholder="Try bed, toys, or dishes"><button type="submit" class="primary">Search</button></form>
+<p id="iconStatus" role="status"></p><div id="iconResults" class="icon-results"></div>
+<div class="picker-actions"><button id="removeIcon" type="button">Remove picture</button><button id="closePicker" type="button">Done</button></div>
+</dialog>
+<script src="../js/arasaac.js"></script><script src="data.js"></script><script src="charts.js"></script></body></html>
