@@ -155,3 +155,20 @@ and daily checkmarks. Invalid files leave the open chart unchanged.
 Chore charts automatically suggest ARASAAC picture symbols. Click a picture to
 search for a replacement or remove it. Icons are included in print output;
 an internet connection is needed to find and load symbols.
+
+## Visual support boards
+
+Five tools share the symbol picker, editing, printing, and file format:
+- `/first-then/`: two activities, with First and Then labels.
+- `/choice-board/`: 2–12 options; select one at a time.
+- `/task-strip/`: 1–12 ordered steps; mark steps done.
+- `/now-next-later/`: three activities labeled Now, Next, and Later.
+- `/calm-down/`: 2–12 supportive choices; select one at a time.
+
+Each tool includes three editable examples. Move cards earlier or later,
+change or remove pictures, and add/remove cards where the layout permits.
+Save named boards in this browser and load them from the same tool. Export
+and import versioned JSON files with labels, pictogram IDs, names, and
+selections. Imports are validated before changing the open board; import
+a file on the matching tool's page. Picture searches require internet.
+Printing hides the editor controls and includes the board and symbol credit.

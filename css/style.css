@@ -483,3 +483,6 @@ body[data-view="projection"] .routine-guide, body[data-view="print"] .routine-gu
 .view-tab:active, .category-tab:active, .secondary-btn:active, .font-scale-btn:active, .chip:active,
 .secondary-btn[aria-pressed="true"] { background: var(--brand-blue); color: white; }
 .guide-links a { color: var(--brand-blue); }
+
+.support-links { display:flex; flex-wrap:wrap; gap:0.6rem 1.2rem; margin:0 0 1rem; padding:1rem; border:1px solid var(--border); border-radius:10px; font-size:0.85rem; }
+.support-links a { color:#0756b5; }
