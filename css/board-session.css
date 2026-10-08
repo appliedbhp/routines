@@ -1,0 +1,20 @@
+.board-session[hidden]{display:none!important}
+@media screen{
+ body.in-board-session{overflow:hidden}
+ body.in-board-session> :not(.board-session){display:none!important}
+ .board-session{position:fixed;inset:0;z-index:2000;width:100vw;height:100dvh;overflow:auto;background:#f4f7fb;color:#17283f;padding:20px clamp(16px,4vw,64px);box-sizing:border-box;font:18px system-ui,sans-serif}
+ .session-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+ .board-session h1{text-align:center;font-size:clamp(24px,4vw,42px);margin:20px 0 8px;overflow-wrap:anywhere}
+ .session-hint,.board-session [role=status]{text-align:center;line-height:1.4}
+ .session-hint{font-size:16px;color:#4b5b70}
+ .session-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:18px;max-width:1500px;margin:24px auto}
+ .session-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;min-width:0;min-height:180px;background:white;border:3px solid #c9d5e5;border-radius:18px;color:#17283f}
+ .session-card img{width:100%;height:clamp(90px,20vh,210px);object-fit:contain}
+ .session-label{font-size:clamp(20px,2vw,28px);font-weight:700;overflow-wrap:anywhere}
+ .session-step{font-weight:700;color:#0756b5}
+ .session-card.current{border-color:#3185fc;box-shadow:0 0 0 3px #3185fc22}
+ .session-card.complete{background:#e8f5ec;border-color:#27824e}
+ .session-card:disabled{opacity:.6;cursor:default}
+ .session-card:focus-visible{outline:4px solid #e5a93b;outline-offset:3px}
+}
+@media print{.board-session{display:none!important}}

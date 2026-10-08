@@ -302,3 +302,11 @@ importFile.onchange = async () => {
 
 loadExample();
 refreshSavedCharts();
+
+BoardSession.mount({
+ days,ordered:false,choice:false,
+ ready:()=>Promise.allSettled([...pendingIcons]),
+ read:day=>({title:document.getElementById('chartName').value||'Chore chart',items:[...rows.children].map(row=>({label:row.querySelector('.chore-cell input').value,pictogramId:Number(row.dataset.pictogramId)||null,marked:row.querySelectorAll('input[type=checkbox]')[day].checked}))}),
+ toggle:(index,day)=>{const check=rows.children[index].querySelectorAll('input[type=checkbox]')[day];check.checked=!check.checked;},
+ reset:day=>{for(const row of rows.children)row.querySelectorAll('input[type=checkbox]')[day].checked=false;}
+});

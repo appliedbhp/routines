@@ -164,3 +164,13 @@ function updateLayout(changed){
   layoutHint.textContent=`${rows} rows × ${columns} columns. Auto fits the board to one printed page.`;
 }
 useExample();refreshLibrary();
+
+BoardSession.mount({
+ ordered:!isChoice,choice:isChoice,slots:config.slots,
+ ready:()=>Promise.allSettled([...pending]),
+ read:()=>({title:titleInput.value||config.name,items:cards}),
+ normalize:()=>{const normalized=BoardSession.normalize(cards);cards.forEach((card,index)=>{card.marked=normalized[index].marked;});},
+ toggle:index=>{const value=!cards[index].marked;if(isChoice)cards.forEach(card=>card.marked=false);cards[index].marked=value;},
+ reset:()=>cards.forEach(card=>card.marked=false),
+ exit:render
+});
