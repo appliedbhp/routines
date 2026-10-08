@@ -31,3 +31,15 @@ body[data-theme=classic]{--accent:var(--classic-color,#3185fc);--reward:var(--cl
 .space-stars{display:none;pointer-events:none}.projection[data-theme=space] #sessionView>.space-stars{display:block;position:absolute;inset:0;z-index:0}.space-stars span{position:absolute;border-radius:50%;background:#fff;opacity:var(--star-opacity);animation:individual-twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite alternate}
 @keyframes individual-twinkle{from{opacity:var(--star-opacity)}to{opacity:calc(var(--star-opacity) + .2)}}
 @media(prefers-reduced-motion:reduce){.space-stars span{animation:none!important}}
+body[data-theme=garden]{--accent:#50894b;--reward:#cb4a82}body[data-theme=unicorn]{--accent:#9969c8;--reward:#c249a7}body[data-theme=chef]{--accent:#a95035;--reward:#d68021}body[data-theme=scientist]{--accent:#167e9f;--reward:#158d76}
+.projection[data-theme=garden] .session{background:linear-gradient(145deg,#eff8dd,#cde7bb 60%,#aacd9c);color:#203d2b}
+.projection[data-theme=unicorn] .session{background:radial-gradient(ellipse at 50% 120%,transparent 50%,#e8b4e8 51%,#ecc5ef 54%,#cee3fc 57%,#d4efd9 60%,transparent 63%),linear-gradient(145deg,#fae7f4,#e6dcfc,#dcf1fc);color:#49245e}
+.projection[data-theme=unicorn] .session::before,.projection[data-theme=unicorn] .session::after{content:'';position:absolute;left:-400px;top:15%;width:260px;height:170px;background:transparent url('cloud.svg') center/contain no-repeat;opacity:.5;pointer-events:none;z-index:0;animation:cloud-pass 80s linear infinite}
+.projection[data-theme=unicorn] .session::after{top:60%;animation-delay:-40s;animation-duration:110s}
+.projection[data-theme=chef] .session{background:linear-gradient(135deg,#fff1db,#f3c7a4 65%,#dda98d);color:#542e21}
+.projection[data-theme=scientist] .session{background:linear-gradient(150deg,#d8f4fb,#abd9ef 60%,#b7e6de);color:#173f52}
+.theme-particles{display:none;pointer-events:none}.projection[data-theme=garden] #sessionView>.petals,.projection[data-theme=scientist] #sessionView>.bubbles{display:block;position:absolute;inset:0;z-index:0;overflow:hidden}
+.theme-particles span{position:absolute;animation-duration:var(--duration);animation-delay:var(--delay);animation-timing-function:linear;animation-iteration-count:infinite}
+.petals span{top:-30px;width:13px;height:20px;background:#d68cae80;border-radius:80% 15% 80% 15%;animation-name:petal-drift}.bubbles span{bottom:-40px;width:25px;height:25px;border:2px solid #fff8;border-radius:50%;animation-name:bubble-rise}
+@keyframes petal-drift{to{transform:translate(90px,110vh) rotate(220deg)}}@keyframes bubble-rise{to{transform:translate(35px,-110vh)}}
+@media(prefers-reduced-motion:reduce){.theme-particles span,.projection[data-theme=unicorn] .session::before,.projection[data-theme=unicorn] .session::after{animation:none!important}}
