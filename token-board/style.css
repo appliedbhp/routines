@@ -13,7 +13,7 @@
 #tokenSheet #progress,#tokenSheet .token-credit{color:inherit}
 #confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
 #confetti i{position:absolute;width:9px;height:14px;border-radius:2px}
-#exitSession{position:absolute;right:12px;top:10px;z-index:6;font:14px Nunito,sans-serif;background:var(--theme-soft);color:inherit;border:1px solid var(--theme-accent)}
+#exitSession,#resetSession{position:absolute;right:12px;top:10px;z-index:6;font:14px Nunito,sans-serif;background:var(--theme-soft);color:inherit;border:1px solid var(--theme-accent)}
 @media screen{
  body.token-run{overflow:hidden}
  body.token-run> :not(main){display:none!important}
@@ -30,9 +30,11 @@
  body.token-run #celebration{grid-column:1 / -1;margin:4px 0 0;text-align:center}
  body.token-run .token-credit{font-size:10px;margin:0;max-width:95%}
 }
-@media print{#tokenSheet{background:var(--theme-background)!important;color:var(--token-color);print-color-adjust:exact}#exitSession,#confetti{display:none!important}}
+@media print{#tokenSheet{background:var(--theme-background)!important;color:var(--token-color);print-color-adjust:exact}#exitSession,#resetSession,#confetti{display:none!important}}
 
 #tokenSheet #celebration{color:#17482a;background:#e9f8ee}
 #tokenSheet[data-theme="space"] img[data-source="material"],#tokenSheet[data-theme="arcade"] img[data-source="material"]{filter:invert(1)}
 
 img[data-source="pixabots"]{image-rendering:pixelated}.icon-choice small{font-size:10px;color:#526175}
+
+#resetSession{left:12px;right:auto}

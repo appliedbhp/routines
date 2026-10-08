@@ -24,7 +24,7 @@ function tone(complete){
 function renderTokens(focusIndex){
  const theme=TokenData.themes[tokenBoard.theme];
  for(const [key,value] of Object.entries(theme).filter(([key])=>key!=='confetti'))$('tokenSheet').style.setProperty(`--theme-${key}`,value);
- $('exitSession').hidden=tokenMode!=='run';$('tokenSheet').dataset.theme=tokenBoard.theme;
+ $('resetSession').hidden=$('exitSession').hidden=tokenMode!=='run';$('tokenSheet').dataset.theme=tokenBoard.theme;
  const earned=tokenBoard.tokens.filter(t=>t.earned).length;
  $('printTitle').textContent=tokenBoard.title||'My token board';$('rewardLabel').textContent=tokenBoard.reward||'Your chosen reward';
  $('progress').textContent=`${earned} of ${tokenBoard.tokens.length} tokens earned`;
@@ -76,7 +76,8 @@ $('tokenCount').onchange=()=>{const count=Number($('tokenCount').value);while(to
 $('extraSets').onchange=()=>{tokenBoard.extraSets=Number($('extraSets').value);renderTokens();};
 $('sound').onchange=()=>{tokenBoard.sound=$('sound').checked;};
 $('editMode').onclick=endSession;$('runMode').onclick=startSession;$('exitSession').onclick=endSession;
-$('resetTokens').onclick=()=>{tokenBoard.tokens.forEach(t=>t.earned=false);renderTokens();announce('Tokens reset. Your pictures and reward are unchanged.');};
+function resetTokens(){tokenBoard.tokens.forEach(t=>t.earned=false);$('confetti').replaceChildren();renderTokens();announce('Tokens reset. Your pictures and reward are unchanged.');}
+$('resetTokens').onclick=resetTokens;$('resetSession').onclick=resetTokens;
 $('rewardPicture').onclick=()=>openPicker(-1);
 function renderCredit(element,icons){
  element.replaceChildren();
