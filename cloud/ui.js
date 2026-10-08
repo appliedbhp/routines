@@ -9,9 +9,10 @@ async function start(){
  await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('cloud/adapter.js',root);script.onload=resolve;script.onerror=reject;document.head.append(script);});
  const accountNav=document.createElement('nav');accountNav.setAttribute('aria-label','Your account');const accountLink=document.createElement('a');accountLink.href=new URL('account/',root);accountLink.setAttribute('aria-label','My cloud boards');accountLink.title='My cloud boards';accountLink.innerHTML='<span class="nav-icon" aria-hidden="true">☁</span><span class="nav-label">My cloud boards</span>';accountNav.append(accountLink);document.querySelector('.workspace-sidebar')?.append(accountNav);
  const editor=!!document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn');
- const entry=document.createElement('button');entry.type='button';entry.className='cloud-entry no-print';entry.textContent='Cloud boards · Free';
- const anchor=document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn');
- if(anchor)anchor.after(entry);else (document.getElementById('cloudAccount')||document.querySelector('main')).append(entry);
+ const entry=document.createElement('button');entry.type='button';entry.className='cloud-entry no-print';entry.setAttribute('aria-label','My cloud boards · Free');entry.title='My cloud boards · Free';
+ entry.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.9 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>';
+ const header=document.querySelector('.workspace-header,.app-header');
+ if(header){header.classList.add('has-cloud-entry');header.append(entry);}else document.body.append(entry);
  const dialog=document.createElement('dialog');dialog.className='cloud-dialog no-print';dialog.setAttribute('aria-labelledby','cloudTitle');
  dialog.innerHTML=`<header><h2 id="cloudTitle">My cloud boards</h2><button type="button" data-close aria-label="Close cloud boards">Close</button></header>
  <p>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>

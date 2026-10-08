@@ -1,1 +1,12 @@
 .cloud-dialog{width:min(660px,calc(100vw - 32px));max-height:90dvh;overflow:auto;border:1px solid #c7d4e6;border-radius:18px;padding:24px;background:#fff;color:#17283f;text-align:left;box-shadow:0 20px 80px #17283f44}.cloud-dialog::backdrop{background:#13263d99}.cloud-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.cloud-dialog h2{margin:0}.cloud-dialog p{line-height:1.5}.cloud-dialog input[type=email]{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:10px}.cloud-dialog .cloud-check{display:flex;align-items:flex-start;gap:10px;margin:18px 0;line-height:1.5}.cloud-dialog input[type=checkbox]{flex:none;margin-top:5px;width:18px;height:18px}.cloud-dialog button,.cloud-entry{background:#3185fc;color:#fff;border:1px solid #1764ce;border-radius:8px;padding:10px 14px;cursor:pointer}.cloud-dialog button{margin:4px}.cloud-dialog button:disabled{background:#dbe3ec;color:#526077;cursor:not-allowed}.cloud-dialog a{color:#155dbd}.cloud-slot{border:1px solid #c7d4e6;border-radius:12px;padding:16px;margin:16px 0;background:#f8fbff}.cloud-dialog pre{white-space:pre-wrap;word-break:break-word;background:#f3f6fa;padding:12px;max-height:220px;overflow:auto;font-size:12px}.cloud-dialog [role=status]{font-weight:600}.cloud-dialog [aria-busy=true]{cursor:wait}.projection .cloud-entry{display:none!important}@media print{.cloud-dialog,.cloud-entry{display:none!important}}
+
+/* Material Icons cloud: Google, Apache 2.0. */
+@media screen {
+ .has-cloud-entry{position:relative;min-height:72px;box-sizing:border-box}
+ .visual-workspace .has-cloud-entry{padding-right:84px}
+ .cloud-entry{position:absolute;top:14px;right:20px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:8px;margin:0;border-radius:50%;box-sizing:border-box;flex:none}
+ .cloud-entry svg{display:block;flex:none}
+ .cloud-entry:hover{background:#1764ce}
+ .cloud-entry:focus-visible{outline:3px solid #17283f;outline-offset:3px}
+ @media(max-width:760px){.cloud-entry{top:12px;right:12px}.visual-workspace .has-cloud-entry{padding-right:68px}}
+}
