@@ -1,13 +1,13 @@
 const TokenData = (() => {
- const fonts=['Nunito','Fredoka','Patrick Hand','system-ui','Quicksand','Space Grotesk','Silkscreen','Lora'];
+ const fonts=['Nunito','Fredoka','Patrick Hand','system-ui','Quicksand','Space Grotesk','Silkscreen','Lora','Atkinson Hyperlegible','Lexend','Balsamiq Sans','Chewy','Comic Neue','Fascinate Inline','Flavors','Freckle Face','Ribeye Marrow','Sofadi One','Tenor Sans','Syne Mono'];
  const characterStyles=['bottts','planets','adventurer','big-smile','critters','clay','croodles','marbles','micah','pixel-art','voxel-art','voxel-bot'];
  const themes={
- classic:{name:'Classic',font:'Nunito',color:'#17283f',background:'#ffffff',accent:'#3185fc',soft:'#edf5ff'},
- ocean:{name:'Ocean',font:'Quicksand',color:'#124559',background:'#e9fbff',accent:'#087f8c',soft:'#c7eef2'},
- space:{name:'Space',font:'Space Grotesk',color:'#f4edff',background:'#191c38',accent:'#c5a3ff',soft:'#303455'},
- garden:{name:'Garden',font:'Fredoka',color:'#254b35',background:'#f1f8e9',accent:'#a33d70',soft:'#e3eed8'},
- arcade:{name:'Arcade',font:'Silkscreen',color:'#eafff3',background:'#172e2b',accent:'#77efba',soft:'#27453d'},
- boho:{name:'Boho',font:'Lora',color:'#4a3525',background:'#fbf1e7',accent:'#b8543c',soft:'#eee3cd'}
+ classic:{confetti:["#3185fc", "#ffcd38", "#f064a1", "#64dca0"],name:'Classic',font:'Nunito',color:'#17283f',background:'#ffffff',accent:'#3185fc',soft:'#edf5ff'},
+ ocean:{confetti:["#087f8c", "#38bdf8", "#67e8f9", "#f4d58d"],name:'Ocean',font:'Quicksand',color:'#124559',background:'#e9fbff',accent:'#087f8c',soft:'#c7eef2'},
+ space:{confetti:["#c5a3ff", "#f9d76e", "#79d4ff", "#ff8ad8"],name:'Space',font:'Space Grotesk',color:'#f4edff',background:'#191c38',accent:'#c5a3ff',soft:'#303455'},
+ garden:{confetti:["#a33d70", "#78a858", "#f2b544", "#ed8fb6"],name:'Garden',font:'Fredoka',color:'#254b35',background:'#f1f8e9',accent:'#a33d70',soft:'#e3eed8'},
+ arcade:{confetti:["#77efba", "#ff5cac", "#ffe56d", "#61d9ff"],name:'Arcade',font:'Silkscreen',color:'#eafff3',background:'#172e2b',accent:'#77efba',soft:'#27453d'},
+ boho:{confetti:["#d9745b", "#e5a93b", "#8a9a86", "#b89272"],name:'Boho',font:'Lora',color:'#4a3525',background:'#fbf1e7',accent:'#b8543c',soft:'#eee3cd'}
  };
  const sources={material:'Simple icons',openmoji:'Colorful emoji',arasaac:'Activity pictures',dicebear:'Characters',pixabots:'PixaBots'};
  const credits={pixabots:['PixaBots by Pablo Stanley','https://pixabots.com'],material:['Google Material Symbols · Apache 2.0','https://github.com/google/material-design-icons/blob/master/LICENSE'],openmoji:['OpenMoji · CC BY-SA 4.0','https://openmoji.org/about/'],arasaac:['Sergio Palao / ARASAAC · Government of Aragón · CC BY-NC-SA 4.0','https://arasaac.org/terms-of-use'],dicebear:['Bottts by Pablo Stanley · DiceBear · Free for personal and commercial use','https://www.dicebear.com/styles/bottts/']};

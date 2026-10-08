@@ -11,13 +11,19 @@ function picture(icon,projection=false){
  const image=document.createElement('img');image.src=TokenData.url(icon,projection&&!printing&&tokenMode==='run'&&tokenBoard.motion&&!matchMedia('(prefers-reduced-motion: reduce)').matches);image.alt='';image.dataset.source=icon.source;
  image.onerror=()=>{if(icon.source==='pixabots'&&image.src.includes('animated=true')){image.src=TokenData.url(icon,false);return;}image.hidden=true;const fallback=document.createElement('span');fallback.textContent=icon.label;image.after(fallback);};return image;
 }
+let celebrationAudio;
 function tone(complete){
  if(!tokenBoard.sound)return;
- try{const Audio=window.AudioContext||window.webkitAudioContext;const audio=new Audio();const osc=audio.createOscillator();const gain=audio.createGain();osc.connect(gain);gain.connect(audio.destination);osc.frequency.value=complete?880:660;gain.gain.setValueAtTime(.08,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.25);osc.start();osc.stop(audio.currentTime+.25);osc.onended=()=>audio.close();}catch{}
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  celebrationAudio??=new Audio();
+  if(celebrationAudio.state==='suspended')celebrationAudio.resume();
+  TokenSounds.play(celebrationAudio,complete);
+ }catch{}
 }
 function renderTokens(focusIndex){
  const theme=TokenData.themes[tokenBoard.theme];
- for(const [key,value] of Object.entries(theme))$('tokenSheet').style.setProperty(`--theme-${key}`,value);
+ for(const [key,value] of Object.entries(theme).filter(([key])=>key!=='confetti'))$('tokenSheet').style.setProperty(`--theme-${key}`,value);
  $('exitSession').hidden=tokenMode!=='run';$('tokenSheet').dataset.theme=tokenBoard.theme;
  const earned=tokenBoard.tokens.filter(t=>t.earned).length;
  $('printTitle').textContent=tokenBoard.title||'My token board';$('rewardLabel').textContent=tokenBoard.reward||'Your chosen reward';
@@ -56,6 +62,9 @@ function sync(){
  $('boardTheme').value=tokenBoard.theme;$('motion').checked=tokenBoard.motion;
  $('boardTitle').value=tokenBoard.title;$('rewardText').value=tokenBoard.reward;$('tokenCount').value=tokenBoard.tokens.length;$('extraSets').value=tokenBoard.extraSets;$('boardFont').value=tokenBoard.font;$('textColor').value=tokenBoard.color;$('sound').checked=tokenBoard.sound;renderTokens();
 }
+TokenPresets.forEach((preset,index)=>$('boardExample').append(new Option(preset.label,index)));
+$('useExample').onclick=()=>{const preset=TokenPresets[Number($('boardExample').value)];if(!preset)return;tokenBoard=TokenData.validate(preset.payload);savedTokenId=null;tokenMode='edit';sync();refresh();announce('Example loaded with zero tokens earned. Customize it, then save your own copy.');};
+$('previewSound').onclick=()=>{if(tokenBoard.sound)tone(true);else announce('Turn on Celebration sound to preview it.');};
 for(let i=1;i<=12;i++)$('tokenCount').append(new Option(i,i));
 
 Object.entries(TokenData.themes).forEach(([key,t])=>$('boardTheme').append(new Option(t.name,key)));
@@ -150,7 +159,7 @@ function celebrate(index,complete){
  if(!tokenBoard.motion||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  const host=$('confetti');host.replaceChildren();
  const origin=$('tokens').children[index].getBoundingClientRect(),bounds=$('tokenSheet').getBoundingClientRect();
- const count=complete?150:36,colors=['#ffcd38','#f064a1','#55c6f5','#a58aff','#64dca0'];
+ const count=complete?150:36,colors=TokenData.themes[tokenBoard.theme].confetti;
  for(let i=0;i<count;i++){
   const bit=document.createElement('i');bit.style.background=colors[i%colors.length];
   const x=complete?bounds.width*Math.random():origin.left-bounds.left+origin.width/2,y=complete?bounds.height*.2:origin.top-bounds.top+origin.height/2;
