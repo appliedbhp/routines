@@ -43,3 +43,8 @@ body[data-theme=garden]{--accent:#50894b;--reward:#cb4a82}body[data-theme=unicor
 .petals span{top:-30px;width:13px;height:20px;background:#d68cae80;border-radius:80% 15% 80% 15%;animation-name:petal-drift}.bubbles span{bottom:-40px;width:25px;height:25px;border:2px solid #fff8;border-radius:50%;animation-name:bubble-rise}
 @keyframes petal-drift{to{transform:translate(90px,110vh) rotate(220deg)}}@keyframes bubble-rise{to{transform:translate(35px,-110vh)}}
 @media(prefers-reduced-motion:reduce){.theme-particles span,.projection[data-theme=unicorn] .session::before,.projection[data-theme=unicorn] .session::after{animation:none!important}}
+/* Low-contrast waves stay behind the timer, rewards and controls. */
+.projection[data-theme=ocean] .session::before,.projection[data-theme=ocean] .session::after{content:'';position:absolute;left:-50%;bottom:0;width:200%;height:30%;background:url('wave.svg') 0 100%/50% 100% repeat-x;opacity:.11;pointer-events:none;z-index:0;animation:ocean-drift 38s linear infinite}
+.projection[data-theme=ocean] .session::after{bottom:-3%;height:25%;opacity:.09;animation-duration:53s;animation-direction:reverse}
+@keyframes ocean-drift{to{transform:translateX(25%)}}
+@media(prefers-reduced-motion:reduce){.projection[data-theme=ocean] .session::before,.projection[data-theme=ocean] .session::after{animation:none!important}}
