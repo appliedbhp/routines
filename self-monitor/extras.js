@@ -1,7 +1,7 @@
 const setupKey='routineVisualTimer.selfMonitor.v1';let savedId=null;
 function currentPayload(){return {format:'self-monitor',version:1,board:SelfMonitor.validateSetup({type:'self-monitor',title:$('setupName').value,duration:Number($('duration').value),interval:Number($('interval').value),timing:$('timing').value,variation:Number($('variation').value),message:$('message').value,yes:Number($('yesPoints').value),no:Number($('noPoints').value),mismatch:Number($('mismatchPoints').value),theme:$('theme').value,classicColor:$('classicColor').value,chimes:$('chimes').checked,showTimer:$('showTimer').checked})};}
 function readSetup(payload){if(payload?.format!=='self-monitor'||payload.version!==1)throw Error('Choose a self-monitor setup exported from this site.');return SelfMonitor.validateSetup(payload.board);}
-function appearance(){document.body.dataset.theme=$('theme').value;$('remaining').hidden=!$('showTimer').checked;$('colorLabel').hidden=$('theme').value!=='classic';document.body.style.setProperty('--classic-color',$('classicColor').value);tokens();$('toggleTimer').textContent=$('showTimer').checked?'Hide numbers':'Show numbers';}
+function appearance(){document.body.dataset.theme=$('theme').value;$('remaining').hidden=!$('showTimer').checked;$('colorLabel').hidden=$('theme').value!=='classic';document.body.style.setProperty('--classic-color',$('classicColor').value);tokens();iconCredit();$('toggleTimer').textContent=$('showTimer').checked?'Hide numbers':'Show numbers';}
 $('theme').onchange=appearance;$('classicColor').oninput=appearance;$('showTimer').onchange=appearance;$('toggleTimer').onclick=()=>{$('showTimer').checked=!$('showTimer').checked;appearance();};
 function openSetup(b){if(session)throw Error('Reset the current session before loading another setup.');for(const [id,value] of Object.entries({setupName:b.title,duration:b.duration,interval:b.interval,timing:b.timing,variation:b.variation,message:b.message,yesPoints:b.yes,noPoints:b.no,mismatchPoints:b.mismatch,theme:b.theme,classicColor:b.classicColor}))$(id).value=value;$('showTimer').checked=b.showTimer;$('chimes').checked=b.chimes;$('duration').oninput();$('timing').onchange();appearance();}
 function library(){const items=JSON.parse(localStorage.getItem(setupKey)||'[]');if(!Array.isArray(items))throw Error('Saved setups could not be read.');return items;}
@@ -12,7 +12,7 @@ $('loadBoard').onclick=()=>report(()=>{const entry=library().find(x=>x.id===$('s
 $('deleteBoard').onclick=()=>report(()=>{const id=$('savedBoards').value;if(!id)return;if(!confirm('Delete this saved setup?'))return;localStorage.setItem(setupKey,JSON.stringify(library().filter(x=>x.id!==id)));if(savedId===id)savedId=null;refreshSetups();});
 $('exportBoard').onclick=()=>report(()=>{const payload=currentPayload(),url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`self-monitor-${payload.board.title.replace(/[^a-z0-9_-]/gi,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('importBoard').onclick=()=>$('importFile').click();$('importFile').onchange=async()=>{try{const file=$('importFile').files[0];if(!file)return;if(file.size>100000)throw Error('Choose a setup smaller than 100 KB.');openSetup(readSetup(JSON.parse(await file.text())));savedId=null;refreshSetups();$('status').textContent='Imported. Save board to keep this setup.';}catch(e){$('status').textContent=e.message;}finally{$('importFile').value='';}};
-function projection(on){document.body.classList.toggle('projection',on);$('exitProject').hidden=!on;$('projectStart').hidden=!on;tokens();}
+function projection(on){document.body.classList.toggle('projection',on);$('exitProject').hidden=!on;$('projectStart').hidden=!on;tokens();iconCredit();}
 $('project').onclick=async()=>{projection(true);try{await document.documentElement.requestFullscreen();}catch{}$('exitProject').focus();};
 async function exitProjection(){if(!document.body.classList.contains('projection'))return;projection(false);if(document.fullscreenElement)await document.exitFullscreen();$('project').focus();}
 $('exitProject').onclick=exitProjection;document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)projection(false);});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('checkin').open)exitProjection();});
@@ -42,7 +42,24 @@ const themePaths={
  forest:'M12 1 5 10h3l-5 7h7v6h4v-6h7l-5-7h3z',
  ocean:'M2 12C6 3 15 3 19 9l4-4v14l-4-4C15 21 6 21 2 12zm5-2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z'
 };
-pointIcon=()=>{const path=document.body.classList.contains('projection')?themePaths[$('theme').value]:null;return path?`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="${path}"/></svg>`:smile;};
+const themeArtwork={
+ stpatricks:{file:'clover',author:'Plastic Donut',url:'https://www.flaticon.com/free-icon/clover_5725105'},
+ winter:{file:'snowman',author:'justicon',url:'https://www.flaticon.com/free-icon/snowman_3912767'},
+ halloween:{file:'spider',author:'Vector Stall',url:'https://www.flaticon.com/free-icon/spider_4548707'},
+ autumn:{file:'maple-leaf',author:'IconsNova',url:'https://www.flaticon.com/free-icon/maple-leaf_8524294'}
+};
+function iconCredit(){
+ const artwork=themeArtwork[$('theme').value],credit=$('iconCredit');
+ credit.hidden=!artwork;credit.replaceChildren();
+ if(artwork){const link=document.createElement('a');link.href=artwork.url;link.target='_blank';link.rel='noopener';link.textContent=`Icon designed by ${artwork.author} from Flaticon`;credit.append(link);}
+}
+pointIcon=()=>{
+ if(!document.body.classList.contains('projection'))return smile;
+ const artwork=themeArtwork[$('theme').value];
+ if(artwork)return `<img src="icons/${artwork.file}.png" alt="" width="32" height="32">`;
+ const path=themePaths[$('theme').value];
+ return path?`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="${path}"/></svg>`:smile;
+};
 appearance();refreshSetups();
 
 $('printExit').onclick=()=>report(()=>{
