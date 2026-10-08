@@ -16,5 +16,17 @@ const SelfMonitor = (() => {
     for(const value of [b.yes,b.no,b.mismatch])if(!Number.isFinite(value)||value<0||value>3||value*2%1!==0)throw Error('Points must be between 0 and 3 in half-point steps.');
     return {type:'self-monitor',title:b.title,duration:b.duration,interval:b.interval,timing:b.timing,variation:b.variation,message:b.message,yes:b.yes,no:b.no,mismatch:b.mismatch,theme:b.theme,showTimer:b.showTimer};
   }
-  return {schedule,points,fill,advance,validateSetup};
+  function restoreSession(record,now=Date.now()){
+    if(record?.version!==1||!Number.isFinite(record.savedAt))throw Error('Invalid saved session.');
+    const setup=validateSetup(record.setup),s=record.session;
+    if(!s||!['running','paused','student','adult','finished'].includes(s.stage)||!Number.isFinite(s.total)||s.total!==setup.duration*60000||!Array.isArray(s.ends)||!s.ends.length||s.ends.length>10000||s.ends.some((end,i)=>!Number.isFinite(end)||end<=0||end>s.total||(i&&end<=s.ends[i-1]))||s.ends[s.ends.length-1]!==s.total)throw Error('Invalid saved session timing.');
+    if(!Number.isInteger(s.index)||s.index<0||s.index>s.ends.length||!Array.isArray(s.records)||s.records.length!==s.index||!Number.isFinite(s.elapsed)||s.elapsed<0||s.elapsed>s.total||(s.stage==='finished')!==(s.index===s.ends.length)||s.elapsed>(s.ends[s.index]??s.total))throw Error('Invalid saved progress.');
+    if(s.stage==='adult'&&typeof s.student!=='boolean')throw Error('Invalid saved answer.');
+    const rules={yes:setup.yes,no:setup.no,mismatch:setup.mismatch};
+    const records=s.records.map((r,i)=>{if(r.number!==i+1||r.elapsed!==s.ends[i]||typeof r.student!=='boolean'||typeof r.adult!=='boolean'||r.points!==points(r.student,r.adult,rules))throw Error('Invalid saved check-in.');return {...r};});
+    const restored={...s,title:setup.title,message:setup.message,rules,records,points:records.reduce((sum,r)=>sum+r.points,0),ends:[...s.ends]};
+    if(restored.stage==='running'){restored.elapsed=advance(restored.elapsed,Math.max(0,now-record.savedAt),restored.ends[restored.index]);if(restored.elapsed>=restored.ends[restored.index])restored.stage='student';}
+    return {setup,session:restored};
+  }
+  return {schedule,points,fill,advance,validateSetup,restoreSession};
 })();
