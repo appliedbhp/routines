@@ -28,3 +28,9 @@ Run session requests fullscreen on the board with a full-window fallback. Exit s
 Classic, Ocean, Space, Garden, Arcade and Boho themes set the font, text, background, accent and token colors. Font/text overrides remain available. Version 2 files without theme or motion fields load with Classic and motion enabled. The style identifier is saved per character; old style-less robot references use Bottts. The v10 generator replaces v9, so older robot seeds may render differently.
 
 Available DiceBear styles: Bottts, Planets, Adventurer, Big Smile, Critters, Clay, Croodles, Marbles, Micah, Pixel Art, Voxel Art and Voxel Bot. Credits are derived from the bundled definitions and included per used style. Planets, Critters, Clay, Voxel Art and Voxel Bot have built-in animation.
+
+## PixaBots and search
+
+PixaBots uses the documented public batch and image endpoints (https://pixabots.com/docs/api). A selected four-character ID is saved in exports, never an arbitrary returned URL. Projection requests animated WebP; printing uses static PNG. Failed animated images fall back to static images. PixaBots receives connection information and picture IDs. Credits identify Pablo Stanley.
+
+Text search combines ARASAAC, Material Symbols, and OpenMoji, independently of the browse source and category. Partial service failures preserve other results. Character generators are browsed separately. Favorites omit Star of David; explicit text searches remain unfiltered.

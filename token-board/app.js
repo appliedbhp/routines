@@ -9,7 +9,7 @@ const announce=message=>{$('status').textContent=message;};
 const picker=$('tokenPicker');
 function picture(icon,projection=false){
  const image=document.createElement('img');image.src=TokenData.url(icon,projection&&!printing&&tokenMode==='run'&&tokenBoard.motion&&!matchMedia('(prefers-reduced-motion: reduce)').matches);image.alt='';image.dataset.source=icon.source;
- image.onerror=()=>{image.hidden=true;const fallback=document.createElement('span');fallback.textContent=icon.label;image.after(fallback);};return image;
+ image.onerror=()=>{if(icon.source==='pixabots'&&image.src.includes('animated=true')){image.src=TokenData.url(icon,false);return;}image.hidden=true;const fallback=document.createElement('span');fallback.textContent=icon.label;image.after(fallback);};return image;
 }
 function tone(complete){
  if(!tokenBoard.sound)return;
@@ -79,31 +79,35 @@ $('characterStyle').onchange=()=>{characterPage=0;renderLibrary();};
 let searchRevision=0,characterPage=0;
 function showChoices(icons){
  $('iconChoices').replaceChildren();
- icons.forEach(icon=>{const button=document.createElement('button');button.type='button';button.className='icon-choice';const name=document.createElement('span');name.textContent=icon.label;button.append(picture(icon),name);button.setAttribute('aria-label',`Use ${icon.label} picture`);button.onclick=()=>assign(icon);$('iconChoices').append(button);});
+ icons.forEach(icon=>{const button=document.createElement('button');button.type='button';button.className='icon-choice';const name=document.createElement('span');name.textContent=icon.label;const source=document.createElement('small');source.textContent=TokenData.sources[icon.source];button.append(picture(icon),name,source);button.setAttribute('aria-label',`Use ${icon.label} picture`);button.onclick=()=>assign(icon);$('iconChoices').append(button);});
 }
 async function renderLibrary(){
- const revision=++searchRevision,source=$('pictureSource').value;
+ const revision=++searchRevision,source=$('pictureSource').value,search=$('pictureSearch').value.trim();
+ let failed=0;
  $('characterStyle').hidden=$('characterStyleLabel').hidden=source!=='dicebear';
- $('searchForm').hidden=source==='dicebear';$('moreCharacters').hidden=source!=='dicebear';
+ $('searchForm').hidden=false;$('moreCharacters').hidden=!!search||!['dicebear','pixabots'].includes(source);
+ $('moreCharacters').textContent=source==='pixabots'?'More PixaBots':'More characters';
  const style=TokenCharacters.styles[$('characterStyle').value];const [label,href]=source==='dicebear'?[`${style.name} by ${style.creator} · ${style.license}`,style.licenseUrl]:TokenData.credits[source];$('pickerCredit').textContent=label;$('pickerCredit').href=href;
  $('iconChoices').replaceChildren();$('pickerStatus').textContent='Loading pictures…';
  try{
   let icons;
   const query=$('pictureSearch').value.trim()||$('iconCategory').value;
-  if(source==='dicebear')icons=Array.from({length:24},(_,i)=>({source,id:`robot-${characterPage*24+i+1}`,style:$('characterStyle').value,label:`${TokenCharacters.styles[$('characterStyle').value].name} ${characterPage*24+i+1}`}));
+  if(search){const result=await TokenSearch.all(search);icons=result.icons;failed=result.failed;}
+  else if(source==='pixabots')icons=await TokenSearch.pixabots();
+  else if(source==='dicebear')icons=Array.from({length:24},(_,i)=>({source,id:`robot-${characterPage*24+i+1}`,style:$('characterStyle').value,label:`${TokenCharacters.styles[$('characterStyle').value].name} ${characterPage*24+i+1}`}));
   else if(source==='material'&&!$('pictureSearch').value.trim()&&query==='star')icons=['star','favorite','redeem','emoji-events','pets','rocket-launch','menu-book','sports-soccer','brush','music-note','sunny','sentiment-satisfied'].map(id=>({source,id,label:id.replace(/-/g,' ')}));
   else {
-   const url=source==='arasaac'?`https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(query)}`:`https://api.iconify.design/search?query=${encodeURIComponent(query)}&prefix=${source==='material'?'material-symbols':'openmoji'}&limit=48`;
-   const response=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('Picture service unavailable');const result=await response.json();
-   icons=source==='arasaac'?result.slice(0,48).map(item=>({source,id:String(item._id),label:(item.keywords?.[0]?.keyword||query).slice(0,100)})):(result.icons||[]).filter(id=>id.startsWith((source==='material'?'material-symbols':'openmoji')+':')).map(name=>({source,id:name.split(':')[1],label:name.split(':')[1].replace(/-/g,' ').slice(0,100)}));
+   icons=await TokenSearch.searchSource(source,query);
   }
   if(revision!==searchRevision)return;
-  showChoices(icons.map(TokenData.icon));$('pickerStatus').textContent=icons.length?`${icons.length} pictures. Choose one below.`:'No pictures found. Try another word.';
+  if(!search&&query==='star')icons=TokenSearch.favorites(icons);
+  showChoices(icons.map(TokenData.icon));$('pickerStatus').textContent=(icons.length?`${icons.length} pictures${search?' across all searchable libraries':''}. Choose one below.`:'No pictures found. Try another word.')+(failed?' Some libraries could not be reached. Try searching again.':'');
+  if(search){$('pickerCredit').textContent='Results from ARASAAC, Google Material Symbols, and OpenMoji. Credits appear on your board.';$('pickerCredit').removeAttribute('href');}
  }catch(error){if(revision===searchRevision)$('pickerStatus').textContent='Pictures could not load. Try again, or choose Characters for pictures available without a picture service.';}
 }
 function openPicker(index){selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value='';renderLibrary();picker.showModal();}
 function assign(value){const icon=TokenData.icon(value);if(selectedToken===-1)tokenBoard.rewardIcon=icon;else if($('applyAll').checked)tokenBoard.tokens.forEach(t=>t.icon={...icon});else tokenBoard.tokens[selectedToken].icon=icon;searchRevision++;picker.close();renderTokens(selectedToken);}
-$('pictureSource').onchange=renderLibrary;$('iconCategory').onchange=()=>{$('pictureSearch').value='';renderLibrary();};
+$('pictureSource').onchange=()=>{$('pictureSearch').value='';renderLibrary();};$('iconCategory').onchange=()=>{$('pictureSearch').value='';renderLibrary();};
 $('searchForm').onsubmit=event=>{event.preventDefault();renderLibrary();};$('moreCharacters').onclick=()=>{characterPage++;renderLibrary();};$('closePicker').onclick=()=>{searchRevision++;picker.close();};
 function currentPayload(){return TokenData.serialize(tokenBoard);}
 function library(){const saved=JSON.parse(localStorage.getItem(tokenKey)||'[]');if(!Array.isArray(saved)||saved.some(entry=>!entry||typeof entry.id!=='string'))throw new Error('Saved boards could not be read. Export your open board for a backup.');saved.forEach(entry=>TokenData.validate(entry.payload));return saved;}

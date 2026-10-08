@@ -34,3 +34,5 @@
 
 #tokenSheet #celebration{color:#17482a;background:#e9f8ee}
 #tokenSheet[data-theme="space"] img[data-source="material"],#tokenSheet[data-theme="arcade"] img[data-source="material"]{filter:invert(1)}
+
+img[data-source="pixabots"]{image-rendering:pixelated}.icon-choice small{font-size:10px;color:#526175}
