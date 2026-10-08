@@ -6,7 +6,8 @@
  .visual-workspace .has-cloud-entry{padding-right:84px}
  .cloud-entry{position:absolute;top:14px;right:20px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:8px;margin:0;border-radius:50%;box-sizing:border-box;flex:none}
  .cloud-entry svg{display:block;flex:none}
- .cloud-entry:hover{background:#1764ce}
+ .cloud-entry{background:transparent;color:#000;border:0;box-shadow:none}
+ .cloud-entry:hover{background:transparent;color:#3185fc}
  .cloud-entry:focus-visible{outline:3px solid #17283f;outline-offset:3px}
  @media(max-width:760px){.cloud-entry{top:12px;right:12px}.visual-workspace .has-cloud-entry{padding-right:68px}}
 }
