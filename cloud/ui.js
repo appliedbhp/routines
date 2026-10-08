@@ -2,7 +2,7 @@ import {cloudConfig} from './config.js';
 import './board-settings.js';
 const S=globalThis.CloudBoardSettings,root=new URL('../',import.meta.url);
 // Fail closed until authentication delivery and authorization tests are complete.
-if(cloudConfig.enabled)start().catch(()=>{const host=document.getElementById('cloudAccount');if(host)host.textContent='Cloud accounts could not load. Please check your connection and reload.';});
+if(cloudConfig.enabled||(cloudConfig.accountEnabled&&document.getElementById('cloudAccount')))start().catch(()=>{const host=document.getElementById('cloudAccount');if(host)host.textContent='Cloud accounts could not load. Please check your connection and reload.';});
 else if(document.getElementById('cloudAccount'))document.getElementById('cloudAccount').textContent='Cloud accounts are being prepared. Browser saving and file export remain available.';
 async function start(){
  const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('cloud/style.css',root);document.head.append(css);
