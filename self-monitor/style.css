@@ -19,3 +19,9 @@ body[data-theme=classic]{--accent:var(--classic-color,#3185fc);--reward:var(--cl
 .projection .clock-face{color:#17283f}.projection[data-theme=ocean] .token-fill{color:#ffd269}.projection[data-theme=space] .token-fill{color:#f8aeef}.projection[data-theme=sunset] .token-fill{color:#ffe66c}.projection[data-theme=forest] .token-fill{color:#217549}
 @keyframes star-glow{from{opacity:.3}to{opacity:.9}}@keyframes sunset-shift{from{background-position:0% 20%}to{background-position:100% 80%}}@keyframes cloud-pass{to{left:110%}}
 @media(prefers-reduced-motion:reduce){.projection .session,.projection .session::before,.projection .session::after{animation:none!important}}
+/* Keep projection controls legible independently of scene text colors. */
+.projection #sessionView .actions button{background:#fff;color:#17283f;border:2px solid #52647a;font-weight:600;box-shadow:0 2px 5px #0003;min-height:44px}
+.projection #sessionView .actions button:hover:not(:disabled){background:#e4edfa;color:#10233e;border-color:#10233e}
+.projection #sessionView .actions button:disabled{background:#e2e7ee;color:#526174;border-color:#8995a5;opacity:1;box-shadow:none}
+.projection #sessionView .actions button:focus-visible{outline:3px solid #17283f;outline-offset:3px;box-shadow:0 0 0 6px #fff}
+.projection #sessionView summary{display:inline-block;background:#fff;color:#17283f;padding:10px 16px;border:2px solid #52647a;border-radius:8px;font-weight:600}
