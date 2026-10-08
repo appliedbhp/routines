@@ -48,3 +48,23 @@ body[data-theme=garden]{--accent:#50894b;--reward:#cb4a82}body[data-theme=unicor
 .projection[data-theme=ocean] .session::after{bottom:-3%;height:25%;opacity:.09;animation-duration:53s;animation-direction:reverse}
 @keyframes ocean-drift{to{transform:translateX(25%)}}
 @media(prefers-reduced-motion:reduce){.projection[data-theme=ocean] .session::before,.projection[data-theme=ocean] .session::after{animation:none!important}}
+body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=autumn]{--accent:#a75b2a;--reward:#a44921}body[data-theme=halloween]{--accent:#e78023;--reward:#ffad52}body[data-theme=winter]{--accent:#428ab9;--reward:#287eb2}body[data-theme=tropical]{--accent:#ca8025;--reward:#478337}body[data-theme=eighties]{--accent:#ec4ed9;--reward:#66fff0}body[data-theme=valentine]{--accent:#c85888;--reward:#bc326a}body[data-theme=stpatricks]{--accent:#35854c;--reward:#22743b}body[data-theme=city]{--accent:#4b719b;--reward:#f9be51}
+.projection[data-theme=classroom] .session{color:#203652;background:repeating-linear-gradient(0deg,transparent 0 31px,#467acf18 31px 32px),linear-gradient(120deg,#fff6cb,#f0f5ff 65%,#ffe1da)}
+.projection[data-theme=autumn] .session{background:linear-gradient(145deg,#f9d59a,#e8af75,#bb8865);color:#472a19}
+.projection[data-theme=halloween] .session{background:radial-gradient(ellipse at 0 0,#713812,transparent 55%),#131018;color:#fff4e5}
+.projection[data-theme=halloween] .session::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-radial-gradient(circle at 0 0,transparent 0 45px,#efab6425 46px 47px,transparent 48px 80px);mask-image:linear-gradient(135deg,#000,transparent 35%);z-index:0}
+.projection[data-theme=winter] .session{background:linear-gradient(#b0d9f2,#edfaff);color:#224457}
+.projection[data-theme=tropical] .session{background:linear-gradient(#ffe8a4,#ffc96f 60%,#f1a46c);color:#533815}
+.projection[data-theme=tropical] .session::before,.projection[data-theme=tropical] .session::after{content:'';position:absolute;bottom:-10px;left:1%;width:180px;height:240px;background:url('tropical.svg') center/contain no-repeat;opacity:.2;pointer-events:none;transform-origin:bottom center;animation:palm-sway 18s ease-in-out infinite alternate;z-index:0}
+.projection[data-theme=tropical] .session::after{left:auto;right:1%;animation-delay:-9s}
+.projection[data-theme=eighties] .session{background:linear-gradient(135deg,#17102f,#281443,#0d2436);color:#f9f0ff}
+.projection[data-theme=valentine] .session{background:linear-gradient(140deg,#ffe5ef,#f4bdcf);color:#623048}
+.projection[data-theme=stpatricks] .session{background:radial-gradient(circle at 12% 15%,#c5e4ae66,transparent 35%),linear-gradient(135deg,#e0f1c9,#9fcea6,#76af8f);color:#193d26}
+.projection[data-theme=city] .session{background:linear-gradient(#344b70,#7292b1 70%,#a6b5c7);color:#fff}
+.projection[data-theme=city] .session::before{content:'';position:absolute;inset:0;pointer-events:none;background:url('city.svg') bottom/100% 24% no-repeat;opacity:.65;z-index:0}
+.projection[data-theme=city] .session::after{content:'';position:absolute;top:10%;left:-400px;width:240px;height:130px;background:url('cloud.svg') center/contain no-repeat;opacity:.18;animation:cloud-pass 95s linear infinite;z-index:0;pointer-events:none}
+.projection[data-theme=autumn] #sessionView>.seasonal-autumn,.projection[data-theme=winter] #sessionView>.seasonal-winter,.projection[data-theme=eighties] #sessionView>.seasonal-eighties,.projection[data-theme=valentine] #sessionView>.seasonal-valentine{display:block;position:absolute;inset:0;z-index:0;overflow:hidden}
+[class*=seasonal-] span{top:-40px;animation-name:seasonal-fall;width:22px;height:22px;opacity:.35}.seasonal-autumn span{background:url('autumn.svg') center/contain no-repeat}.seasonal-winter span{color:#fff;font-size:24px}.seasonal-valentine svg{width:100%;height:100%;fill:#c34f7e}.seasonal-eighties span{border:2px solid var(--shape-color);width:30px;height:30px;opacity:.35}.seasonal-eighties span:nth-child(3n){border-radius:50%}.seasonal-eighties span:nth-child(3n+1){clip-path:polygon(50% 0,100% 100%,0 100%);background:var(--shape-color)}
+@keyframes seasonal-fall{to{transform:translate(45px,115vh) rotate(130deg)}}@keyframes palm-sway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.projection[data-theme=tropical] .session::before,.projection[data-theme=tropical] .session::after,.projection[data-theme=city] .session::after{animation:none!important}}
+.projection[data-theme=stpatricks] .session::before{content:'';position:absolute;inset:0;background:url('clover.svg') 0 0/120px 120px repeat;pointer-events:none;z-index:0}

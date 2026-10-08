@@ -22,6 +22,16 @@ const oldReset=$('reset').onclick;$('reset').onclick=()=>{const before=session;o
 $('printCard').onclick=()=>report(()=>{const b=currentPayload().board;if(session?.stage==='running')$('pause').onclick();const card=$('studentCard');card.replaceChildren();const title=document.createElement('h1');title.textContent=b.title;const name=document.createElement('p');name.textContent='Name: __________________________    Date: ______________';const prompt=document.createElement('h2');prompt.textContent=b.message;const instructions=document.createElement('p');instructions.textContent=`Circle your answer at each check-in. Ask an adult for their own rating, then record points. Both Yes: ${b.yes}; both No: ${b.no}; mismatch: ${b.mismatch}. Session: ${b.duration} minutes; ${b.timing==='random'?`random intervals around ${b.interval} minutes (±${b.variation})`:`every ${b.interval} minutes`}.`;
 const table=document.createElement('table');table.className='card-table';const head=document.createElement('thead');const row=document.createElement('tr');for(const label of ['Check-in','Student','Adult','Points']){const th=document.createElement('th');th.textContent=label;row.append(th);}head.append(row);table.append(head);const body=document.createElement('tbody');const count=session?.ends.length??Math.ceil(b.duration/(b.timing==='random'?b.interval-b.variation:b.interval));for(let i=0;i<count;i++){const tr=document.createElement('tr');for(const text of [String(i+1),'Yes / No','Yes / No','________']){const td=document.createElement('td');td.textContent=text;tr.append(td);}body.append(tr);}table.append(body);const footer=document.createElement('footer');footer.className='card-footer';footer.append('Total points: ______   Applied Behavioral Health Practice');const qr=document.createElement('img');qr.src='../assets/qr/routines.png';qr.alt='Routines website QR code';footer.append(qr);card.append(title,name,prompt,instructions,table,footer);window.print();});
 const themePaths={
+ classroom:"M3 17 16 4l4 4L7 21H3zm14-14 2-2 4 4-2 2z",
+ autumn:"M11 23v-5l-8 2 2-5-5-3 5-1-1-5 5 3 3-9 3 9 5-3-1 5 5 1-5 3 2 5-8-2v5z",
+ halloween:"M9 8a3 3 0 1 1 6 0l1 2 5-5 2 1-6 6 6 1v2l-6-1 5 6-2 1-4-5-1 7h-2l-1-6-1 6H9l-1-7-4 5-2-1 5-6-6 1v-2l6-1-6-6 2-1 5 5z",
+ winter:"M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 9a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM11 4h2v2h-2zm0 10h2v2h-2zm0 4h2v2h-2zM1 10l6 3-1 2-6-3zm16 3 6-3 1 2-6 3z",
+ tropical:"M10 23c3-7 3-11 2-15C6 9 4 12 3 15 1 9 4 5 10 5 5 3 2 4 0 5c2-5 8-6 12-2 4-4 10-3 12 2-4-2-7-2-10 0 6 0 9 4 7 10-1-4-4-6-7-7 2 6 1 11-1 15z",
+ eighties:"M1 7h3v10H1zm4-3h4v16H5zm5 6h4v4h-4zm5-6h4v16h-4zm5 3h3v10h-3z",
+ valentine:"M12 22 2 12C-5 3 6-3 12 5c6-8 17-2 10 7z",
+ stpatricks:"M11 13C-2 19-3 5 7 8 0-3 16-3 13 8c11-8 16 8 2 6l4 8-3 1-4-9z",
+ city:"M5 3h14l3 8v10h-3v-3H5v3H2V11zm1 2-2 6h16l-2-6H6zm0 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",
+
  garden:'M12 8C5-2 0 8 8 11C-2 16 8 23 11 15C15 25 24 16 16 12C26 8 17-1 13 8zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM11 17h2v7h-2z',
  unicorn:'M6 23C3 17 4 10 9 7L8 2l5 3 6-5-2 8 5 6-3 4-6-2 2 7zM14 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
  chef:'M3 9C3 0 21 0 21 9H3zM2 11h20v3H2zM3 16h18v2H3zM3 20h18c0 3-2 4-4 4H7c-2 0-4-1-4-4z',
