@@ -54,4 +54,4 @@ and stale revisions. Both test identities and their board rows were removed afte
 A separate local browser fixture verified the two-slot UI, review snapshot, disabled save until
 attestation, successful save, and attestation reset on replacement. It was not deployed.
 
-Current rollout status: backend deployed and tested; public UI disabled pending SMTP configuration and an email-link round trip.
+Current rollout status: public cloud controls enabled on 2026-10-08. Resend SMTP is configured; the user confirmed Gmail delivery and a successful email-link sign-in. Outlook delivery remains unconfirmed. A second-device save/open walkthrough remains a manual follow-up.
