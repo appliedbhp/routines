@@ -14,8 +14,9 @@ const SelfMonitor = (() => {
     if(!Number.isInteger(b.duration)||!Number.isInteger(b.interval)||!Number.isFinite(b.variation)||b.variation<0||b.variation>89)throw Error('Invalid timing settings.');
     schedule(b.duration,b.interval,b.timing==='random'?b.variation:0,()=>.5);
     for(const value of [b.yes,b.no,b.mismatch])if(!Number.isFinite(value)||value<0||value>3||value*2%1!==0)throw Error('Points must be between 0 and 3 in half-point steps.');
+    const chimes=b.chimes??true;if(typeof chimes!=='boolean')throw Error('Invalid sound setting.');
     const classicColor=b.classicColor??'#3185fc';if(typeof classicColor!=='string'||!/^#[0-9a-f]{6}$/i.test(classicColor))throw Error('Choose a valid Classic color.');
-    return {type:'self-monitor',title:b.title,duration:b.duration,interval:b.interval,timing:b.timing,variation:b.variation,message:b.message,yes:b.yes,no:b.no,mismatch:b.mismatch,theme:b.theme,classicColor,showTimer:b.showTimer};
+    return {type:'self-monitor',title:b.title,duration:b.duration,interval:b.interval,timing:b.timing,variation:b.variation,message:b.message,yes:b.yes,no:b.no,mismatch:b.mismatch,theme:b.theme,classicColor,chimes,showTimer:b.showTimer};
   }
   function restoreSession(record,now=Date.now()){
     if(record?.version!==1||!Number.isFinite(record.savedAt))throw Error('Invalid saved session.');

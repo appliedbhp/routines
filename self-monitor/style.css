@@ -25,3 +25,9 @@ body[data-theme=classic]{--accent:var(--classic-color,#3185fc);--reward:var(--cl
 .projection #sessionView .actions button:disabled{background:#e2e7ee;color:#526174;border-color:#8995a5;opacity:1;box-shadow:none}
 .projection #sessionView .actions button:focus-visible{outline:3px solid #17283f;outline-offset:3px;box-shadow:0 0 0 6px #fff}
 .projection #sessionView summary{display:inline-block;background:#fff;color:#17283f;padding:10px 16px;border:2px solid #52647a;border-radius:8px;font-weight:600}
+/* Filled Material Cloud silhouette replaces the decorative cloud blobs. */
+.projection[data-theme=forest] .session::before,.projection[data-theme=forest] .session::after{height:170px;background:transparent url('cloud.svg') center/contain no-repeat;border-radius:0;box-shadow:none}
+.projection[data-theme=space] .session::before,.projection[data-theme=space] .session::after{content:none}
+.space-stars{display:none;pointer-events:none}.projection[data-theme=space] #sessionView>.space-stars{display:block;position:absolute;inset:0;z-index:0}.space-stars span{position:absolute;border-radius:50%;background:#fff;opacity:var(--star-opacity);animation:individual-twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite alternate}
+@keyframes individual-twinkle{from{opacity:var(--star-opacity)}to{opacity:calc(var(--star-opacity) + .2)}}
+@media(prefers-reduced-motion:reduce){.space-stars span{animation:none!important}}
