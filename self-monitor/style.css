@@ -5,3 +5,17 @@ body{--accent:#3185fc;--reward:#e6a000}body[data-theme=forest]{--accent:#278459;
 .projection> :not(main){display:none!important}
 
 .exit-reflection{break-inside:avoid}.exit-reflection p{overflow-wrap:anywhere}
+body[data-theme=classic]{--accent:var(--classic-color,#3185fc);--reward:var(--classic-color,#3185fc)}
+.projection .session{position:relative;isolation:isolate;overflow:hidden}
+.projection .session>*{position:relative;z-index:1}
+.projection[data-theme=space] .session{background:#030610;color:#f6f8ff}
+.projection[data-theme=space] .session::before,.projection[data-theme=space] .session::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,#fff 1px,transparent 2px),radial-gradient(circle,#b7d5ff 1px,transparent 2px);background-size:117px 137px,193px 173px;background-position:14px 30px,60px 90px;animation:star-glow 7s ease-in-out infinite alternate}
+.projection[data-theme=space] .session::after{background-size:227px 207px,293px 273px;animation-delay:-4s;opacity:.5}
+.projection[data-theme=sunset] .session{background:linear-gradient(145deg,#5d3886,#be5277,#ef996b,#f4c378);background-size:250% 250%;animation:sunset-shift 35s ease-in-out infinite alternate;color:#fff}
+.projection[data-theme=forest] .session{background:linear-gradient(#8ccdf0,#dbf1fc 75%,#e8f5e2);color:#17283f}
+.projection[data-theme=forest] .session::before,.projection[data-theme=forest] .session::after{content:'';position:absolute;pointer-events:none;width:260px;height:85px;border-radius:70px;background:#ffffffb3;box-shadow:50px -35px 0 -10px #ffffffb3,110px -20px 0 0 #ffffffb3;left:-400px;top:15%;z-index:0;animation:cloud-pass 65s linear infinite}
+.projection[data-theme=forest] .session::after{top:55%;animation-duration:90s;animation-delay:-45s;opacity:.6}
+.projection[data-theme=ocean] .session{background:linear-gradient(155deg,#08728c,#064363 50%,#031b36);color:#f0fcff}
+.projection .clock-face{color:#17283f}.projection[data-theme=ocean] .token-fill{color:#ffd269}.projection[data-theme=space] .token-fill{color:#f8aeef}.projection[data-theme=sunset] .token-fill{color:#ffe66c}.projection[data-theme=forest] .token-fill{color:#217549}
+@keyframes star-glow{from{opacity:.3}to{opacity:.9}}@keyframes sunset-shift{from{background-position:0% 20%}to{background-position:100% 80%}}@keyframes cloud-pass{to{left:110%}}
+@media(prefers-reduced-motion:reduce){.projection .session,.projection .session::before,.projection .session::after{animation:none!important}}
