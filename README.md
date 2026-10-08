@@ -202,3 +202,9 @@ The task-strip examples include Get Ready with Me with its nine original symbols
 fullscreen. Skipping preserves whether the timer is running or paused and
 immediately recalculates the wall-clock anchors. In timed mode, Next advances
 to the next activity boundary (or the end of remaining buffer time).
+
+## Free cloud accounts
+
+Optional cloud saving supports two settings-only boards per verified adult account.
+Every save requires a fresh privacy attestation. Results and personal fields are excluded.
+See [cloud setup and security notes](cloud/README.md) for deployment and verification.

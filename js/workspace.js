@@ -47,6 +47,7 @@
   }
   toggle.addEventListener('click', () => { collapsed = !collapsed; try { localStorage.setItem('visualNavigationCollapsed', String(collapsed)); } catch {} update(); });
   update();
+  const cloudScript=document.createElement('script');cloudScript.type='module';cloudScript.src=new URL('cloud/ui.js',root).href;document.head.append(cloudScript);
   const main = document.querySelector('main');
   main.querySelectorAll(':scope > nav[aria-label="Visual supports"], :scope > nav.support-links').forEach(node => node.remove());
   const back = main.querySelector(':scope > a[href="../"]'); if (back) back.remove();
