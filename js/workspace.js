@@ -5,7 +5,8 @@
     ['', 'Routine timer', '◷'], ['chore-chart/', 'Chore chart', '✓'],
     ['first-then/', 'First–Then board', '⇢'], ['choice-board/', 'Choice board', '▦'],
     ['task-strip/', 'Task strip', '≡'], ['now-next-later/', 'Now–Next–Later', '⋯'],
-    ['calm-down/', 'Calm-down board', '♡']
+    ['calm-down/', 'Calm-down board', '♡'],
+    ['whats-new/', 'What’s New', '✦']
   ];
   document.body.classList.add('visual-workspace');
   const sidebar = document.createElement('aside');
