@@ -4,3 +4,5 @@ test('planner files reject invalid statuses, sizes, layouts and wrong formats',(
 test('blank answers are distinct from no and unknown imported fields are dropped',()=>{const b=d.defaults();assert.equal(b.subjects[0].entries[0].homework,'');b.imageUrl='https://example.test';assert.equal(d.serialize(b).board.imageUrl,undefined);});
 
 test('older planners load with weekly layout and no images, discarding obsolete start times',()=>{const b=d.defaults();delete b.layout;delete b.day;for(const s of b.subjects)delete s.image;b.times=Array(7).fill('16:00');const result=d.validate({format:'homework-planner',version:1,board:b});assert.equal(result.layout,'week');assert.equal(result.day,0);assert.equal(result.subjects[0].image,'');assert.equal(result.times,undefined);});
+
+test('ARASAAC subject IDs roundtrip and reject invalid identifiers',()=>{const b=d.defaults();b.subjects[0].pictogramId=1234;assert.equal(d.validate(d.serialize(b)).subjects[0].pictogramId,1234);for(const id of [-1,0,1.5,'1234','https://example.com']){b.subjects[0].pictogramId=id;assert.throws(()=>d.serialize(b));}});
