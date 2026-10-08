@@ -6,6 +6,7 @@
     ['first-then/', 'First–Then board', '⇢'], ['choice-board/', 'Choice board', '▦'],
     ['task-strip/', 'Task strip', '≡'], ['now-next-later/', 'Now–Next–Later', '⋯'],
     ['calm-down/', 'Calm-down board', '♡'],
+    ['self-monitor/', 'Self-monitor', '☺'],
     ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
     ['whats-new/', 'What’s New', '✦']
