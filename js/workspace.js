@@ -6,10 +6,11 @@
     ['first-then/', 'First–Then board', '⇢'], ['choice-board/', 'Choice board', '▦'],
     ['task-strip/', 'Task strip', '≡'], ['now-next-later/', 'Now–Next–Later', '⋯'],
     ['calm-down/', 'Calm-down board', '♡'],
-    ['homework-planner/', 'Homework planner', '▤'],
+    ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
     ['whats-new/', 'What’s New', '✦']
   ];
+  const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
   document.body.classList.add('visual-workspace');
   const sidebar = document.createElement('aside');
   sidebar.className = 'workspace-sidebar no-print';
@@ -26,6 +27,7 @@
     const link = document.createElement('a'); link.href = new URL(path, root).href;
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
+    if(symbol==='edit_document'){icon.style.fontFamily='Material Symbols Outlined';icon.style.fontWeight='normal';icon.style.fontStyle='normal';icon.style.fontSize='24px';icon.style.letterSpacing='normal';icon.style.textTransform='none';icon.style.fontFeatureSettings='"liga"';}
     const label = document.createElement('span'); label.className = 'nav-label'; label.textContent = name;
     link.append(icon, label);
     if (new URL(link.href).pathname === location.pathname.replace(/index\.html$/, '')) link.setAttribute('aria-current', 'page');
