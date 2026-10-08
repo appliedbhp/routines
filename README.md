@@ -172,3 +172,12 @@ and import versioned JSON files with labels, pictogram IDs, names, and
 selections. Imports are validated before changing the open board; import
 a file on the matching tool's page. Picture searches require internet.
 Printing hides the editor controls and includes the board and symbol credit.
+
+## Visual workspace navigation
+
+All seven visual editors share `js/workspace.js` and `css/workspace.css`.
+The left navigation collapses to an icon rail and remembers the preference
+in this browser. On smaller screens it starts collapsed; expanded navigation
+overlays the workspace. Each visual keeps its existing URL and saved data.
+Options and save/import/export/print actions sit above the editing canvas.
+The shared interface is excluded from print output.

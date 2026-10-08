@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600&display=swap');
+@media screen {
+  body.visual-workspace { --sidebar-width: 238px; padding-left: var(--sidebar-width); background: #f4f7fb; }
+  body.visual-workspace.sidebar-collapsed { --sidebar-width: 68px; }
+  .workspace-sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-width); padding: 18px 10px; background: #fff; border-right: 1px solid #d8e2ef; z-index: 20; overflow-y: auto; }
+  .workspace-sidebar .sidebar-toggle { width: 100%; min-height: 44px; margin-bottom: 20px; border: 1px solid #d8e2ef; border-radius: 8px; background: #f4f7fb; color: #21344e; cursor: pointer; font: 600 14px system-ui; }
+  .sidebar-heading { color: #607087; font: 700 11px system-ui; letter-spacing: .08em; text-transform: uppercase; padding: 0 12px; margin-bottom: 14px; }
+  .workspace-sidebar nav { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+  .workspace-sidebar nav a { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 12px; border-radius: 9px; color: #30465f; text-decoration: none; font: 500 14px/1.4 system-ui; }
+  .workspace-sidebar nav a:hover { background: #e7f0ff; }
+  .workspace-sidebar nav a[aria-current="page"] { background: #3185fc; color: white; }
+  .nav-icon { flex: 0 0 22px; text-align: center; font-size: 23px; line-height: 1; }
+  .sidebar-collapsed .nav-label, .sidebar-collapsed .sidebar-heading { display: none; }
+  .sidebar-collapsed .workspace-sidebar nav a { justify-content: center; padding: 10px 0; }
+  .workspace-sidebar a:focus-visible, .sidebar-toggle:focus-visible { outline: 3px solid #17283f; outline-offset: 2px; }
+  .visual-workspace main { max-width: 1500px; min-width: 0; margin: auto; }
+  .workspace-header { padding: 14px 24px; background: #fff; border-bottom: 1px solid #d8e2ef; }
+  .workspace-brand { display: flex; align-items: center; gap: 12px; color: #17283f; text-decoration: none; font: 600 clamp(16px,2vw,22px)/1.2 Lora,serif; letter-spacing: -.045em; }
+  .workspace-brand img { object-fit: contain; }
+  .visual-workspace .app-header { flex-wrap: wrap; gap: 12px; position: relative; }
+  .visual-toolbar, .visual-workspace .print-toolbar, .visual-workspace .projection-settings { background: white; border: 1px solid #d8e2ef; border-radius: 12px; padding: 16px; margin: 0 0 24px; }
+  .visual-toolbar { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start; }
+  .visual-toolbar .toolbar-group { flex: 1 1 340px; min-width: 0; }
+  .visual-toolbar h2 { margin-top: 0; }
+  .visual-toolbar .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0; width: 100%; }
+  .visual-toolbar input:not([type=checkbox]), .visual-toolbar select { max-width: 100%; min-width: 0; }
+  .visual-workspace .builder-layout { grid-template-columns: minmax(260px, 1fr) minmax(260px, 1.3fr); gap: 24px; }
+  .visual-workspace .builder-left { background: #fff; border: 1px solid #d8e2ef; border-radius: 12px; padding: 20px; }
+  .visual-workspace .builder-left h2 { margin-top: 0; }
+  .visual-workspace .builder-right { top: 24px; }
+  .visual-workspace .builder-right .wheel-holder { max-width: 100%; }
+  .visual-workspace .consultation-button { left: calc(var(--sidebar-width) + 16px); }
+  .visual-workspace button.primary { background: #3185fc; border-color: #3185fc; color: white; }
+  @media (max-width: 1000px) { .visual-workspace .builder-layout { grid-template-columns: 1fr; } .visual-workspace .builder-right { position: static; } }
+  @media (max-width: 760px) {
+    body.visual-workspace { padding-left: 68px; }
+    body.visual-workspace:not(.sidebar-collapsed) { --sidebar-width: 238px; }
+    body.visual-workspace:not(.sidebar-collapsed) .workspace-sidebar { box-shadow: 10px 0 30px #17283f26; }
+    .visual-workspace .consultation-button { left: 80px; }
+    .visual-workspace main { padding-left: 10px; padding-right: 10px; }
+    .visual-workspace .view-panel { padding: 12px 0 24px; }
+    .visual-workspace .app-header, .workspace-header { padding: 12px; }
+    .visual-workspace .view-tabs { flex-wrap: wrap; }
+    .visual-toolbar { padding: 12px; }
+    .visual-workspace .sheet { overflow-x: auto; }
+  }
+}
+@media print { .workspace-sidebar, .workspace-header, .visual-toolbar { display: none !important; } body.visual-workspace { padding-left: 0 !important; } }

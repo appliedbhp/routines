@@ -51,6 +51,8 @@
   ]
 }
 </script>
+<link rel="stylesheet" href="css/workspace.css">
+<script src="js/workspace.js" defer></script>
 </head>
 <body data-view="builder">
 <a class="skip-link" href="#routine-builder">Skip to routine builder</a>
@@ -75,9 +77,9 @@
 <!-- ===================== BUILDER VIEW ===================== -->
 <section id="routine-builder" class="view-panel active" data-view="builder" tabindex="-1">
   <p class="app-intro">A free visual timer for kids, teachers, and parents. Build a picture-based schedule, project your routine, or print a wheel. No account needed.</p>
-  <div class="builder-layout">
-    <div class="builder-left">
-      <h2>1. Choose a mode</h2>
+  <div class="visual-toolbar no-print" aria-label="Routine options">
+    <div class="toolbar-group">
+      <h2>Routine setup</h2>
       <div id="categoryTabs" class="category-tabs"></div>
       <div class="preset-controls">
         <label for="presetSelect">Ready-made routine</label>
@@ -86,14 +88,9 @@
       </div>
       <p class="hint">Replaces the current steps. Save your routine first if you want to keep it. <a href="chore-chart/">Create a weekly chore chart →</a></p>
 
-      <h2>2. Add steps</h2>
-      <p class="hint">Click a suggestion to add it, or add a custom step and search any ARASAAC symbol.</p>
-      <div id="suggestionChips" class="suggestion-chips"></div>
-
-      <div id="stepList" class="step-list"></div>
-      <button id="addBlankStepBtn" class="secondary-btn">+ Add custom step</button>
-
-      <h2>3. Total time</h2>
+    </div>
+    <div class="toolbar-group">
+      <h2>Timing</h2>
       <div class="totals-row">
         <label><input type="checkbox" id="autoTotalCheckbox" checked /> Auto (sum of steps: <span id="stepSumDisplay">0 min</span>)</label>
         <label class="total-input-label">
@@ -104,7 +101,7 @@
       </div>
       <p id="overflowWarning" class="warning" hidden>Steps add up to more than the total time — the wheel is scaled to fit the steps instead.</p>
 
-      <h2>4. Save &amp; load</h2>
+      <h2>Save &amp; share</h2>
       <div class="save-load-row">
         <input type="text" id="routineNameInput" placeholder="Name this routine…" />
         <button id="saveRoutineBtn" class="secondary-btn">💾 Save</button>
@@ -121,6 +118,17 @@
       </div>
       <p class="hint">Export the current routine as a file to share or back up. Import opens a routine without changing your saved library.</p>
       <p id="saveStatus" class="save-status" role="status" hidden></p>
+    </div>
+  </div>
+  <div class="builder-layout">
+    <div class="builder-left">
+      <h2>Routine steps</h2>
+      <p class="hint">Click a suggestion to add it, or add a custom step and search any ARASAAC symbol.</p>
+      <div id="suggestionChips" class="suggestion-chips"></div>
+
+      <div id="stepList" class="step-list"></div>
+      <button id="addBlankStepBtn" class="secondary-btn">+ Add custom step</button>
+
     </div>
 
     <div class="builder-right">
@@ -173,7 +181,7 @@
 
 <!-- ===================== PROJECTION VIEW ===================== -->
 <section class="view-panel" data-view="projection">
-  <details class="projection-settings no-print" id="projectionSettings">
+  <details class="projection-settings no-print" id="projectionSettings" open>
   <summary>Customize timer</summary>
   <div class="projection-toolbar">
     <button id="startTimerBtn" class="primary-btn">▶ Start</button>
