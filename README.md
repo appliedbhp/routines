@@ -208,3 +208,11 @@ to the next activity boundary (or the end of remaining buffer time).
 Optional cloud saving supports two settings-only boards per verified adult account.
 Every save requires a fresh privacy attestation. Results and personal fields are excluded.
 See [cloud setup and security notes](cloud/README.md) for deployment and verification.
+
+## Offline app
+
+Service worker `sw.js` caches the versioned application shell and allowlisted image/font assets. It never caches Supabase requests, writes, or picture-search API responses. Board download stores a separate localStorage snapshot per tool plus its currently used external images (and both PixaBots variants). Unsupported/failed assets produce a partial-download warning. Self-monitor snapshots contain setup only; session persistence stays independent. Google Fonts may fall back to system fonts offline.
+
+Before every deployment after runtime changes, run `python3 scripts/build-offline.py` and commit `offline-assets.js`. Installation is atomic; updated workers wait for existing tabs to close rather than interrupt sessions. Browser storage eviction/clearing removes offline files. Open online to prepare again; exports are the durable backup.
+
+Verification: `node --test tests/*.test.cjs`. Offline tests cover cached navigation, image retrieval, and exclusion of authentication, search, and write requests.

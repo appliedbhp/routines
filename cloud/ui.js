@@ -23,6 +23,7 @@ async function start(){
  let client,user,rows=[],pending=null,busy=false,authRevision=0;
  const message=t=>{status.textContent=t;};
  async function sdk(){
+  if(!navigator.onLine)throw Error("Cloud accounts need internet. Use a local save or downloaded offline copy instead.");
   if(!client){const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2.57.4');client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{storageKey:'routines.cloud.auth.v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
    client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
   }return client;
