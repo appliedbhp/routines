@@ -56,6 +56,7 @@ function moveCard(index, direction) {
 }
 function render() {
   boardElement.replaceChildren();
+  updateLayout();
   cards.forEach((card,index) => {
     const article = document.createElement('article');
     article.className = 'card' + (card.marked ? ' marked' : '');
@@ -91,7 +92,7 @@ const exampleSelect=document.getElementById('example');
 Object.keys(config.examples).forEach(name=>exampleSelect.append(new Option(name,name)));
 function useExample() {
   activeSavedId=null;savedSelect.value='';titleInput.value=exampleSelect.value;personInput.value='';
-  const example=config.examples[exampleSelect.value];cards=example.map(([label])=>newCard(label));updateHeading();render();
+  const example=config.examples[exampleSelect.value];cards=example.map(([label,term,id])=>newCard(label,id || null,false,!!id));updateHeading();render();
   cards.forEach((card,index)=>suggest(card,example[index][1]));
   announce('Example loaded. Customize the labels and pictures.');
 }
@@ -122,8 +123,8 @@ document.getElementById('removeIcon').onclick=()=>{if(pickerCard){pickerCard.man
 picker.addEventListener('close',()=>{pickerCard=null;searchRevision++;});
 function readLibrary(){const raw=localStorage.getItem(storageKey);if(!raw)return [];const library=JSON.parse(raw);if(!Array.isArray(library)||library.some(entry=>!entry||typeof entry.id!=='string'))throw new Error('Saved boards could not be read. Export your open board for a backup.');library.forEach(entry=>SupportData.validate(entry.payload,type));return library;}
 function refreshLibrary(){savedSelect.replaceChildren(new Option('Choose a saved board',''));try{readLibrary().forEach(entry=>savedSelect.append(new Option(entry.payload.board.title || 'Untitled board',entry.id)));savedSelect.value=activeSavedId || '';}catch(error){announce(`Browser saving is unavailable. ${error.message} Use Export board instead.`);}}
-async function currentPayload(){await Promise.allSettled([...pending]);return SupportData.serialize({type,title:titleInput.value,person:personInput.value,cards:cards.map(card=>({label:card.label,pictogramId:card.pictogramId,marked:card.marked}))});}
-function openBoard(board){if(picker.open)picker.close();titleInput.value=board.title;personInput.value=board.person;cards=board.cards.map(card=>newCard(card.label,card.pictogramId,card.marked,true));updateHeading();render();}
+async function currentPayload(){await Promise.allSettled([...pending]);return SupportData.serialize({type,title:titleInput.value,person:personInput.value,layout: {rows: Number(rowSelect.value), columns: Number(columnSelect.value)}, cards:cards.map(card=>({label:card.label,pictogramId:card.pictogramId,marked:card.marked}))});}
+function openBoard(board){rowSelect.value=String(board.layout.rows);columnSelect.value=String(board.layout.columns);if(picker.open)picker.close();titleInput.value=board.title;personInput.value=board.person;cards=board.cards.map(card=>newCard(card.label,card.pictogramId,card.marked,true));updateHeading();render();}
 document.getElementById('saveBoard').onclick=async()=>{
   const button=document.getElementById('saveBoard');button.disabled=true;
   try{const payload=await currentPayload();if(!payload.board.title.trim()){announce('Give your board a name before saving.');return;}const library=readLibrary();const id=activeSavedId || crypto.randomUUID();const entry={id,payload};const index=library.findIndex(item=>item.id===id);if(index<0)library.push(entry);else library[index]=entry;localStorage.setItem(storageKey,JSON.stringify(library));activeSavedId=id;refreshLibrary();announce(`Saved “${payload.board.title}” in this browser.`);}catch(error){announce(`Could not save. ${error.message} You can still export a file.`);}finally{button.disabled=false;}
@@ -137,4 +138,29 @@ document.getElementById('exportBoard').onclick=async()=>{
 const importFile=document.getElementById('importFile');document.getElementById('importBoard').onclick=()=>importFile.click();
 importFile.onchange=async()=>{const file=importFile.files[0];if(!file)return;try{if(file.size>1024*1024)throw new Error('Choose a file smaller than 1 MB.');const board=SupportData.validate(JSON.parse(await file.text()),type);openBoard(board);activeSavedId=null;savedSelect.value='';announce(`Imported “${board.title}”. Press Save board to keep it in this browser.`);}catch(error){announce(`Could not import. ${error.message} Your current board is unchanged.`);}finally{importFile.value='';}};
 document.getElementById('printBoard').onclick=async()=>{const button=document.getElementById('printBoard');button.disabled=true;try{await Promise.allSettled([...pending]);await Promise.allSettled([...boardElement.querySelectorAll('img')].map(image=>image.decode()));window.print();}finally{button.disabled=false;}};
+const layoutControls=document.createElement('div');layoutControls.className='controls no-print';
+const rowSelect=document.createElement('select');const columnSelect=document.createElement('select');
+for(const [labelText,select,id] of [['Rows',rowSelect,'boardRows'],['Columns',columnSelect,'boardColumns']]){
+  select.id=id;select.append(new Option('Auto','0'));
+  for(let i=1;i<=12;i++)select.append(new Option(String(i),String(i)));
+  const label=document.createElement('label');label.htmlFor=id;label.textContent=labelText;layoutControls.append(label,select);
+  select.onchange=()=>updateLayout(select);
+}
+const layoutHint=document.createElement('span');layoutHint.className='hint';layoutControls.append(layoutHint);
+document.querySelector('.controls').after(layoutControls);
+function updateLayout(changed){
+  if(typeof rowSelect==='undefined')return;
+  const count=cards.length || minCards;
+  let rows=Number(rowSelect.value),columns=Number(columnSelect.value);
+  if(rows&&columns&&rows*columns<count){
+    if(changed===rowSelect){columns=Math.ceil(count/rows);columnSelect.value=String(columns);}
+    else{rows=Math.ceil(count/columns);rowSelect.value=String(rows);}
+  }
+  if(!rows&&!columns){columns=Math.ceil(Math.sqrt(count));rows=Math.ceil(count/columns);}
+  else if(!rows)rows=Math.ceil(count/columns);
+  else if(!columns)columns=Math.ceil(count/rows);
+  boardElement.style.setProperty('--board-columns',columns);boardElement.style.setProperty('--board-rows',rows);
+  boardElement.style.setProperty('--print-label-size',`${Math.min(16,Math.max(8,50/rows))}px`);
+  layoutHint.textContent=`${rows} rows × ${columns} columns. Auto fits the board to one printed page.`;
+}
 useExample();refreshLibrary();

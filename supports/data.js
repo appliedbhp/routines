@@ -16,7 +16,9 @@ const SupportData = (() => {
       return {label:text(card.label,100), pictogramId:card.pictogramId, marked:card.marked};
     });
     if (['choice-board','calm-down'].includes(board.type) && cards.filter(card=>card.marked).length > 1) throw new Error('Choose one option at a time.');
-    return {type:board.type, title:text(board.title,100), person:text(board.person,100), cards};
+    const layout = board.layout || {rows:0, columns:0};
+    for (const value of [layout.rows,layout.columns]) if (!Number.isInteger(value) || value<0 || value>12) throw new Error("Choose Auto or a layout between 1 and 12.");
+    return {layout:{rows:layout.rows,columns:layout.columns}, type:board.type, title:text(board.title,100), person:text(board.person,100), cards};
   }
   function serialize(board) {return {format:'visual-support-board',version:1,board:validate({format:'visual-support-board',version:1,board})};}
   return {validate,serialize,limits};

@@ -58,3 +58,11 @@ test('quiet mode blocks audio and per-sound settings are respected',()=>{
   assert.equal(h.run('plays'),0);h.run(`state.quiet=false;state.sounds.chime=false;playSound('chime')`);assert.equal(h.run('plays'),0);
   h.run(`state.sounds.chime=true;playSound('chime')`);assert.equal(h.run('plays'),1);
 });
+test('timed Next skips to the next boundary, rebases anchors, and preserves pause state',()=>{
+  const h=harness();h.run('startTimer()');h.advance(60000);h.run('nextStep()');
+  assert.equal(h.run('getElapsedMinutes()'),5);assert.equal(h.get('projCurrentName').textContent,'Two');
+  assert.equal(h.run('state.timer.running'),true);assert.equal(h.get('stageNextBtn').hidden,false);
+  assert.equal(h.run('captured.boundaryBaseTime.getTime()'),new Date('2026-09-09T09:56:00Z').getTime());
+  h.run('pauseTimer(); nextStep()');assert.equal(h.run('state.timer.running'),false);
+  assert.equal(h.get('projCurrentName').textContent,'All done!');assert.equal(h.get('stageNextBtn').disabled,true);
+});

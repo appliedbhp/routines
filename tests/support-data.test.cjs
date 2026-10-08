@@ -4,3 +4,14 @@ test('all five board formats preserve labels, icons, selections and names',()=>{
 test('fixed layouts and variable board limits are enforced',()=>{for(const type of Object.keys(data.limits)){const [min,max]=data.limits[type];assert.throws(()=>data.serialize(sample(type,min-1)));assert.throws(()=>data.serialize(sample(type,max+1)));}});
 test('rejects mismatched board types, unsafe picture IDs, invalid selections and versions',()=>{const payload=data.serialize(sample('first-then',2));assert.throws(()=>data.validate(payload,'task-strip'));for(const mutate of [p=>p.version=2,p=>p.board.cards[0].pictogramId='https://evil.test/icon',p=>p.board.cards[0].marked='true',p=>p.board.title='x'.repeat(101)]){const copy=JSON.parse(JSON.stringify(payload));mutate(copy);assert.throws(()=>data.validate(copy));}});
 test('choice boards allow one selected option and ignore unrecognized fields',()=>{const board=sample('choice-board',2);board.cards[1].marked=true;assert.throws(()=>data.serialize(board));board.cards[1].marked=false;const payload=data.serialize(board);payload.board.cards[0].imageUrl='javascript:alert(1)';assert.equal(data.validate(payload).cards[0].imageUrl,undefined);});
+test('layouts survive sharing while old files default to automatic layout',()=>{
+  const board=sample('task-strip',9);assert.equal(data.serialize(board).board.layout.rows,0);
+  board.layout={rows:3,columns:3};assert.equal(data.validate(data.serialize(board)).layout.columns,3);
+  for(const value of [-1,13,1.5,'3']){board.layout.rows=value;assert.throws(()=>data.serialize(board));}
+});
+test('Get Ready with Me default preserves all nine labels and exact symbols',()=>{
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../supports/config.js'),'utf8')+'\nthis.examples=SUPPORT_CONFIG;',context);
+  const example=context.examples['task-strip'].examples['Get Ready with Me'];
+  assert.equal(example.length,9);assert.equal(example[0][0],'Feed the dogs');assert.equal(example[8][0],'Packed up for school');
+  assert.deepEqual(Array.from(example,row=>row[2]),[11176,7012,30967,6617,2298,3233,5400,38604,38265]);
+});

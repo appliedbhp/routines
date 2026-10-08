@@ -103,6 +103,7 @@ const SUPPORT_CONFIG = {
     "name": "Task strip",
     "intro": "Break a task into small steps. Edit the pictures, put them in order, and mark each step as done.",
     "examples": {
+      "Get Ready with Me": [["Feed the dogs", "Feed the dogs", 11176], ["Eat breakfast", "Eat breakfast", 7012], ["Clean up", "Clean up", 30967], ["Morning routine upstairs", "Morning routine upstairs", 6617], ["Socks are on", "Socks are on", 2298], ["Homework folder", "Homework folder", 3233], ["School snack", "School snack", 5400], ["Water bottle", "Water bottle", 38604], ["Packed up for school", "Packed up for school", 38265]],
       "Wash hands": [
         [
           "Turn on water",

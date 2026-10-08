@@ -68,7 +68,7 @@ saved routines. Press Save to add it to this browser's library.
 ## Projection controls
 
 - Play, pause, and resume are available inside fullscreen, along with an exit
-  button, quiet toggle, and Next step when flexible mode is enabled.
+  button, quiet toggle, and Next step in either scheduling mode.
 - On resume, border time markers immediately shift to account for the pause.
 - Timed mode advances automatically and stops at completion.
 - Flexible schedule mode holds on each step when its planned time runs out.
@@ -181,3 +181,24 @@ in this browser. On smaller screens it starts collapsed; expanded navigation
 overlays the workspace. Each visual keeps its existing URL and saved data.
 Options and save/import/export/print actions sit above the editing canvas.
 The shared interface is excluded from print output.
+
+## Sharing and board layouts
+
+Every visual has **Share by email**. It prepares the current JSON file and
+step-by-step import/save/load instructions. Supported devices can pass the
+attachment and text to an email app through native sharing. Otherwise, download
+the attachment and open a prefilled email, or download an `.eml` email containing
+both the instructions and attachment (requires a compatible desktop mail app).
+The user chooses a recipient and sends it; the website sends no email itself.
+
+Boards offer Rows and Columns selectors. Auto chooses a grid for a single
+US Letter page; print at 100% with browser headers/footers disabled. Selecting
+one dimension calculates the other. If both are specified and more cards need
+space, the other dimension grows so no cards are dropped. Layout preferences
+are preserved by saving, exporting, importing, and sharing; old files use Auto.
+The task-strip examples include Get Ready with Me with its nine original symbols.
+
+**Next step** is available in both timed and flexible projection, including
+fullscreen. Skipping preserves whether the timer is running or paused and
+immediately recalculates the wall-clock anchors. In timed mode, Next advances
+to the next activity boundary (or the end of remaining buffer time).

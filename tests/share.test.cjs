@@ -1,0 +1,23 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const fs=require('node:fs');
+const path=require('node:path');
+for(const kind of ['board','chart','routine'])test(`${kind} sharing prepares correct import instructions and an attached email`,async()=>{
+ const elements=[];const blobs=[];
+ const element=tag=>{const e={tag,textContent:'',append(){},after(){},setAttribute(){},removeAttribute(name){delete this[name]},remove(){},showModal(){this.open=true},close(){this.open=false},click(){if(this.onclick)return this.onclick()}};elements.push(e);return e};
+ const exportButton=element('button');const payload=kind==='board'?{board:{type:'task-strip',title:'Ready & go',cards:[]}}:kind==='chart'?{chart:{name:'Ready & go',chores:[]}}:{name:'Ready & go',steps:[]};
+ const context=vm.createContext({document:{body:{dataset:kind==='board'?{support:'task-strip'}:{},append(){}},getElementById:id=>id===({board:'exportBoard',chart:'exportChart',routine:'exportRoutineBtn'}[kind])?exportButton:null,createElement:element},navigator:{},File,Blob,TextEncoder,btoa,crypto:require('node:crypto').webcrypto,URL:{createObjectURL:blob=>{blobs.push(blob);return 'blob:test'},revokeObjectURL(){}},setTimeout(){},currentPayload:async()=>payload,currentChart:async()=>payload,routineRecord:()=>payload,normalizeRoutine:value=>value});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/share.js'),'utf8'),context);
+ await elements.find(e=>e.textContent==='Share by email').onclick();
+ const email=elements.find(e=>e.textContent==='Open prefilled email');
+ const body=new URL(email.href).searchParams.get('body');
+ assert.match(body,new RegExp(`Import ${kind}`));assert.match(body,/same browser/);
+ assert.ok(body.includes(kind==='board'?'/task-strip/':kind==='chart'?'/chore-chart/':'routines.getadhd.care/'));
+ assert.equal(blobs.length,1,'unsupported browsers download JSON automatically');
+ elements.find(e=>e.textContent==='Download email with attachment (.eml)').onclick();
+ const eml=await blobs[1].text();assert.match(eml,/Content-Disposition: attachment; filename=".*\.json"/);assert.match(eml,/X-Unsent: 1/);
+ const encoded=eml.split('Content-Transfer-Encoding: base64\r\n\r\n')[2].split('\r\n--')[0];
+ const decoded=JSON.parse(Buffer.from(encoded,'base64').toString('utf8'));
+ assert.equal(kind==='board'?decoded.board.title:kind==='chart'?decoded.chart.name:decoded.routine.name,'Ready & go');
+});

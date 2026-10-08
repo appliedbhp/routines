@@ -515,7 +515,7 @@ function updateTimerButtons() {
   ["pauseTimerBtn", "stagePauseBtn"].forEach((id) => document.getElementById(id).disabled = !state.timer.running);
   ["nextStepBtn", "stageNextBtn"].forEach((id) => {
     const button = document.getElementById(id);
-    button.hidden = !state.flexible;
+    button.hidden = false;
     button.disabled = finished;
   });
 }
@@ -528,9 +528,17 @@ function getElapsedMinutes() {
 }
 
 function nextStep() {
-  if (!state.flexible || routineFinished()) return;
-  state.flexIndex++;
-  const elapsed = state.steps.slice(0, state.flexIndex).reduce((sum, step) => sum + step.minutes, 0);
+  if (routineFinished() || !state.steps.length) return;
+  let elapsed;
+  if (state.flexible) {
+    state.flexIndex++;
+    elapsed = state.steps.slice(0, state.flexIndex).reduce((sum, step) => sum + step.minutes, 0);
+  } else {
+    const current = getElapsedMinutes();
+    let boundary = 0;
+    elapsed = Math.max(state.totalMinutes, stepSum());
+    for (const step of state.steps) { boundary += step.minutes; if (boundary > current + 0.0001) { elapsed = boundary; break; } }
+  }
   state.timer.elapsedMinutesAtPause = elapsed;
   state.timer.startedAt = Date.now() - elapsed * 60000;
   tickProjection(true);
