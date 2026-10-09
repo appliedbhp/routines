@@ -21,7 +21,7 @@ const LiveLink=(()=>{
   const [{createClient},{cloudConfig}]=await Promise.all([import('https://esm.sh/@supabase/supabase-js@2.57.4'),import('../cloud/config.js')]);
   let open=false,closed=false,counter=0,lastRecovery=0,retryTimer=null,rebuilding=false,channelGeneration=0,channel;const seen=new Map();
   const client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{worker:typeof Worker!=='undefined',heartbeatCallback:status=>{console.debug('Self-monitor heartbeat:',status);if(status==='disconnected')recover();}}});
-  function recover(){if(closed||Date.now()>=inv.expires||Date.now()-lastRecovery<1000)return;lastRecovery=Date.now();if(!open&&channel)rebuild();else client.realtime.connect();}
+  function recover(force=false){if(closed||Date.now()>=inv.expires||Date.now()-lastRecovery<(force===true?15000:1000))return;lastRecovery=Date.now();if((force===true||!open)&&channel)rebuild();else client.realtime.connect();}
   const visible=()=>{if(typeof document==='undefined'||document.visibilityState==='visible')recover();};
   globalThis.addEventListener?.('online',recover);globalThis.addEventListener?.('focus',visible);globalThis.document?.addEventListener('visibilitychange',visible);
 
@@ -32,7 +32,7 @@ const LiveLink=(()=>{
   async function rebuild(){if(closed||rebuilding||Date.now()>=inv.expires)return;rebuilding=true;open=false;channelGeneration++;try{await client.removeChannel(channel);await new Promise(resolve=>setTimeout(resolve,150));if(!closed&&Date.now()<inv.expires)subscribe();}catch{if(!closed&&!retryTimer)retryTimer=setTimeout(()=>{retryTimer=null;rebuild();},3000);}finally{rebuilding=false;}}
   subscribe();
   const expiry=setTimeout(()=>{close();onStatus('expired');},Math.max(0,inv.expires-Date.now()));
-  async function send(body,secure=false){if(closed||!open||Date.now()>=inv.expires)return false;const seq=Date.now()*1000+(counter++%1000);if(secure){if(!peerKey)return false;body=await seal(peerKey,{role,sender,seq,body});}const payload=await seal(key,{role,sender,secure,seq,body});return await channel.send({type:'broadcast',event:'sealed',payload})==='ok';}
+  async function send(body,secure=false){if(closed||!open||Date.now()>=inv.expires)return false;const seq=Date.now()*1000+(counter++%1000);if(secure){if(!peerKey)return false;body=await seal(peerKey,{role,sender,seq,body});}const payload=await seal(key,{role,sender,secure,seq,body});try{const sent=await channel.send({type:'broadcast',event:'sealed',payload})==='ok';if(!sent)recover(true);return sent;}catch{recover(true);return false;}}
   function close(){closed=true;open=false;clearTimeout(expiry);clearTimeout(retryTimer);globalThis.removeEventListener?.('online',recover);globalThis.removeEventListener?.('focus',visible);globalThis.document?.removeEventListener('visibilitychange',visible);client.removeChannel(channel);}
   return {send,sendPrivate:body=>send(body,true),setPeer,publicKey,close,sender,recover,isConnected:()=>open&&!closed&&Date.now()<inv.expires};
  }
