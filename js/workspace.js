@@ -2,11 +2,11 @@
 (() => {
   const root = new URL('../', document.currentScript.src);
   const tools = [
-    ['', 'Routine timer', '◷'], ['chore-chart/', 'Chore chart', '✓'],
-    ['first-then/', 'First–Then board', '⇢'], ['choice-board/', 'Choice board', '▦'],
-    ['task-strip/', 'Task strip', '≡'], ['now-next-later/', 'Now–Next–Later', '⋯'],
+    ['', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
+    ['first-then/', 'First–Then board', 'checklist_rtl'], ['choice-board/', 'Choice board', 'developer_board'],
+    ['task-strip/', 'Task strip', 'ballot'], ['now-next-later/', 'Now–Next–Later', 'steppers'],
     ['calm-down/', 'Calm-down board', '♡'],
-    ['self-monitor/', 'Self-monitor', '☺'],
+    ['self-monitor/', 'Self-monitor', 'done_all'],
     ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
     ['whats-new/', 'What’s New', '✦']
@@ -28,6 +28,7 @@
     const link = document.createElement('a'); link.href = new URL(path, root).href;
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
+    if(['timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
     if(symbol==='edit_document'){icon.style.fontFamily='Material Symbols Outlined';icon.style.fontWeight='normal';icon.style.fontStyle='normal';icon.style.fontSize='24px';icon.style.letterSpacing='normal';icon.style.textTransform='none';icon.style.fontFeatureSettings='"liga"';}
     const label = document.createElement('span'); label.className = 'nav-label'; label.textContent = name;
     link.append(icon, label);

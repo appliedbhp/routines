@@ -69,3 +69,5 @@
 @media print{.file-bar,.file-dialog{display:none!important}}
 
 .token-run .file-bar{display:none!important}
+
+.nav-material-icon{display:inline-block;width:24px;height:24px;flex:0 0 24px;background-color:currentColor;mask-repeat:no-repeat;mask-position:center;mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:contain}
