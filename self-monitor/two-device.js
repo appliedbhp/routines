@@ -4,10 +4,20 @@
  let link=null,inv=null,adult=null,candidate=null,remote=null,lastSeen=0,connecting=false,ending=false,generation=0;
  try{mode.value=sessionStorage.getItem('routines.selfMonitor.mode')==='two'?'two':'one';}catch{}
  const enabled=()=>mode.value==='two';
+ const allowReaction=MonitorReactions.gate();let reactionTimer;
+ function showReaction(m){if(!session||!$('showReactions').checked||!allowReaction(m))return false;
+  document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);
+  const effect=document.createElement('div');effect.className='monitor-reaction no-print';effect.setAttribute('role','status');
+  const symbol=document.createElement('span');symbol.setAttribute('aria-hidden','true');symbol.textContent=MonitorReactions.choices[m.kind].emoji;
+  const caption=document.createElement('span');caption.className='reaction-caption';caption.textContent=MonitorReactions.choices[m.kind].label+' from your adult';effect.append(symbol,caption);
+  ($('checkin').open?$('checkin'):$('sessionView')).append(effect);reactionTimer=setTimeout(()=>effect.remove(),2600);return true;
+ }
+ $('showReactions').onchange=()=>{if(!$('showReactions').checked)document.querySelector('.monitor-reaction')?.remove();publish();};
+
  function say(text){linkStatus.textContent=text;}
  function saveInvite(){try{if(inv)sessionStorage.setItem(inviteKey,JSON.stringify(inv));else sessionStorage.removeItem(inviteKey);}catch{}}
- function resetLink(){generation++;connecting=false;const previous=link;if(previous)previous.sendPrivate({type:'ended'}).finally(()=>previous.close());link=null;inv=null;adult=null;candidate=null;remote=null;lastSeen=0;saveInvite();pair.hidden=true;$('approveAdult').hidden=true;$('pairCode').textContent='Waiting for adult';$('pairLink').value='';$('pairQR').replaceChildren();}
- function snapshot(){return {type:'state',adult,stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
+ function resetLink(){document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);generation++;connecting=false;const previous=link;if(previous)previous.sendPrivate({type:'ended'}).finally(()=>previous.close());link=null;inv=null;adult=null;candidate=null;remote=null;lastSeen=0;saveInvite();pair.hidden=true;$('approveAdult').hidden=true;$('pairCode').textContent='Waiting for adult';$('pairLink').value='';$('pairQR').replaceChildren();}
+ function snapshot(){return {type:'state',adult,reactionsEnabled:$('showReactions').checked,stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
  function publish(){if(link&&adult&&!ending)link.sendPrivate(snapshot());}
  function finish(){if(session?.stage==='adult'&&remote?.index===session.index&&typeof remote.value==='boolean'){const value=remote.value;remote=null;originalAnswer(value);persistSession(true);publish();}}
  function showWaiting(){if(!session||session.stage!=='adult')return;$('checkin').close();say(adult?'Your answer is saved. Waiting for the adult’s independent rating.':'Your answer is saved. Ask the adult to scan your QR code.');pair.hidden=!!adult;}
@@ -23,6 +33,7 @@
      if(!adult&&!candidate){candidate={sender,publicKey:m.publicKey};$('pairCode').textContent=sender.slice(0,12);$('approveAdult').hidden=false;say('Check that the code below matches the adult’s phone, then allow it to join.');}return;
     }
     if(sender!==adult||!secure)return;lastSeen=Date.now();
+    if(m.type==='reaction'){if(showReaction(m))link.sendPrivate({type:'reaction-received',id:m.id});return;}
     if(m.type==='rating'&&session&&m.index===session.index&&['student','adult'].includes(session.stage)&&typeof m.value==='boolean'){if(!remote)remote={index:m.index,value:m.value};finish();}
     if(m.type==='pause'&&session?.stage==='running')$('pause').click();
     if(m.type==='resume'&&session?.stage==='paused')$('pause').click();

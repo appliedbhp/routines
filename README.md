@@ -242,3 +242,9 @@ No titles, names, custom prompts, or cloud credentials enter live payloads.
 Keys are kept in tab storage. The relay still sees connection metadata. This is
 not a claim of HIPAA/FERPA compliance. QR generation vendors qrcode-generator
 1.4.4 (MIT, Kazuhiko Arase); its license notice is retained in the source.
+
+Adults can send six fixed emoji reactions through the same encrypted connection.
+The child can disable effects; they are silent, noninteractive, removed after
+2.6 seconds, and respect reduced motion. Reactions do not change scores or timers,
+are not persisted, are rate-limited and deduplicated, and are never retried after
+reconnection. A child acknowledgement confirms delivery on the adult screen.
