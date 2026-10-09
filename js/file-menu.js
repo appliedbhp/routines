@@ -14,7 +14,11 @@
  if(nameInput){const oldLabel=nameInput.closest('label');document.querySelector(`label[for="${nameInput.id}"]`)?.remove();if(oldLabel)oldLabel.remove();nameInput.setAttribute('aria-label','Board name');nameInput.placeholder='Name your board';documentRow.append(nameInput);}
  const saveState=document.createElement('span');saveState.className='file-save-state';saveState.setAttribute('role','status');documentRow.append(saveState);
  const offlineState=document.createElement('span');offlineState.className='file-offline-state';documentRow.append(offlineState);
- const title=main.querySelector(':scope > h1');if(title)title.after(bar);else main.prepend(bar);
+ const title=main.querySelector(':scope > h1')||document.querySelector('.brand-app-title');
+ const pageTitle=title||document.createElement('h1');
+ pageTitle.textContent=document.querySelector('.workspace-sidebar a[aria-current="page"] .nav-label')?.textContent||pageTitle.textContent;
+ pageTitle.classList.add('file-page-title');bar.prepend(pageTitle);main.prepend(bar);
+ main.querySelectorAll(':scope > .intro, #routine-builder > .intro').forEach(el=>el.remove());
  function status(){saveState.textContent=lastError||(!target?'Unsaved board':dirty?(target.location==='cloud'&&!navigator.onLine?'Cloud unavailable · changes not synced':'Unsaved changes'):(target.location==='cloud'?`Saved to cloud · ${target.count} of 2 slots used`:'Saved on this device ✓'));}
  async function check(){if(checking)return;checking=true;try{dirty=JSON.stringify(await A.current())!==baseline;status();}catch{dirty=true;status();}finally{checking=false;}}
  async function adopted(t,payload){target=t;baseline=JSON.stringify(payload||await A.current());lastError='';await check();}
