@@ -1,23 +1,27 @@
 /* Child-owned timer. Only completed ratings are revealed to the paired adult. */
 (()=>{
  const mode=$('deviceMode'),linkStatus=$('linkStatus'),pair=$('pairPanel'),inviteKey='routines.selfMonitor.invite.v1';
- let link=null,inv=null,adult=null,candidate=null,remote=null,lastSeen=0,connecting=false,ending=false,generation=0;
+ let link=null,inv=null,adult=null,candidate=null,remote=null,lastSeen=0,connecting=false,ending=false,generation=0,shortInvite=null;
  try{mode.value=sessionStorage.getItem('routines.selfMonitor.mode')==='two'?'two':'one';}catch{}
  const enabled=()=>mode.value==='two';
  const allowReaction=MonitorReactions.gate();let reactionTimer;
  function showReaction(m){if(!session||!$('showReactions').checked||!allowReaction(m))return false;
   document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);
-  const effect=document.createElement('div');effect.className='monitor-reaction no-print';effect.setAttribute('role','status');
-  const symbol=document.createElement('span');symbol.setAttribute('aria-hidden','true');symbol.textContent=MonitorReactions.choices[m.kind].emoji;
-  const caption=document.createElement('span');caption.className='reaction-caption';caption.textContent=MonitorReactions.choices[m.kind].label+' from your adult';effect.append(symbol,caption);
-  ($('checkin').open?$('checkin'):$('sessionView')).append(effect);reactionTimer=setTimeout(()=>effect.remove(),2600);return true;
+  const reaction=MonitorReactions.choices[m.kind],effect=document.createElement('div');effect.className='monitor-reaction no-print';effect.setAttribute('role','status');
+  effect.style.setProperty('--reaction-x',`${18+Math.random()*64}vw`);effect.style.setProperty('--reaction-y',`${18+Math.random()*42}vh`);
+  const symbol=document.createElement('span');symbol.className='reaction-symbol';symbol.setAttribute('aria-hidden','true');symbol.textContent=reaction.emoji;
+  const caption=document.createElement('span');caption.className='reaction-caption';caption.textContent=reaction.phrase?reaction.label:reaction.label+' from your adult';effect.append(symbol,caption);
+  for(let i=0;i<4;i++){const ghost=document.createElement('span');ghost.className='reaction-ghost';ghost.textContent=reaction.emoji;ghost.setAttribute('aria-hidden','true');ghost.style.setProperty('--drift',`${(Math.random()-.5)*140}px`);ghost.style.setProperty('--delay',`${.3+i*.22}s`);effect.append(ghost);}
+  ($('checkin').open?$('checkin'):$('sessionView')).append(effect);reactionTimer=setTimeout(()=>effect.remove(),4200);
+  session.encouragement=MonitorReactions.history([...(session.encouragement||[]),{kind:m.kind,elapsed:session.elapsed}]);MonitorReactions.renderHistory($('encouragementList'),session.encouragement);persistSession(true);publish();return true;
  }
  $('showReactions').onchange=()=>{if(!$('showReactions').checked)document.querySelector('.monitor-reaction')?.remove();publish();};
 
  function say(text){linkStatus.textContent=text;}
  function saveInvite(){try{if(inv)sessionStorage.setItem(inviteKey,JSON.stringify(inv));else sessionStorage.removeItem(inviteKey);}catch{}}
- function resetLink(){document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);generation++;connecting=false;const previous=link;if(previous)previous.sendPrivate({type:'ended'}).finally(()=>previous.close());link=null;inv=null;adult=null;candidate=null;remote=null;lastSeen=0;saveInvite();pair.hidden=true;$('approveAdult').hidden=true;$('pairCode').textContent='Waiting for adult';$('pairLink').value='';$('pairQR').replaceChildren();}
- function snapshot(){return {type:'state',adult,reactionsEnabled:$('showReactions').checked,stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
+ function removeCode(){const old=shortInvite;shortInvite=null;if(old)ShortCode.request({action:"remove",code:old.code,owner:old.owner}).catch(()=>{});}
+ function resetLink(){removeCode();$("showPair").hidden=false;document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);generation++;connecting=false;const previous=link;if(previous)previous.sendPrivate({type:'ended'}).finally(()=>previous.close());link=null;inv=null;adult=null;candidate=null;remote=null;lastSeen=0;saveInvite();pair.hidden=true;$('approveAdult').hidden=true;$('pairCode').textContent='Waiting for adult';$('pairLink').value='';$('pairQR').replaceChildren();}
+ function snapshot(){return {type:'state',adult,encouragement:MonitorReactions.history(session?.encouragement),reactionsEnabled:$('showReactions').checked,stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
  function publish(){if(link&&adult&&!ending)link.sendPrivate(snapshot());}
  function finish(){if(session?.stage==='adult'&&remote?.index===session.index&&typeof remote.value==='boolean'){const value=remote.value;remote=null;originalAnswer(value);persistSession(true);publish();}}
  function showWaiting(){if(!session||session.stage!=='adult')return;$('checkin').close();say(adult?'Your answer is saved. Waiting for the adult’s independent rating.':'Your answer is saved. Ask the adult to scan your QR code.');pair.hidden=!!adult;}
@@ -37,16 +41,19 @@
     if(m.type==='rating'&&session&&m.index===session.index&&['student','adult'].includes(session.stage)&&typeof m.value==='boolean'){if(!remote)remote={index:m.index,value:m.value};finish();}
     if(m.type==='pause'&&session?.stage==='running')$('pause').click();
     if(m.type==='resume'&&session?.stage==='paused')$('pause').click();
-    if(m.type==='leave'){adult=null;candidate=null;remote=null;pair.hidden=false;say('Adult disconnected. Scan the QR code to reconnect.');}
+    if(m.type==='leave'){resetLink();connect();return;}
     publish();
    },state=>{if(attempt!==generation)return;if(state==='expired'){say('Pairing expired. Create a new QR code or switch to One device.');link=null;inv=null;adult=null;remote=null;saveInvite();pair.hidden=false;}else if(state==='connected'){say(adult?'Adult connected.':'Ready. Ask the adult to scan the QR code.');publish();}else say('Reconnecting… Ratings will wait until both devices reconnect.');});
    if(attempt!==generation){connected.close();return;}link=connected;inv.publicKey=link.publicKey;saveInvite();
-   const url=new URL('join/',location.href);url.hash=LiveLink.pack(inv);$('pairLink').value=url.href;
-   const qr=qrcode(0,'M');qr.addData(url.href);qr.make();$('pairQR').innerHTML=qr.createSvgTag({cellSize:4,margin:4,scalable:true});pair.hidden=false;
+   const url=new URL('join/',location.href);url.hash=LiveLink.pack(inv);
+   try{const owner=LiveLink.invitation().key,code=await ShortCode.request({action:'create',invitation:LiveLink.pack(inv),owner});if(attempt!==generation){ShortCode.request({action:'remove',code:code.code,owner}).catch(()=>{});return;}shortInvite={...code,owner};url.pathname='/join/';url.hash=code.code;$('shortPairHint').textContent='Or open '+url.host+'/join and enter '+code.code+' · Code expires in 15 minutes.';}catch{$('shortPairHint').textContent='Short code unavailable. Scan the QR code or copy the private link.';}
+   if(attempt!==generation)return;
+   $('pairLink').value=url.href;
+   const qr=qrcode(0,'M');qr.addData(url.href);qr.make();$('pairQR').innerHTML=qr.createSvgTag({cellSize:4,margin:4,scalable:true});pair.hidden=!!adult;if(adult)removeCode();
   }catch(e){say(e.message);}finally{if(attempt===generation)connecting=false;}
  }
  let approving=false;
- async function approve(startOnJoin=false){if(!candidate||!link||approving)return;approving=true;const approved=candidate,current=link,attempt=generation;try{await current.setPeer(approved.publicKey);if(attempt!==generation||current!==link)return;adult=approved.sender;candidate=null;lastSeen=Date.now();$('approveAdult').hidden=true;pair.hidden=true;if(startOnJoin&&!session)$('settings').requestSubmit();say(session?'Adult connected. Each of you will rate on your own screen.':'Adult connected. Check your settings, then start the session.');publish();}finally{approving=false;}}
+ async function approve(startOnJoin=false){if(!candidate||!link||approving)return;approving=true;const approved=candidate,current=link,attempt=generation;try{await current.setPeer(approved.publicKey);if(attempt!==generation||current!==link)return;adult=approved.sender;candidate=null;lastSeen=Date.now();$('approveAdult').hidden=true;pair.hidden=true;$('showPair').hidden=true;removeCode();if(startOnJoin&&!session)$('settings').requestSubmit();say(session?'Adult connected. Each of you will rate on your own screen.':'Adult connected. Check your settings, then start the session.');publish();}finally{approving=false;}}
  $('approveAdult').onclick=()=>approve(false);
  $('newPair').onclick=()=>{resetLink();connect();};
  $('enlargeQR').onclick=()=>{const large=$('pairQR').classList.toggle('large');$('enlargeQR').textContent=large?'Make QR code smaller':'Enlarge QR code';$('enlargeQR').setAttribute('aria-pressed',String(large));};
@@ -55,9 +62,10 @@
  mode.onchange=()=>{if(!enabled()){resetLink();if(session?.stage==='adult')reopenCheckin();say('One device: take turns on this screen.');}else{if(session?.stage==='adult')showWaiting();connect();}try{sessionStorage.setItem('routines.selfMonitor.mode',mode.value);}catch{}};
  const originalAnswer=answer;answer=function(value){if(!enabled())return originalAnswer(value);if(session?.stage!=='student')return;session.student=value;session.stage='adult';persistSession(true);showWaiting();finish();publish();};
  const originalSubmit=$('settings').onsubmit;$('settings').onsubmit=e=>{if(enabled()&&!navigator.onLine){e.preventDefault();say('Two-device mode needs internet. Choose One device to start offline.');return;}originalSubmit(e);if(session&&enabled())connect();};
- const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
+ const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){MonitorReactions.renderHistory($('encouragementList'),[]);resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
  const originalTick=tick;tick=function(){originalTick();if(enabled()&&session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers on their phone.';};
  setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}publish();if(adult&&Date.now()-lastSeen>12000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
  addEventListener('online',()=>{if(enabled())connect();});
+ MonitorReactions.renderHistory($('encouragementList'),session?.encouragement);
  if(enabled()){if(session?.stage==='adult')showWaiting();connect();}else say('One device: take turns on this screen.');
 })();

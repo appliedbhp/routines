@@ -75,3 +75,26 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 
 .device-panel #pairQR svg{width:128px;max-width:100%;height:auto}.device-panel #pairQR.large svg{width:280px}
 .monitor-reaction{position:fixed;right:24px;top:18vh;z-index:1000;pointer-events:none;text-align:center;animation:monitor-encouragement 2.6s ease-out both;filter:drop-shadow(0 3px 6px #0003)}.monitor-reaction>span:first-child{display:block;font:clamp(64px,10vw,110px)/1.2 system-ui}.monitor-reaction .reaction-caption{display:block;font:600 14px/1.4 system-ui;background:white;color:#17283f;padding:5px 10px;border-radius:12px}.projection .session>.monitor-reaction{position:fixed;z-index:1000}.reaction-preference{font-size:14px;margin:8px 0}@keyframes monitor-encouragement{0%{opacity:0;transform:translateY(20px) scale(.7)}15%,75%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-30px) scale(1)}}@media(prefers-reduced-motion:reduce){.monitor-reaction{animation:none}}@media print{.monitor-reaction{display:none!important}}
+/* Keep transient encouragement clear of screen edges and collect it separately. */
+.monitor-reaction{left:var(--reaction-x,50vw);top:var(--reaction-y,30vh);right:auto;width:min(260px,64vw);margin-left:calc(min(260px,64vw)/-2);animation:monitor-pop 4.2s ease-out both}
+.monitor-reaction .reaction-ghost{position:absolute;left:35%;top:0;font-size:60px;opacity:0;animation:monitor-float 3s ease-out var(--delay) both}
+@keyframes monitor-pop{0%{opacity:0;transform:scale(.6)}10%,70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+@keyframes monitor-float{0%{opacity:0;transform:translate(0,0) scale(.6)}20%{opacity:.3}100%{opacity:0;transform:translate(var(--drift),-45vh) scale(1.1)}}
+.encouragement-history{margin:18px auto;padding:14px 18px;background:#fff;color:#17283f;border:1px solid #c7d4e6;border-radius:14px;max-width:680px;width:100%;text-align:left}
+.encouragement-history h2{font-size:18px;margin:0 0 10px}.encouragement-history ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0;max-height:130px;overflow:auto}.encouragement-history li{padding:7px 10px;border-radius:10px;background:#eef5ff;font-size:14px}.encouragement-history small{display:block;margin-top:10px;color:#52647a}
+.device-panel{display:flex;flex-direction:column;gap:12px}.device-panel label{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}.device-panel input[type=checkbox]{width:auto}.device-panel #pairPanel{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}.device-panel #pairPanel label{width:100%}.device-panel #pairPanel h2,.device-panel #pairPanel p{margin:0}.device-panel #pairPanel[hidden]{display:none!important}
+.projection .session>.encouragement-history{flex-shrink:0;position:relative;z-index:1}.projection .encouragement-history h2{color:#17283f}
+@media(prefers-reduced-motion:reduce){.monitor-reaction{animation:none}.monitor-reaction .reaction-ghost{display:none}}
+@media print{.encouragement-history ul{max-height:none;overflow:visible}}
+@media screen{
+ .projection .session{justify-content:flex-start;gap:10px}
+ .projection .clock{width:min(34dvh,60vw);min-width:160px;flex-shrink:0;margin:0 auto}
+ .projection .device-panel:has(#pairPanel[hidden]){flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:center;max-width:760px;margin:0 auto;padding:8px 14px;gap:8px 18px}
+ .projection .device-panel:has(#pairPanel[hidden]) p,.projection .device-panel .reaction-preference{margin:0}
+ .projection #projectStart:disabled{display:none}
+ .projection .actions{margin:4px 0}.projection #score{margin:4px 0}.projection .tokens{margin-top:0}
+ .projection .encouragement-history{margin:4px auto;padding:12px 16px}.projection .encouragement-history ul{max-height:80px}
+ .projection #progress,.projection .session>details{margin:4px 0}
+}
+.monitor-reaction{left:clamp(calc(min(260px,64vw)/2 + 12px),var(--reaction-x,50vw),calc(100vw - min(260px,64vw)/2 - 12px));top:clamp(12px,var(--reaction-y,30vh),calc(100dvh - 190px))}
+@media print{#studentCard li{break-inside:avoid;margin-block:6px}}

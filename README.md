@@ -231,10 +231,17 @@ Check-ins pause until both independent ratings arrive; pending adult ratings ret
 The child owns the timer and results, and the adult can pause/resume, export, or
 print completed results. Browser tab storage retains active state; no child login
 or names are required. Refreshing the child page may require approving the phone
-again. Use a new QR code to replace a paired phone. Links expire after two hours.
+again. Use a new QR code to replace a paired phone. Six-character codes expire after 15 minutes; paired connections last up to two hours. Open `/join/` to type a code, or scan the short URL. Pairing consumes the code and hides the QR controls.
 
-Transport uses the existing Supabase project’s client Broadcast service, with no
-new tables or database writes. A random 256-bit invite key protects the handshake;
+Live session transport uses the existing Supabase project’s client Broadcast service.
+The `routine-join-code` Edge Function stores only encrypted temporary invitations in
+`routine_join_codes`, plus short-lived salted connection hashes in `routine_join_limits`
+for rate limiting. Both tables deny browser access; only the server role can use them.
+Codes are allocated with a unique constraint, claimed atomically by one joining browser,
+and revoked after pairing. A scheduled job deletes expired rows every ten minutes.
+The Edge Function holds the at-rest encryption key; this is not end-to-end invitation storage.
+No ratings or encouragement history are written to these tables. Deployment source and
+idempotent setup SQL are in `cloud/join-code/`. A random 256-bit invite key protects the handshake;
 the QR fragment also binds the child's P-256 public key. A per-device ECDH key
 protects approved-session messages using AES-GCM; the matching code is derived
 from the adult's public key. Only completed answer pairs are sent in snapshots.
@@ -243,8 +250,10 @@ Keys are kept in tab storage. The relay still sees connection metadata. This is
 not a claim of HIPAA/FERPA compliance. QR generation vendors qrcode-generator
 1.4.4 (MIT, Kazuhiko Arase); its license notice is retained in the source.
 
-Adults can send six fixed emoji reactions through the same encrypted connection.
+Adults can send six emoji reactions and three fixed encouraging phrases through the same encrypted connection.
 The child can disable effects; they are silent, noninteractive, removed after
-2.6 seconds, and respect reduced motion. Reactions do not change scores or timers,
-are not persisted, are rate-limited and deduplicated, and are never retried after
-reconnection. A child acknowledgement confirms delivery on the adult screen.
+4.2 seconds, and respect reduced motion. Effects pop at random positions with translucent
+floating copies. Reactions do not change scores or timers, are rate-limited and
+deduplicated, and are never retried after reconnection. The latest 300 encouragements
+are retained in local tab session results, shown on both screens, and included in
+exit tickets and the adult results export. They are excluded from board settings/cloud saves. A child acknowledgement confirms delivery on the adult screen.
