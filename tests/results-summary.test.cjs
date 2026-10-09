@@ -1,0 +1,4 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const R=require('../self-monitor/results-summary.js');
+test('separate on-track rates use Yes counts, not rating agreement or point totals',()=>{assert.deepEqual(R.summarize([{student:true,adult:true,points:1},{student:true,adult:false,points:0},{student:false,adult:false,points:.5}]),{total:3,points:1.5,child:2,adult:1,childPercent:67,adultPercent:33});});
+test('no completed responses gives no percentages, not zero percent',()=>{assert.deepEqual(R.summarize([]),{total:0,points:0,child:0,adult:0,childPercent:null,adultPercent:null});});
+test('custom point values are preserved independently of on-track rates',()=>{const result=R.summarize([{student:false,adult:false,points:2},{student:false,adult:true,points:.5}]);assert.equal(result.points,2.5);assert.equal(result.childPercent,0);assert.equal(result.adultPercent,50);});

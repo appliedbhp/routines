@@ -11,7 +11,7 @@
   const rating=['student','adult'].includes(state.stage);$('ratingPanel').hidden=!rating;if(pending&&pending.index!==state.index){pending=null;try{sessionStorage.removeItem(pendingKey);}catch{}}
   $('prompt').textContent=rating?'Is the child on track?':state.stage==='finished'?'All check-ins complete':'Waiting for the next check-in';$('yes').disabled=$('no').disabled=!online||!rating||!!pending;
   $('answerStatus').textContent=pending?'Your answer is saved on this phone. Waiting for the child and connection confirmation.':'';
-  $('score').textContent=`${state.points} ${state.points===1?'point':'points'}`;
+  MonitorResults.render($('exitSummary'),state.records);
   $('results').replaceChildren();for(const r of state.records){const li=document.createElement('li');li.textContent=`Check-in ${r.number}: child ${r.student?'Yes':'No'}, adult ${r.adult?'Yes':'No'} — ${r.points} points`;$('results').append(li);}
   MonitorReactions.renderHistory($('encouragementList'),state.encouragement);$('download').disabled=$('print').disabled=!state.records.length&&!MonitorReactions.history(state.encouragement).length;
   try{sessionStorage.setItem('routines.selfMonitor.adult.results',JSON.stringify({format:'self-monitor-results',version:1,points:state.points,records:state.records,encouragement:MonitorReactions.history(state.encouragement)}));}catch{}

@@ -100,3 +100,5 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 @media print{#studentCard li{break-inside:avoid;margin-block:6px}}
 .monitor-reaction>.reaction-pill:first-child{font:700 clamp(18px,2.5vw,28px)/1.4 system-ui;padding:14px 22px;border-radius:999px;background:#fff;color:#17283f;box-shadow:0 4px 18px #0002}
 .encouragement-history li.encouragement-emoji{font-size:30px;line-height:1.2;background:none;padding:4px 8px}.encouragement-history li.encouragement-phrase{border-radius:999px;align-self:center}
+
+.exit-summary{margin:20px 0;padding:16px;border:1px solid #b7c6d8;border-radius:12px;background:#fff;color:#17283f}.exit-summary h2{margin:0 0 12px;font-size:22px}.exit-summary dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}.exit-summary dt{font-size:14px}.exit-summary dd{font-size:28px;font-weight:700;margin:6px 0 0}.exit-summary p{font-size:13px;line-height:1.5;margin:14px 0 0}@media print{.exit-summary{break-inside:avoid}}

@@ -75,9 +75,10 @@ $('printExit').onclick=()=>report(()=>{
  add('p',`Session started: ${new Date(session.startedAt).toLocaleString()} · ${session.stage==='finished'?'Completed session':'Session in progress — results so far'}`);
  add('h2',session.message);
  add('p',`Work time: ${timeText(session.elapsed)} of ${timeText(session.total)} · Completed check-ins: ${session.records.length} of ${session.ends.length}`);
+ MonitorResults.render(add('section',''),session.records);
  const matches=session.records.filter(r=>r.student===r.adult).length;
  const possible=session.records.length*Math.max(...Object.values(session.rules));
- add('p',`Points earned: ${session.points} of ${possible} possible for completed check-ins · Matching ratings: ${matches} of ${session.records.length}`);
+ add('p',`Possible match points for completed check-ins: ${possible} · Matching ratings: ${matches} of ${session.records.length}`);
  add('p',`Scoring: Both Yes = ${session.rules.yes}; both No = ${session.rules.no}; mismatch = ${session.rules.mismatch}.`);
  const table=document.createElement('table');table.className='card-table';const head=document.createElement('thead'),header=document.createElement('tr');
  for(const text of ['Check-in','Work time','Student','Adult','Points']){const th=document.createElement('th');th.textContent=text;header.append(th);}head.append(header);table.append(head);

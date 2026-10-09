@@ -1,0 +1,7 @@
+/* Use completed response pairs only; unfinished check-ins never count as No. */
+const MonitorResults=(()=>{
+ function summarize(records=[]){const total=records.length,child=records.filter(r=>r.student===true).length,adult=records.filter(r=>r.adult===true).length;return {total,points:Math.round(records.reduce((sum,r)=>sum+r.points,0)*100)/100,child,adult,childPercent:total?Math.round(100*child/total):null,adultPercent:total?Math.round(100*adult/total):null};}
+ function render(target,records){const s=summarize(records);target.replaceChildren();target.className='exit-summary';const heading=document.createElement('h2');heading.textContent='Overall score';target.append(heading);const list=document.createElement('dl');for(const [label,value] of [['Match points',String(s.points)],['Child: on track',s.childPercent===null?'—':s.childPercent+'%'],['Adult: on track',s.adultPercent===null?'—':s.adultPercent+'%']]){const box=document.createElement('div'),term=document.createElement('dt'),score=document.createElement('dd');term.textContent=label;score.textContent=value;box.append(term,score);list.append(box);}target.append(list);const note=document.createElement('p');note.textContent=s.total?`Based on ${s.total} completed check-ins. Child answered Yes ${s.child} of ${s.total} times; adult answered Yes ${s.adult} of ${s.total} times.`:'No completed check-ins yet. On-track percentages are not available.';target.append(note);}
+ return {summarize,render};
+})();
+if(typeof module!=='undefined')module.exports=MonitorResults;
