@@ -72,15 +72,39 @@
   const controls=[...toolbar.querySelectorAll('.controls')].filter(el=>el.tagName!=='FORM');
   const settings=toolbar.querySelector('form#settings');if(settings)groups.Content.content.append(settings);
   for(const control of controls){for(const el of [...control.children]){if(el.classList.contains('file-legacy')||el.matches('label[for]')||el.type==='file')continue;const field=el.matches('input,select,button')?el:el.querySelector('input,select,button');const id=field?.id||'';if(!field)continue;
-    if((el.textContent.trim()==='Run session'&&el.tagName==='BUTTON')||['project'].includes(id)){el.classList.add('file-run');el.textContent='▶ Run session';menuRow.append(el);continue;}
-    if(['editMode','runMode'].includes(id)){if(id==='runMode')button(menuRow,'▶ Run session',()=>field.click()).className='file-run';el.closest('label')?.classList.add('file-legacy');continue;}
+    if((el.textContent.trim()==='Run session'&&el.tagName==='BUTTON')||['project'].includes(id)){el.classList.add('file-run','file-legacy');menuRow.append(el);continue;}
+    if(['editMode','runMode'].includes(id)){if(id==='runMode')button(menuRow,'Run Session',()=>field.click()).className='file-run file-legacy';el.closest('label')?.classList.add('file-legacy');continue;}
     const group=/theme|font|color|motion|sound|chime|showTimer/i.test(id)?'Appearance':/row|column|layout|orientation|extraSets|weekend|day|version/i.test(id)?'Layout':'Content';
     const label=control.querySelector(`label[for="${id}"]`);if(label){const wrap=document.createElement('div');wrap.append(label,el);groups[group].content.append(wrap);}else groups[group].content.append(el);
    }control.classList.add('file-controls-source');}
   for(const group of Object.values(groups))if(group.content.children.length)toolbar.append(group.d);
  }
  groupControls();
- if(currentType==='routine')button(menuRow,'▶ Run session',()=>document.querySelector('.view-tab[data-view="projection"]').click()).className='file-run';
+ const modes=document.createElement('div');modes.className='file-modes';modes.setAttribute('aria-label','Board views');menuRow.append(modes);
+ const routineTab=view=>document.querySelector(`.view-tab[data-view="${view}"]`);
+ document.querySelector('.view-tabs')?.classList.add('file-legacy');
+ const setMode=mode=>{document.body.dataset.boardMode=mode;document.body.classList.toggle('board-print-preview',mode==='print'&&currentType!=='routine');modes.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));};
+ const build=button(modes,'Build',()=>{setMode('build');if(currentType==='routine')routineTab('builder').click();});build.dataset.mode='build';
+ const print=button(modes,'Print',()=>{setMode('print');if(currentType==='routine')routineTab('print').click();else document.dispatchEvent(new Event('board-print-preview'));});print.dataset.mode='print';
+ const printActions=document.createElement('div');printActions.className='board-print-actions no-print';bar.after(printActions);button(printActions,'Print / Save PDF…',()=>printDialog.showModal());
+ function runPlanner(){
+  const sheet=document.querySelector('.sheet');
+  let exit=sheet.querySelector('.planner-exit');
+  if(!exit){exit=document.createElement('button');exit.type='button';exit.className='planner-exit no-print';exit.textContent='Exit session';sheet.prepend(exit);exit.onclick=()=>{sheet.classList.remove('planner-running');setMode('build');if(document.fullscreenElement===sheet)document.exitFullscreen().catch(()=>{});launch.focus();};}
+  sheet.classList.add('planner-running');sheet.requestFullscreen?.().catch(()=>{});exit.focus();
+ }
+ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.querySelector('.planner-running')?.classList.remove('planner-running');});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('.planner-running .planner-exit')?.click();});
+ const launch=button(modes,'Run Session',()=>{
+  setMode('run');
+  if(currentType==='routine'){if(document.body.dataset.view!=='projection')routineTab('projection').click();document.getElementById('startTimerBtn').click();document.getElementById('fullscreenBtn').click();}
+  else if(currentType==='self-monitor')document.getElementById('project').click();
+  else if(currentType==='token-board')document.getElementById('runMode').click();
+  else {const existing=document.querySelector('.file-run');if(existing)existing.click();else if(currentType==='homework-planner')runPlanner();else throw Error('Session controls are still loading. Try again.');}
+ });launch.dataset.mode='run';
+
+ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)setMode(currentType==='routine'?'run':'build');});
+ setMode('build');
  function offlineUpdate(){const panel=document.querySelector('.offline-tools'),s=panel?.querySelector('[role=status]');if(panel&&!offlineHelp.contains(panel))offlineHelp.append(panel);offlineState.textContent=s?.textContent||'';offlineState.title='File → Make available offline; Help → Offline & installation';}
  const observer=new MutationObserver(offlineUpdate);const panel=document.querySelector('.offline-tools');if(panel){observer.observe(panel,{subtree:true,childList:true,characterData:true});offlineUpdate();}
  nameInput?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();run(save)();}},true);

@@ -71,3 +71,37 @@
 .token-run .file-bar{display:none!important}
 
 .nav-material-icon{display:inline-block;width:24px;height:24px;flex:0 0 24px;background-color:currentColor;mask-repeat:no-repeat;mask-position:center;mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:contain}
+
+/* Keep document menus and the shared view controls within reach while scrolling. */
+@media screen {
+ .file-bar{position:sticky;top:0;z-index:30;box-shadow:0 3px 10px #17283f12}
+ .file-modes{display:flex;gap:6px;margin-left:auto;align-items:center}
+ .file-modes button{border:1px solid #b7c6d8;border-radius:8px;padding:9px 14px;background:#fff;color:#17283f;font:600 14px system-ui;cursor:pointer;min-height:44px}
+ .file-modes button:hover{background:#e7f0ff}
+ .file-modes button[aria-pressed=true]{background:#3185fc;border-color:#3185fc;color:#fff}
+ @media(max-width:600px){.file-modes{justify-content:flex-end;flex:1 0 100%;margin-top:8px}.file-modes button{flex:1;padding:9px 6px}}
+}
+
+@media screen {
+ #projectionStage.stage-full-window{position:fixed;inset:0;width:100vw;height:100dvh!important;z-index:100;border-radius:0;background:var(--bg,#fff)}
+ .planner-exit{display:none}
+ .sheet.planner-running{position:fixed;inset:0;width:100vw!important;max-width:none!important;height:100dvh;margin:0!important;box-sizing:border-box;overflow:auto;z-index:100;background:#fff;padding:24px}
+ .planner-running .planner-exit{display:block;margin:0 0 16px auto}
+ .planner-running .subject-input,.planner-running .no-print:not(.planner-exit){display:none}
+}
+
+@media screen {
+ .board-print-actions{display:none;margin:0 0 20px}
+ .board-print-preview .board-print-actions{display:block}
+ .board-print-preview .visual-toolbar,.board-print-preview main>.intro,.board-print-preview main>.hint,.board-print-preview #sessionView{display:none!important}
+ .board-print-preview .sheet .no-print{display:none!important}
+ .board-print-preview #studentCard{display:block;background:white;padding:28px;border:1px solid #d8e2ef}
+ .board-print-preview .sheet{box-shadow:0 4px 16px #17283f18}
+ .board-print-preview .sheet input,.board-print-preview .sheet textarea,.board-print-preview .sheet button{pointer-events:none}
+}
+@media screen {
+ .board-print-preview #planner input[type=text],.board-print-preview #planner textarea{display:none}
+ .board-print-preview #planner .print-only{display:block;white-space:pre-wrap;overflow-wrap:anywhere;min-height:36px}
+ .board-print-preview #planner .assignment-print{min-height:65px}
+ .planner-running #planner th input{pointer-events:none;border-color:transparent;background:transparent}
+}

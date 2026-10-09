@@ -737,11 +737,20 @@ function formatMMSS(totalSeconds) {
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
+function exitWheelFullscreen() {
+  document.getElementById("projectionStage").classList.remove("stage-full-window");
+  document.getElementById("exitFullscreenBtn").hidden = true;
+  document.getElementById("stageFullscreenBtn").hidden = false;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  fitProjection();
+}
 function requestWheelFullscreen() {
   const el = document.getElementById("projectionStage");
-  if (el.requestFullscreen) el.requestFullscreen().catch(() => {
-    document.getElementById("scheduleHint").textContent = "Full screen is unavailable in this browser.";
-  });
+  el.classList.add("stage-full-window");
+  document.getElementById("exitFullscreenBtn").hidden = false;
+  document.getElementById("stageFullscreenBtn").hidden = true;
+  fitProjection();
+  el.requestFullscreen?.().catch(() => {});
 }
 
 // ---------- Init ----------
@@ -769,7 +778,7 @@ function bindStaticControls() {
   document.getElementById("stageNextBtn").onclick = nextStep;
   document.getElementById("nextStepBtn").onclick = nextStep;
   document.getElementById("stageQuietBtn").onclick = () => setQuiet(!state.quiet);
-  document.getElementById("exitFullscreenBtn").onclick = () => document.exitFullscreen();
+  document.getElementById("exitFullscreenBtn").onclick = exitWheelFullscreen;
   document.getElementById("stageFullscreenBtn").onclick = requestWheelFullscreen;
   document.getElementById("stageInfoBtn").onclick = () => {
     const panel = document.querySelector(".projection-current");
@@ -780,11 +789,13 @@ function bindStaticControls() {
   };
   document.addEventListener("fullscreenchange", () => {
     const full = !!document.fullscreenElement;
+    if (!full) document.getElementById("projectionStage").classList.remove("stage-full-window");
     document.getElementById("stageFullscreenBtn").hidden = full;
     document.getElementById("exitFullscreenBtn").hidden = !full;
     fitProjection();
   });
   document.getElementById("exitFullscreenBtn").hidden = true;
+  document.addEventListener("keydown", e => { if (e.key === "Escape") exitWheelFullscreen(); });
   window.addEventListener("resize", fitProjection);
   window.visualViewport?.addEventListener("resize", fitProjection);
   new ResizeObserver(() => requestAnimationFrame(fitProjection)).observe(document.getElementById("projectionSettings"));
@@ -866,7 +877,7 @@ function loadThemeFont(theme) {
 function fitProjection() {
   if (state.view !== "projection") return;
   const stage = document.getElementById("projectionStage");
-  const fullscreen = document.fullscreenElement === stage;
+  const fullscreen = document.fullscreenElement === stage || stage.classList.contains("stage-full-window");
   const viewportHeight = window.visualViewport?.height || window.innerHeight;
   const headerHeight = document.querySelector(".app-header").getBoundingClientRect().height;
   const settingsHeight = document.getElementById("projectionSettings").getBoundingClientRect().height;
