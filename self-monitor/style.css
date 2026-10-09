@@ -70,3 +70,7 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 .projection[data-theme=stpatricks] .session::before{content:'';position:absolute;inset:0;background:url('icons/clover.png') 0 0/120px 120px repeat;opacity:.06;pointer-events:none;z-index:0}
 
 .token img{display:block;width:32px;height:32px;max-width:none;object-fit:contain}.token>img{filter:grayscale(1);opacity:.28}.token-fill img{filter:none;opacity:1}.icon-credit{font-size:11px;line-height:1.4;margin:10px 0}.icon-credit a{color:inherit;text-decoration:underline}.projection .icon-credit a{display:inline-block;background:#fff;color:#253349;border-radius:6px;padding:4px 8px}
+
+.device-panel{margin:12px auto;padding:12px;border:1px solid #aebed1;border-radius:12px;max-width:520px;background:white;color:#17283f;text-align:center}.device-panel p{margin:8px 0}.device-panel button,.device-panel select,.device-panel input{background:white;color:#17283f;border:1px solid #52647a;max-width:100%}.device-panel label{display:block}.device-panel input{width:100%;font-size:12px}.device-panel #pairQR svg{width:min(250px,100%);height:auto}.projection .device-panel{flex-shrink:0}.device-panel:has(option[value=one]:checked) #showPair{display:none}
+
+.device-panel #pairQR svg{width:128px;max-width:100%;height:auto}.device-panel #pairQR.large svg{width:280px}

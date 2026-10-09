@@ -220,3 +220,25 @@ Verification: `node --test tests/*.test.cjs`. Offline tests cover cached navigat
 ## Shared editor menus
 
 `js/file-menu.js` provides File/Edit/View/Help and the device/cloud library. `js/file-store.js` reads and updates existing per-tool storage without a migration. Save uses the open record ID; Save as creates a new ID. Device writes compare the original record to detect concurrent edits. Cloud writes retain the server revision check and per-write attestation; credentials and responses never enter the offline cache. A separate offline copy is not a cloud-sync status.
+
+### Two-device self-monitor sessions
+
+Choose **Two devices** on the child's screen, then start the session. The adult
+scans the locally generated QR code, compares the matching code, and the child's
+screen approves that phone. The default QR is 128px; Enlarge uses 280px. One-device
+mode remains available offline. Two-device mode needs both pages open and online.
+Check-ins pause until both independent ratings arrive; pending adult ratings retry.
+The child owns the timer and results, and the adult can pause/resume, export, or
+print completed results. Browser tab storage retains active state; no child login
+or names are required. Refreshing the child page may require approving the phone
+again. Use a new QR code to replace a paired phone. Links expire after two hours.
+
+Transport uses the existing Supabase project’s client Broadcast service, with no
+new tables or database writes. A random 256-bit invite key protects the handshake;
+the QR fragment also binds the child's P-256 public key. A per-device ECDH key
+protects approved-session messages using AES-GCM; the matching code is derived
+from the adult's public key. Only completed answer pairs are sent in snapshots.
+No titles, names, custom prompts, or cloud credentials enter live payloads.
+Keys are kept in tab storage. The relay still sees connection metadata. This is
+not a claim of HIPAA/FERPA compliance. QR generation vendors qrcode-generator
+1.4.4 (MIT, Kazuhiko Arase); its license notice is retained in the source.
