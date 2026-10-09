@@ -223,9 +223,9 @@ Verification: `node --test tests/*.test.cjs`. Offline tests cover cached navigat
 
 ### Two-device self-monitor sessions
 
-Choose **Two devices** on the child's screen, then start the session. The adult
-scans the locally generated QR code, compares the matching code, and the child's
-screen approves that phone. The default QR is 128px; Enlarge uses 280px. One-device
+Choose **Two devices** on the child's screen to display a QR code before starting.
+Opening the private QR link on the adult's phone pairs it and starts the timer.
+For an already active session, compare the matching code and approve the phone. The default QR is 128px; Enlarge uses 280px. One-device
 mode remains available offline. Two-device mode needs both pages open and online.
 Check-ins pause until both independent ratings arrive; pending adult ratings retry.
 The child owns the timer and results, and the adult can pause/resume, export, or

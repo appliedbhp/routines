@@ -21,7 +21,7 @@
  function publish(){if(link&&adult&&!ending)link.sendPrivate(snapshot());}
  function finish(){if(session?.stage==='adult'&&remote?.index===session.index&&typeof remote.value==='boolean'){const value=remote.value;remote=null;originalAnswer(value);persistSession(true);publish();}}
  function showWaiting(){if(!session||session.stage!=='adult')return;$('checkin').close();say(adult?'Your answer is saved. Waiting for the adult’s independent rating.':'Your answer is saved. Ask the adult to scan your QR code.');pair.hidden=!!adult;}
- async function connect(){if(connecting||link||!enabled()||!session)return;connecting=true;const attempt=generation;
+ async function connect(){if(connecting||link||!enabled())return;connecting=true;const attempt=generation;
   try{if(!navigator.onLine)throw Error('Two-device mode needs internet. Reconnect, or choose One device to continue.');
    if(!inv){try{inv=LiveLink.parse(JSON.parse(sessionStorage.getItem(inviteKey)));}catch{inv=LiveLink.invitation();}saveInvite();}
    say('Connecting… Keep this screen open.');
@@ -30,7 +30,7 @@
     if(!m||typeof m.type!=='string')return;
     if(m.type==='hello'){
      if(sender===adult){lastSeen=Date.now();publish();return;}
-     if(!adult&&!candidate){candidate={sender,publicKey:m.publicKey};$('pairCode').textContent=sender.slice(0,12);$('approveAdult').hidden=false;say('Check that the code below matches the adult’s phone, then allow it to join.');}return;
+     if(!adult&&!candidate){candidate={sender,publicKey:m.publicKey};$('pairCode').textContent=sender.slice(0,12);$('approveAdult').hidden=false;if(!session){approve(true);return;}say('Check that the code below matches the adult’s phone, then allow it to join.');}return;
     }
     if(sender!==adult||!secure)return;lastSeen=Date.now();
     if(m.type==='reaction'){if(showReaction(m))link.sendPrivate({type:'reaction-received',id:m.id});return;}
@@ -45,17 +45,19 @@
    const qr=qrcode(0,'M');qr.addData(url.href);qr.make();$('pairQR').innerHTML=qr.createSvgTag({cellSize:4,margin:4,scalable:true});pair.hidden=false;
   }catch(e){say(e.message);}finally{if(attempt===generation)connecting=false;}
  }
- $('approveAdult').onclick=async()=>{if(!candidate||!link)return;const approved=candidate;await link.setPeer(approved.publicKey);adult=approved.sender;candidate=null;lastSeen=Date.now();$('approveAdult').hidden=true;pair.hidden=true;say('Adult connected. Each of you will rate on your own screen.');publish();};
+ let approving=false;
+ async function approve(startOnJoin=false){if(!candidate||!link||approving)return;approving=true;const approved=candidate,current=link,attempt=generation;try{await current.setPeer(approved.publicKey);if(attempt!==generation||current!==link)return;adult=approved.sender;candidate=null;lastSeen=Date.now();$('approveAdult').hidden=true;pair.hidden=true;if(startOnJoin&&!session)$('settings').requestSubmit();say(session?'Adult connected. Each of you will rate on your own screen.':'Adult connected. Check your settings, then start the session.');publish();}finally{approving=false;}}
+ $('approveAdult').onclick=()=>approve(false);
  $('newPair').onclick=()=>{resetLink();connect();};
  $('enlargeQR').onclick=()=>{const large=$('pairQR').classList.toggle('large');$('enlargeQR').textContent=large?'Make QR code smaller':'Enlarge QR code';$('enlargeQR').setAttribute('aria-pressed',String(large));};
- $('showPair').onclick=()=>{if(!session){say('Start the session on this screen to create the adult’s QR code.');return;}pair.hidden=!pair.hidden;};
+ $('showPair').onclick=()=>{if(!enabled()){mode.value='two';mode.onchange();return;}if(!link){connect();return;}pair.hidden=!pair.hidden;};
  $('copyPair').onclick=async()=>{try{await navigator.clipboard.writeText($('pairLink').value);say('Private invitation copied. Share it only with the adult joining this session.');}catch{$('pairLink').select();say('Select and copy the invitation link.');}};
  mode.onchange=()=>{if(!enabled()){resetLink();if(session?.stage==='adult')reopenCheckin();say('One device: take turns on this screen.');}else{if(session?.stage==='adult')showWaiting();connect();}try{sessionStorage.setItem('routines.selfMonitor.mode',mode.value);}catch{}};
  const originalAnswer=answer;answer=function(value){if(!enabled())return originalAnswer(value);if(session?.stage!=='student')return;session.student=value;session.stage='adult';persistSession(true);showWaiting();finish();publish();};
  const originalSubmit=$('settings').onsubmit;$('settings').onsubmit=e=>{if(enabled()&&!navigator.onLine){e.preventDefault();say('Two-device mode needs internet. Choose One device to start offline.');return;}originalSubmit(e);if(session&&enabled())connect();};
- const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){resetLink();say('Start a new session to create a new invitation.');}};
+ const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
  const originalTick=tick;tick=function(){originalTick();if(enabled()&&session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers on their phone.';};
- setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(link)resetLink();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}publish();if(adult&&Date.now()-lastSeen>12000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
- addEventListener('online',()=>{if(enabled()&&session)connect();});
- if(enabled()&&session){if(session.stage==='adult')showWaiting();connect();}else say('One device: take turns on this screen.');
+ setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}publish();if(adult&&Date.now()-lastSeen>12000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
+ addEventListener('online',()=>{if(enabled())connect();});
+ if(enabled()){if(session?.stage==='adult')showWaiting();connect();}else say('One device: take turns on this screen.');
 })();
