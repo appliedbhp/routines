@@ -216,3 +216,7 @@ Service worker `sw.js` caches the versioned application shell and allowlisted im
 Before every deployment after runtime changes, run `python3 scripts/build-offline.py` and commit `offline-assets.js`. Installation is atomic; updated workers wait for existing tabs to close rather than interrupt sessions. Browser storage eviction/clearing removes offline files. Open online to prepare again; exports are the durable backup.
 
 Verification: `node --test tests/*.test.cjs`. Offline tests cover cached navigation, image retrieval, and exclusion of authentication, search, and write requests.
+
+## Shared editor menus
+
+`js/file-menu.js` provides File/Edit/View/Help and the device/cloud library. `js/file-store.js` reads and updates existing per-tool storage without a migration. Save uses the open record ID; Save as creates a new ID. Device writes compare the original record to detect concurrent edits. Cloud writes retain the server revision check and per-write attestation; credentials and responses never enter the offline cache. A separate offline copy is not a cloud-sync status.

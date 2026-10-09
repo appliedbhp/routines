@@ -25,7 +25,7 @@ async function start(){
  async function sdk(){
   if(!navigator.onLine)throw Error("Cloud accounts need internet. Use a local save or downloaded offline copy instead.");
   if(!client){const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2.57.4');client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{storageKey:'routines.cloud.auth.v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-   client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
+   client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){dispatchEvent(new Event('board-cloud-signedout'));authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
   }return client;
  }
  async function refresh(){
@@ -44,23 +44,32 @@ async function start(){
     action(card,'Export settings',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(row.payload,null,2)],{type:'application/json'}));a.href=url;a.download='board-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
     action(card,'Delete from cloud',async()=>{if(!confirm(`Delete “${S.title(row.payload)}” from the cloud? This cannot be undone. Export it first if you need a backup.`))return;const {data,error}=await client.from('routine_cloud_boards').delete().eq('slot',slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Refresh and try again.');await refresh();message('Cloud copy deleted. Local boards are unchanged.');});
    }
-   if(editor)action(card,row?'Replace with current board':'Save current board here',async()=>{
-    const payload=S.clean(await CloudBoardAdapter.current());
-    pending={payload,slot,revision:row?.revision??null,userId:user.id,authRevision};
-    q('[data-text]').replaceChildren();for(const text of S.textFields(payload)){const li=document.createElement('li');li.textContent=text;q('[data-text]').append(li);}
-    q('[data-preview]').textContent=JSON.stringify(payload,null,2);q('[data-attest]').checked=false;q('[data-save]').disabled=true;q('[data-review]').hidden=false;q('[data-library]').hidden=true;
-    message(row?'Saving will replace the board in this slot.':'Review your settings-only cloud copy.');q('[data-attest]').focus();
-   });
+   if(editor)action(card,row?'Replace with current board':'Save current board here',()=>review(row,slot));
    q('[data-slots]').append(card);
   }
  }
+ async function review(row,slot,override=null){
+  const original=override?null:await CloudBoardAdapter.current(),payload=S.clean(override||original);
+  pending={payload,original,slot,revision:row?.revision??null,userId:user.id,authRevision};
+  q('[data-text]').replaceChildren();for(const text of S.textFields(payload)){const li=document.createElement('li');li.textContent=text;q('[data-text]').append(li);}
+  q('[data-preview]').textContent=JSON.stringify(payload,null,2);q('[data-attest]').checked=false;q('[data-save]').disabled=true;q('[data-review]').hidden=false;q('[data-library]').hidden=true;
+  message(row?'Saving will replace the board in this slot.':'Review your settings-only cloud copy.');q('[data-attest]').focus();
+ }
+ globalThis.CloudBoardUI={
+  async list(){await refresh();return {rows:[...rows],signedIn:!!user};},
+  open:row=>{dialog.showModal();return run(()=>open(row));},
+  account:()=>entry.click(),
+  async save(target=null,override=null){dialog.showModal();await run(async()=>{await refresh();if(!user){message('Sign in, then choose a cloud slot.');return;}if(target){const row=rows.find(r=>r.slot===target.slot);if(user.id!==target.userId||row?.revision!==target.revision)throw Error('This cloud board changed or your account changed. Reopen it or use Save as.');await review(row,target.slot,override);}else if(override){const slot=[1,2].find(n=>!rows.some(r=>r.slot===n));if(!slot)throw Error('Both cloud slots are full. Delete a copy you no longer need first.');await review(null,slot,override);}else message('Choose a slot for your settings-only cloud copy.');});},
+  async rename(row,name){dialog.showModal();await run(async()=>{await refresh();const fresh=rows.find(r=>r.slot===row.slot);if(!fresh||fresh.revision!==row.revision)throw Error('This board changed. Reopen the library.');await review(fresh,row.slot,BoardFiles.rename(row.payload,name));});},
+  async remove(row){const c=await sdk();const {data,error}=await c.from('routine_cloud_boards').delete().eq('slot',row.slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Reopen the library.');dispatchEvent(new CustomEvent('board-cloud-deleted',{detail:{slot:row.slot}}));}
+ };
  function action(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>run(fn);parent.append(b);}
  async function run(fn){if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');try{await fn();}catch(e){message(e.message||'That action could not be completed. Try again.');}finally{busy=false;dialog.removeAttribute('aria-busy');}}
  async function open(row){
   const path=new URL(S.path(row.payload),root),here=location.pathname.replace(/index\.html$/,'');
   if(path.pathname!==here){path.searchParams.set('cloudSlot',String(row.slot));location.assign(path);return;}
   if(!confirm('Open this cloud board? Unsaved edits in the current visual will be replaced.'))return;
-  CloudBoardAdapter.open(S.clean(row.payload));dialog.close();
+  CloudBoardAdapter.open(S.clean(row.payload));dispatchEvent(new CustomEvent('board-cloud-opened',{detail:{payload:S.clean(row.payload),slot:row.slot,revision:row.revision,userId:user.id,count:rows.length}}));dialog.close();
  }
  entry.onclick=()=>run(async()=>{dialog.showModal();message('Loading…');await refresh();message(user?'Your cloud boards are private to this account.':'Sign in to save and open your two free boards.');});
  q('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{pending=null;q('[data-attest]').checked=false;q('[data-save]').disabled=true;entry.focus();});
@@ -78,7 +87,7 @@ async function start(){
   q('[data-attest]').checked=false;q('[data-save]').disabled=true;
   const response=await client.functions.invoke('cloud-board-save',{body:{slot:snapshot.slot,revision:snapshot.revision,payload:snapshot.payload,attested:true,attestationVersion:S.VERSION}});
   if(response.error){let details;try{details=await response.error.context?.json();}catch{}throw Error(details?.error||'Cloud save failed. Your local board is unchanged. Review and try again.');}
-  await refresh();message('Settings saved to the cloud. Session results remain on this device.');
+  await refresh();const saved=rows.find(r=>r.slot===snapshot.slot);dispatchEvent(new CustomEvent('board-cloud-saved',{detail:{payload:snapshot.original,slot:snapshot.slot,revision:saved?.revision,userId:user.id,count:rows.length}}));message('Settings saved to the cloud. Session results remain on this device.');dialog.close();
  });
  // Sign-in return and cross-tool opening never auto-upload any local data.
  if(document.getElementById('cloudAccount')||new URLSearchParams(location.search).has('cloudSlot')){
