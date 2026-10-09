@@ -19,15 +19,22 @@ const LiveLink=(()=>{
   if(role==='adult')await setPeer(inv.publicKey);
   const digest=await crypto.subtle.digest('SHA-256',decode(inv.key));const topic='routine-live-'+encode(new Uint8Array(digest));
   const [{createClient},{cloudConfig}]=await Promise.all([import('https://esm.sh/@supabase/supabase-js@2.57.4'),import('../cloud/config.js')]);
-  const client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  let open=false,closed=false,counter=0;const seen=new Map();
-  const channel=client.channel(topic,{config:{broadcast:{ack:true,self:false}}});
-  channel.on('broadcast',{event:'sealed'},async({payload})=>{try{if(closed||Date.now()>=inv.expires)return;const m=await unseal(key,payload);if(m.sender===sender||!['child','adult'].includes(m.role)||m.role===role||typeof m.sender!=='string'||m.sender.length>50||!Number.isSafeInteger(m.seq)||m.seq<=(seen.get(m.sender)||0)||m.role==='child'&&m.sender!==inv.host)return;if(m.secure){if(!peerKey)return;const inner=await unseal(peerKey,m.body);if(inner.seq!==m.seq||inner.sender!==m.sender||inner.role!==m.role)return;seen.set(m.sender,m.seq);onMessage(inner.body,m.sender,true);}else if(role==='child'&&m.body?.type==='hello'&&await fingerprint(m.body.publicKey)===m.sender){if(seen.size>=32&&!seen.has(m.sender))return;seen.set(m.sender,m.seq);onMessage(m.body,m.sender,false);}}catch{/* Ignore unauthenticated or malformed packets. */}});
-  channel.subscribe(status=>{open=status==='SUBSCRIBED';onStatus(open?'connected':'connecting');});
+  let open=false,closed=false,counter=0,lastRecovery=0,retryTimer=null,rebuilding=false,channelGeneration=0,channel;const seen=new Map();
+  const client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{worker:typeof Worker!=='undefined',heartbeatCallback:status=>{console.debug('Self-monitor heartbeat:',status);if(status==='disconnected')recover();}}});
+  function recover(){if(closed||Date.now()>=inv.expires||Date.now()-lastRecovery<1000)return;lastRecovery=Date.now();if(!open&&channel)rebuild();else client.realtime.connect();}
+  const visible=()=>{if(typeof document==='undefined'||document.visibilityState==='visible')recover();};
+  globalThis.addEventListener?.('online',recover);globalThis.addEventListener?.('focus',visible);globalThis.document?.addEventListener('visibilitychange',visible);
+
+  function subscribe(){const generation=++channelGeneration;channel=client.channel(topic,{config:{broadcast:{ack:true,self:false}}});
+  channel.on('broadcast',{event:'sealed'},async({payload})=>{try{if(closed||generation!==channelGeneration||Date.now()>=inv.expires)return;const m=await unseal(key,payload);if(m.sender===sender||!['child','adult'].includes(m.role)||m.role===role||typeof m.sender!=='string'||m.sender.length>50||!Number.isSafeInteger(m.seq)||m.seq<=(seen.get(m.sender)||0)||m.role==='child'&&m.sender!==inv.host)return;if(m.secure){if(!peerKey)return;const inner=await unseal(peerKey,m.body);if(inner.seq!==m.seq||inner.sender!==m.sender||inner.role!==m.role)return;seen.set(m.sender,m.seq);onMessage(inner.body,m.sender,true);}else if(role==='child'&&m.body?.type==='hello'&&await fingerprint(m.body.publicKey)===m.sender){if(seen.size>=32&&!seen.has(m.sender))return;seen.set(m.sender,m.seq);onMessage(m.body,m.sender,false);}}catch{/* Ignore unauthenticated or malformed packets. */}});
+  channel.subscribe(status=>{console.debug('Self-monitor channel:',status);if(closed||generation!==channelGeneration)return;open=status==='SUBSCRIBED';onStatus(open?'connected':'connecting');if(open){clearTimeout(retryTimer);retryTimer=null;}else if(!retryTimer)retryTimer=setTimeout(()=>{retryTimer=null;rebuild();},3000);});
+  }
+  async function rebuild(){if(closed||rebuilding||Date.now()>=inv.expires)return;rebuilding=true;open=false;channelGeneration++;try{await client.removeChannel(channel);await new Promise(resolve=>setTimeout(resolve,150));if(!closed&&Date.now()<inv.expires)subscribe();}catch{if(!closed&&!retryTimer)retryTimer=setTimeout(()=>{retryTimer=null;rebuild();},3000);}finally{rebuilding=false;}}
+  subscribe();
   const expiry=setTimeout(()=>{close();onStatus('expired');},Math.max(0,inv.expires-Date.now()));
   async function send(body,secure=false){if(closed||!open||Date.now()>=inv.expires)return false;const seq=Date.now()*1000+(counter++%1000);if(secure){if(!peerKey)return false;body=await seal(peerKey,{role,sender,seq,body});}const payload=await seal(key,{role,sender,secure,seq,body});return await channel.send({type:'broadcast',event:'sealed',payload})==='ok';}
-  function close(){closed=true;open=false;clearTimeout(expiry);client.removeChannel(channel);}
-  return {send,sendPrivate:body=>send(body,true),setPeer,publicKey,close,sender};
+  function close(){closed=true;open=false;clearTimeout(expiry);clearTimeout(retryTimer);globalThis.removeEventListener?.('online',recover);globalThis.removeEventListener?.('focus',visible);globalThis.document?.removeEventListener('visibilitychange',visible);client.removeChannel(channel);}
+  return {send,sendPrivate:body=>send(body,true),setPeer,publicKey,close,sender,recover,isConnected:()=>open&&!closed&&Date.now()<inv.expires};
  }
  return {invitation,parse,pack,cipher,seal,unseal,connect};
 })();

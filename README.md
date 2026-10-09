@@ -228,8 +228,8 @@ Opening the private QR link on the adult's phone pairs it and starts the timer.
 For an already active session, compare the matching code and approve the phone. The default QR is 128px; Enlarge uses 280px. One-device
 mode remains available offline. Two-device mode needs both pages open and online.
 Check-ins pause until both independent ratings arrive; pending adult ratings retry.
-The child owns the timer and results, and the adult can pause/resume, export, or
-print completed results. Browser tab storage retains active state; no child login
+The child owns the timer and results, and the adult can send encouragement, rate check-ins, export, or
+print completed results. Countdown and pause/resume controls stay on the primary screen. Browser tab storage retains active state; no child login
 or names are required. Refreshing the child page may require approving the phone
 again. Use a new QR code to replace a paired phone. Six-character codes expire after 15 minutes; paired connections last up to two hours. Open `/join/` to type a code, or scan the short URL. Pairing consumes the code and hides the QR controls.
 
@@ -257,3 +257,7 @@ floating copies. Reactions do not change scores or timers, are rate-limited and
 deduplicated, and are never retried after reconnection. The latest 300 encouragements
 are retained in local tab session results, shown on both screens, and included in
 exit tickets and the adult results export. They are excluded from board settings/cloud saves. A child acknowledgement confirms delivery on the adult screen.
+
+Theme and presentation changes preserve session state and pairing. Realtime uses worker heartbeats with reconnect-on-focus/online recovery; reopening Run Session also requests recovery without replacing the invitation. Emoji effects have no visible text labels; phrase effects and collected phrases use pills. Accessible labels retain their descriptions.
+
+Peer-presence grace is 90 seconds to allow ordinary browser background timer throttling. An explicit channel failure disables adult controls immediately; a fresh channel reconnects after three seconds while retaining ECDH keys and replay protection. The two-hour invitation/session expiry remains intentional.

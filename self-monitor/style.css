@@ -98,3 +98,5 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 }
 .monitor-reaction{left:clamp(calc(min(260px,64vw)/2 + 12px),var(--reaction-x,50vw),calc(100vw - min(260px,64vw)/2 - 12px));top:clamp(12px,var(--reaction-y,30vh),calc(100dvh - 190px))}
 @media print{#studentCard li{break-inside:avoid;margin-block:6px}}
+.monitor-reaction>.reaction-pill:first-child{font:700 clamp(18px,2.5vw,28px)/1.4 system-ui;padding:14px 22px;border-radius:999px;background:#fff;color:#17283f;box-shadow:0 4px 18px #0002}
+.encouragement-history li.encouragement-emoji{font-size:30px;line-height:1.2;background:none;padding:4px 8px}.encouragement-history li.encouragement-phrase{border-radius:999px;align-self:center}

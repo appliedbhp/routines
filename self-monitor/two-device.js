@@ -9,9 +9,11 @@
   document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);
   const reaction=MonitorReactions.choices[m.kind],effect=document.createElement('div');effect.className='monitor-reaction no-print';effect.setAttribute('role','status');
   effect.style.setProperty('--reaction-x',`${18+Math.random()*64}vw`);effect.style.setProperty('--reaction-y',`${18+Math.random()*42}vh`);
-  const symbol=document.createElement('span');symbol.className='reaction-symbol';symbol.setAttribute('aria-hidden','true');symbol.textContent=reaction.emoji;
-  const caption=document.createElement('span');caption.className='reaction-caption';caption.textContent=reaction.phrase?reaction.label:reaction.label+' from your adult';effect.append(symbol,caption);
-  for(let i=0;i<4;i++){const ghost=document.createElement('span');ghost.className='reaction-ghost';ghost.textContent=reaction.emoji;ghost.setAttribute('aria-hidden','true');ghost.style.setProperty('--drift',`${(Math.random()-.5)*140}px`);ghost.style.setProperty('--delay',`${.3+i*.22}s`);effect.append(ghost);}
+  effect.setAttribute('aria-label',reaction.label);
+  if(reaction.phrase){const pill=document.createElement('span');pill.className='reaction-caption reaction-pill';pill.textContent=reaction.label;effect.append(pill);}else{
+   const symbol=document.createElement('span');symbol.className='reaction-symbol';symbol.setAttribute('aria-hidden','true');symbol.textContent=reaction.emoji;effect.append(symbol);
+   for(let i=0;i<4;i++){const ghost=document.createElement('span');ghost.className='reaction-ghost';ghost.textContent=reaction.emoji;ghost.setAttribute('aria-hidden','true');ghost.style.setProperty('--drift',`${(Math.random()-.5)*140}px`);ghost.style.setProperty('--delay',`${.3+i*.22}s`);effect.append(ghost);}
+  }
   ($('checkin').open?$('checkin'):$('sessionView')).append(effect);reactionTimer=setTimeout(()=>effect.remove(),4200);
   session.encouragement=MonitorReactions.history([...(session.encouragement||[]),{kind:m.kind,elapsed:session.elapsed}]);MonitorReactions.renderHistory($('encouragementList'),session.encouragement);persistSession(true);publish();return true;
  }
@@ -64,7 +66,8 @@
  const originalSubmit=$('settings').onsubmit;$('settings').onsubmit=e=>{if(enabled()&&!navigator.onLine){e.preventDefault();say('Two-device mode needs internet. Choose One device to start offline.');return;}originalSubmit(e);if(session&&enabled())connect();};
  const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){MonitorReactions.renderHistory($('encouragementList'),[]);resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
  const originalTick=tick;tick=function(){originalTick();if(enabled()&&session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers on their phone.';};
- setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}publish();if(adult&&Date.now()-lastSeen>12000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
+ setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}publish();if(adult&&Date.now()-lastSeen>90000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
+ addEventListener('self-monitor-presentation',()=>{link?.recover?.();publish();});
  addEventListener('online',()=>{if(enabled())connect();});
  MonitorReactions.renderHistory($('encouragementList'),session?.encouragement);
  if(enabled()){if(session?.stage==='adult')showWaiting();connect();}else say('One device: take turns on this screen.');
