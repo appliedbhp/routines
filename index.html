@@ -54,7 +54,7 @@
 <link rel="stylesheet" href="css/workspace.css">
 <script src="js/workspace.js" defer></script>
 <script src="js/share.js" defer></script>
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#3185fc"><link rel="apple-touch-icon" href="assets/app-icon-192.png"></head>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#3185fc"><link rel="apple-touch-icon" href="assets/app-icon-192.png"><link rel="stylesheet" href="css/visual-system.css"></head>
 <body data-view="builder">
 <a class="skip-link" href="#routine-builder">Skip to routine builder</a>
 
@@ -124,8 +124,10 @@
   <div class="builder-layout">
     <div class="builder-left">
       <h2>Routine steps</h2>
+      <details class="routine-suggestions"><summary>Suggested steps</summary>
       <p class="hint">Click a suggestion to add it, or add a custom step and search any ARASAAC symbol.</p>
       <div id="suggestionChips" class="suggestion-chips"></div>
+      </details>
 
       <div id="stepList" class="step-list"></div>
       <button id="addBlankStepBtn" class="secondary-btn">+ Add custom step</button>
