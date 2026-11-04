@@ -2,7 +2,7 @@
 (() => {
   const root = new URL('../', document.currentScript.src);
   const tools = [
-    ['', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
+    ['routine/', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
     ['first-then/', 'First–Then board', 'checklist_rtl'], ['choice-board/', 'Choice board', 'developer_board'],
     ['task-strip/', 'Task strip', 'ballot'], ['now-next-later/', 'Now–Next–Later', 'steppers'],
     ['calm-down/', 'Calm-down board', '♡'],
@@ -22,10 +22,10 @@
   const nav = document.createElement('nav');
   nav.id = 'visual-navigation';
   nav.setAttribute('aria-label', 'Create a visual');
-  const home = document.createElement('a');home.className='workspace-home';home.href=new URL('tools/',root).href;
+  const home = document.createElement('a');home.className='workspace-home';home.href=root.href;
   const homeMark=document.createElement('span');homeMark.className='workspace-home-mark';homeMark.setAttribute('aria-hidden','true');homeMark.textContent='✦';
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Visual supports';home.append(homeMark,homeName);
-  const overview=document.createElement('a');overview.href=new URL('tools/',root).href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname===overview.pathname)overview.setAttribute('aria-current','page');
+  const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
   const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','What’s New':'Resources'};
   const order=['Daily routines','Choices & transitions','Learning & focus','Resources'];
@@ -80,5 +80,5 @@
     if (controls.length) { controls[0].before(toolbar); controls.forEach(control => toolbar.append(control)); }
   }
   const header=document.querySelector('.workspace-header,.app-header');
-  if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=new URL('tools/',root).href;allTools.textContent='All tools';header.append(allTools);}
+  if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
 })();

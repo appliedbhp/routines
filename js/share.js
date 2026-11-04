@@ -21,7 +21,7 @@
       const title=kind==='board'?payload.board.title:kind==='chart'?payload.chart.name:payload.routine.name;
       const filename=`${kind}-${(title || 'visual').replace(/[^a-z0-9_-]+/gi,'-').slice(0,80)}.json`;
       const file=new File([JSON.stringify(payload,null,2)],filename,{type:'application/json'});
-      const path=kind==='board'?`${payload.board.type}/`:kind==='chart'?'chore-chart/':'';
+      const path=kind==='board'?`${payload.board.type}/`:kind==='chart'?'chore-chart/':'routine/';
       const importLabel=`Import ${kind}`;const saveLabel=kind==='routine'?'Save':`Save ${kind}`;
       const body=`I'm sharing “${title || 'My visual'}” with you.\n\nHow to open it:\n1. Download the attached ${filename} file to your device.\n2. Open https://routines.getadhd.care/${path} in your browser.${kind==='routine'?' Select Builder.':''}\n3. Select “${importLabel}” and choose the downloaded JSON file.\n4. The visual opens immediately. Review it, then select “${saveLabel}” to keep it in this browser.\n5. Next time, open the same page in the same browser, choose it from the saved ${kind==='routine'?'routines':kind==='chart'?'charts':'boards'} menu, and select “Load${kind==='routine'?'':` ${kind}`}”.\n\nSaved visuals stay in that browser on that device. Keep the attached file as a backup.`;
       directions.value=body;

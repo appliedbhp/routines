@@ -48,7 +48,7 @@
  }
  const type=p=>p.board?.type||(p.chart?'chore-chart':'routine');
  const title=p=>p.board?.title??p.chart?.name??p.routine?.name;
- const path=p=>type(p)==='routine'?'':`${type(p)}/`;
+ const path=p=>type(p)==='routine'?'routine/':`${type(p)}/`;
  const textFields=p=>{const result=[];function visit(v,k){if(v&&typeof v==='object'&&v.source==='dicebear')result.push(`Character seed: ${v.id}`);if(typeof v==='string'&&['title','name','label','message','reward'].includes(k)&&v)result.push(v);else if(Array.isArray(v))v.forEach(x=>visit(x,''));else if(v&&typeof v==='object')Object.entries(v).forEach(([k,x])=>visit(x,k));}visit(p,'');return [...new Set(result)];};
  const api={clean,type,title,path,textFields,VERSION,ATTESTATION};
  if(typeof module!=='undefined')module.exports=api;else root.CloudBoardSettings=api;

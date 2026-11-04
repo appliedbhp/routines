@@ -1,6 +1,6 @@
 /* Offline copies stay on this device; there is no background cloud upload. */
 (()=>{
- const root=new URL('../',document.currentScript.src),key='routines.offline.board.'+location.pathname;
+ const root=new URL('../',document.currentScript.src),key='routines.offline.board.'+(document.getElementById('exportRoutineBtn')?root.pathname:location.pathname);
  const panel=document.createElement('aside');panel.className='offline-tools no-print';panel.setAttribute('aria-label','Offline tools');
  panel.innerHTML='<span role="status" aria-live="polite">Preparing offline tools…</span><button type="button" data-download>Download this board for offline use</button><button type="button" data-open hidden>Open offline copy</button><button type="button" data-install hidden>Install app</button><details><summary>Offline help</summary><p>Open this site online once and wait for “Available offline.” Download a board before disconnecting. Downloads keep a separate snapshot on this device; download again after edits. Fonts may use a fallback. New picture searches, cloud accounts, and email sending need internet. Export files and printing still work offline.</p><p>On iPad: Safari → Share → Add to Home Screen. On Chromebook: use Install app here or Chrome’s install menu. Browser storage can be cleared or evicted; export important boards as backups.</p></details>';
  const main=document.querySelector('main');if(!main)return;const toolbar=main.querySelector('.visual-toolbar');if(toolbar)toolbar.before(panel);else main.prepend(panel);

@@ -72,7 +72,7 @@
  const edit=menu('Edit');item(edit,'Rename board',()=>{nameInput?.focus();nameInput?.select();});item(edit,'Duplicate board…',saveAs);
  const clear=[...document.querySelectorAll('#clearMarks,#clear,#resetTokens')];for(const b of clear)item(edit,b.textContent,()=>b.click());
  const view=menu('View');item(view,'Show / hide visual navigation',()=>document.querySelector('.sidebar-toggle')?.click());item(view,'Expand editing options',()=>document.querySelectorAll('.editor-options').forEach(d=>d.open=true));item(view,'Collapse editing options',()=>document.querySelectorAll('.editor-options').forEach(d=>d.open=false));
- const help=menu('Help'),offlineHelp=dialog('Offline & installation');item(help,'Offline & installation',()=>{const panel=document.querySelector('.offline-tools');if(panel){offlineHelp.append(panel);panel.querySelector('details').open=true;}offlineHelp.showModal();});item(help,'What’s New',()=>{location.href=new URL('whats-new/',root);});item(help,'Privacy',()=>{location.href=new URL('#privacy-policy',root);});
+ const help=menu('Help'),offlineHelp=dialog('Offline & installation');item(help,'Offline & installation',()=>{const panel=document.querySelector('.offline-tools');if(panel){offlineHelp.append(panel);panel.querySelector('details').open=true;}offlineHelp.showModal();});item(help,'What’s New',()=>{location.href=new URL('whats-new/',root);});item(help,'Privacy',()=>{location.href=new URL('routine/#privacy-policy',root);});
  const more=menu('More');more.d.classList.add('file-more');
  for(const entry of [edit,view,help]){entry.d.classList.add('file-nested-menu');more.list.append(entry.d);}
  const examples=button(menuRow,'Examples',()=>{selectedTab='Examples';return openLibrary();});examples.className='file-examples';

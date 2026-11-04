@@ -7,7 +7,7 @@ const CATEGORIES = {
 
 // TimeTimer affiliate — required by the Refersion program terms.
 const AFFILIATE_URL = "https://bit.ly/3Plh1Y4";
-const QR_IMAGE_URL = "assets/qr/timetimer.png";
+const QR_IMAGE_URL = "../assets/qr/timetimer.png";
 
 const PROJECTION_INNER_RADIUS = 1.3; // in — smaller hub than the print spec, for the clock + countdown
 const PRINT_OUTER_MARGIN = 0.08; // in — room for the full outline stroke on every side
@@ -28,9 +28,9 @@ const BRAND_URL = "https://routines.getadhd.care";
 const SAVE_KEY = "routineVisualTimer.savedRoutines";
 
 const SOUND_FILES = {
-  chime: "assets/audio/chime.mp3",
-  tick: "assets/audio/tick.mp3",
-  victory: "assets/audio/victory.mp3",
+  chime: "../assets/audio/chime.mp3",
+  tick: "../assets/audio/tick.mp3",
+  victory: "../assets/audio/victory.mp3",
 };
 const soundCache = {};
 Object.entries(SOUND_FILES).forEach(([key, src]) => {
