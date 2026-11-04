@@ -29,7 +29,7 @@
  .calm-ui :is(button,a,input,select,textarea,summary):focus-visible{outline:3px solid #2459d3;outline-offset:3px}
  .calm-ui button:disabled{opacity:.5}.calm-ui .hint{font-size:12px;line-height:1.65;color:var(--ui-muted)}.calm-ui #status{font-size:12px;line-height:1.6;color:#516580;margin:10px 0 18px;min-height:0}.calm-ui #status:empty{display:none}
  /* One page heading and one compact command row across all editors. */
- .visual-workspace.calm-ui .file-bar{background:none;border:0;border-radius:0;padding:0;margin:0 0 26px;box-shadow:none}
+ .visual-workspace.calm-ui .file-bar{background:var(--ui-canvas);border:0;border-radius:0;padding:0;margin:0 0 26px;box-shadow:none}
  .visual-workspace.calm-ui .file-bar .file-page-title{font:730 clamp(28px,3vw,36px)/1.2 var(--ui-font);letter-spacing:-.04em;margin:0 0 8px}
  .file-page-description{font-size:14px;line-height:1.6;color:var(--ui-muted);margin:0 0 24px}
  .calm-ui .file-menu-row{padding:0 0 13px;border-bottom:1px solid var(--ui-border);gap:6px;min-height:52px}
