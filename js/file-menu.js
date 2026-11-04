@@ -33,7 +33,7 @@
  function dialog(title){const d=document.createElement('dialog');d.className='file-dialog no-print';d.setAttribute('aria-label',title);const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.type='button';close.textContent='Close';close.className='file-close';close.onclick=()=>d.close();d.append(h,close);document.body.append(d);return d;}
  function button(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=run(fn);parent.append(b);return b;}
  const saveDialog=dialog('Save board'),saveForm=document.createElement('form');saveForm.innerHTML='<label>Board name<input name="title" maxlength="100" required></label><label>Save to<select name="location"><option value="device">This device</option><option value="cloud">Cloud · two free slots</option></select></label><p>Device copies may include progress. Cloud copies contain reusable settings only and require a privacy review.</p><button type="submit">Save</button>';saveDialog.append(saveForm);
- function saveAs(){saveForm.elements.title.value=nameInput?.value||F.title(initial);saveForm.elements.location.value='device';saveDialog.showModal();saveForm.elements.title.focus();}
+ function saveAs(location='device'){saveForm.elements.title.value=nameInput?.value||F.title(initial);saveForm.elements.location.value=location;saveDialog.showModal();saveForm.elements.title.focus();}
  saveForm.onsubmit=e=>{e.preventDefault();run(async()=>{const name=saveForm.elements.title.value.trim();F.rename(await A.current(),name);if(nameInput){nameInput.value=name;nameInput.dispatchEvent(new Event('input',{bubbles:true}));nameInput.dispatchEvent(new Event('change',{bubbles:true}));}const payload=F.rename(await A.current(),name);if(saveForm.elements.location.value==='cloud'){if(!globalThis.CloudBoardUI)throw Error('Cloud tools are still loading. Try again.');saveDialog.close();await CloudBoardUI.save();}else{const row=F.save(localStorage,payload);await adopted({...row,location:'device'},await A.current());saveDialog.close();}})();};
  async function save(){if(!target)return saveAs();if(nameInput){nameInput.value=nameInput.value.trim();nameInput.dispatchEvent(new Event('input',{bubbles:true}));}F.rename(await A.current(),nameInput?.value||F.title(await A.current()));if(target.location==='cloud'){if(!navigator.onLine)throw Error('Cloud unavailable · changes not synced. Use File → Save as → This device to keep a local copy.');await CloudBoardUI.save(target);}else{const payload=await A.current();const row=F.save(localStorage,payload,target.id,target.revision);await adopted({...row,location:'device'},payload);}}
  const library=dialog('Open board'),tabs=document.createElement('div');tabs.className='file-library-tabs';tabs.setAttribute('aria-label','Board locations');library.append(tabs);
@@ -55,7 +55,13 @@
  for(const tab of ['Examples','This device','Cloud'])button(tabs,tab,()=>renderLibrary(tab));
  const exampleSelect=document.querySelector('#boardExample,#example,#presetSelect'),exampleButton=document.querySelector('#useExample,#usePresetBtn,#load');
  async function openLibrary(){library.showModal();try{await renderLibrary();}catch(e){libraryBody.textContent=e.message;}}
- const file=menu('File');item(file,'New board',async()=>{if(!confirmReplace())return;A.blank(await A.current());await adopted(null,null);});item(file,'Open…',openLibrary);item(file,'Save',save);item(file,'Save as…',saveAs);
+ async function newBoard(){if(!confirmReplace())return;A.blank(await A.current());await adopted(null,null);}
+ async function saveToCloud(){
+  if(!navigator.onLine)throw Error('Connect to the internet to save to the cloud.');
+  if(target?.location==='cloud')return save();
+  saveAs('cloud');
+ }
+ const file=menu('File');item(file,'New board',newBoard);item(file,'Open…',openLibrary);item(file,'Save',save);item(file,'Save as…',saveAs);
  const importButton=document.querySelector('#importBoard,#importChart,#importRoutineBtn');item(file,'Import file…',()=>{if(confirmReplace())importButton.click();});item(file,'Export file…',()=>exportButton.click());
  item(file,'Share…',()=>{const share=[...document.querySelectorAll('button')].find(b=>b.textContent==='Share by email');if(share){share.classList.add('file-legacy');share.click();}else throw Error('Sharing is still loading. Try again.');});
  item(file,'Make available offline…',()=>{const b=document.querySelector('.offline-tools [data-download]');if(!b||b.disabled)throw Error('Wait for offline tools to finish preparing.');b.click();});
@@ -70,7 +76,17 @@
  const more=menu('More');more.d.classList.add('file-more');
  for(const entry of [edit,view,help]){entry.d.classList.add('file-nested-menu');more.list.append(entry.d);}
  const examples=button(menuRow,'Examples',()=>{selectedTab='Examples';return openLibrary();});examples.className='file-examples';
- const quickSave=button(menuRow,'Save',save);quickSave.className='file-quick-save';
+ const quickActions=document.createElement('div');quickActions.className='file-quick-actions';
+ quickActions.setAttribute('role','group');quickActions.setAttribute('aria-label','Quick board actions');
+ documentRow.insertBefore(quickActions,saveState);
+ function quickAction(label,icon,action){
+  const control=button(quickActions,label,action);
+  control.title=label;control.setAttribute('aria-label',label);
+  control.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg>';
+ }
+ quickAction('Save','<path d="M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M7 3v6h9V3M7 21v-8h10v8"/>',save);
+ quickAction('Save to cloud','<path d="M7 18H6a4 4 0 0 1-.5-8 6.5 6.5 0 0 1 12.6-1A4.5 4.5 0 0 1 18 18h-1M12 20v-8m-3 3 3-3 3 3"/>',saveToCloud);
+ quickAction('New board','<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8m-4-4h8"/>',newBoard);
  const addButton=document.querySelector('#addCard,#add,#addSubject');if(addButton){addButton.classList.add('file-legacy');const addQuick=button(menuRow,addButton.textContent,()=>addButton.click());addQuick.className='file-quick-add';const mirror=()=>{addQuick.disabled=addButton.disabled;addQuick.hidden=addButton.hidden;};new MutationObserver(mirror).observe(addButton,{attributes:true,attributeFilter:['disabled','hidden']});mirror();}
  const hints=[...main.querySelectorAll(':scope > .hint')];if(hints.length){const tips=document.createElement('details');tips.className='workspace-tips no-print';const summary=document.createElement('summary');summary.textContent='Using this tool';tips.append(summary,...hints);main.append(tips);}
  const firstStatus=document.querySelector('#status');if(firstStatus?.textContent.startsWith('Example loaded.'))firstStatus.textContent='';
