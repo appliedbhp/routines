@@ -18,13 +18,15 @@
  const pageTitle=title||document.createElement('h1');
  pageTitle.textContent=document.querySelector('.workspace-sidebar a[aria-current="page"] .nav-label')?.textContent||pageTitle.textContent;
  pageTitle.classList.add('file-page-title');bar.prepend(pageTitle);main.prepend(bar);
+ const descriptions={routine:'A little structure for everyday moments.','chore-chart':'Small steps. Shared responsibilities.','first-then':'Make the next step easy to see.','choice-board':'Make room for a choice.','task-strip':'One manageable step at a time.','now-next-later':'A clear picture of what comes next.','calm-down':'Find what feels helpful, together.','self-monitor':'A little focus. A moment to reflect.','homework-planner':'Make space for a calmer school week.','token-board':'Celebrate progress, one token at a time.'};
+ const pageDescription=document.createElement('p');pageDescription.className='file-page-description';pageDescription.textContent=descriptions[currentType]||'Make a visual support that works for your family.';pageTitle.after(pageDescription);
  main.querySelectorAll(':scope > .intro, #routine-builder > .intro').forEach(el=>el.remove());
- function status(){saveState.textContent=lastError||(!target?'Unsaved board':dirty?(target.location==='cloud'&&!navigator.onLine?'Cloud unavailable · changes not synced':'Unsaved changes'):(target.location==='cloud'?`Saved to cloud · ${target.count} of 2 slots used`:'Saved on this device ✓'));}
+ function status(){saveState.textContent=lastError||(!target?'Not saved yet':dirty?(target.location==='cloud'&&!navigator.onLine?'Cloud unavailable · changes not synced':'Unsaved changes'):(target.location==='cloud'?`Saved to cloud · ${target.count} of 2 slots used`:'Saved on this device ✓'));}
  async function check(){if(checking)return;checking=true;try{dirty=JSON.stringify(await A.current())!==baseline;status();}catch{dirty=true;status();}finally{checking=false;}}
  async function adopted(t,payload){target=t;baseline=JSON.stringify(payload||await A.current());lastError='';await check();}
  function run(fn){return async()=>{try{lastError='';document.querySelectorAll('.file-error').forEach(el=>el.remove());await fn();await check();}catch(e){lastError=e.message||'That action could not finish.';status();const active=document.querySelector('.file-dialog[open]');if(active){const error=document.createElement('p');error.className='file-error';error.setAttribute('role','alert');error.textContent=lastError;active.append(error);}}};}
  function confirmReplace(){return !dirty||confirm('Replace the open board? Unsaved changes will be lost.');}
- function menu(label){const d=document.createElement('details');d.className='file-menu';const summary=document.createElement('summary');summary.textContent=label+' ▾';d.append(summary);const list=document.createElement('div');list.className='file-menu-items';d.append(list);menuRow.append(d);d.addEventListener('toggle',()=>{if(d.open)menuRow.querySelectorAll('details').forEach(other=>{if(other!==d)other.open=false;});});return {d,list};}
+ function menu(label){const d=document.createElement('details');d.className='file-menu';const summary=document.createElement('summary');summary.textContent=label+' ▾';d.append(summary);const list=document.createElement('div');list.className='file-menu-items';d.append(list);menuRow.append(d);d.addEventListener('toggle',()=>{if(d.open)menuRow.querySelectorAll('details').forEach(other=>{if(other!==d&&other.parentElement===d.parentElement)other.open=false;});});return {d,list};}
  function item(m,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=run(async()=>{m.d.open=false;await fn();});m.list.append(b);return b;}
  document.addEventListener('click',e=>{if(!menuRow.contains(e.target))menuRow.querySelectorAll('details').forEach(d=>d.open=false);});
  menuRow.addEventListener('keydown',e=>{if(e.key==='Escape'){const d=e.target.closest('details');if(d){d.open=false;d.querySelector('summary').focus();}}if(['ArrowDown','ArrowUp'].includes(e.key)){const d=e.target.closest('details');if(!d)return;d.open=true;const buttons=[...d.querySelectorAll('button')];const i=buttons.indexOf(document.activeElement);buttons[(i+(e.key==='ArrowDown'?1:buttons.length-1)+buttons.length)%buttons.length]?.focus();e.preventDefault();}});
@@ -65,14 +67,21 @@
  const clear=[...document.querySelectorAll('#clearMarks,#clear,#resetTokens')];for(const b of clear)item(edit,b.textContent,()=>b.click());
  const view=menu('View');item(view,'Show / hide visual navigation',()=>document.querySelector('.sidebar-toggle')?.click());item(view,'Expand editing options',()=>document.querySelectorAll('.editor-options').forEach(d=>d.open=true));item(view,'Collapse editing options',()=>document.querySelectorAll('.editor-options').forEach(d=>d.open=false));
  const help=menu('Help'),offlineHelp=dialog('Offline & installation');item(help,'Offline & installation',()=>{const panel=document.querySelector('.offline-tools');if(panel){offlineHelp.append(panel);panel.querySelector('details').open=true;}offlineHelp.showModal();});item(help,'What’s New',()=>{location.href=new URL('whats-new/',root);});item(help,'Privacy',()=>{location.href=new URL('#privacy-policy',root);});
+ const more=menu('More');more.d.classList.add('file-more');
+ for(const entry of [edit,view,help]){entry.d.classList.add('file-nested-menu');more.list.append(entry.d);}
+ const examples=button(menuRow,'Examples',()=>{selectedTab='Examples';return openLibrary();});examples.className='file-examples';
+ const quickSave=button(menuRow,'Save',save);quickSave.className='file-quick-save';
+ const addButton=document.querySelector('#addCard,#add,#addSubject');if(addButton){addButton.classList.add('file-legacy');const addQuick=button(menuRow,addButton.textContent,()=>addButton.click());addQuick.className='file-quick-add';const mirror=()=>{addQuick.disabled=addButton.disabled;addQuick.hidden=addButton.hidden;};new MutationObserver(mirror).observe(addButton,{attributes:true,attributeFilter:['disabled','hidden']});mirror();}
+ const hints=[...main.querySelectorAll(':scope > .hint')];if(hints.length){const tips=document.createElement('details');tips.className='workspace-tips no-print';const summary=document.createElement('summary');summary.textContent='Using this tool';tips.append(summary,...hints);main.append(tips);}
+ const firstStatus=document.querySelector('#status');if(firstStatus?.textContent.startsWith('Example loaded.'))firstStatus.textContent='';
  // Keep the original handlers available for import/export; move file management into this menu.
  const legacy=['saveBoard','loadBoard','deleteBoard','savedBoards','saveChart','loadChart','deleteChart','savedCharts','saveRoutineBtn','loadRoutineBtn','deleteRoutineBtn','savedRoutinesSelect','exportBoard','exportChart','exportRoutineBtn','importBoard','importChart','importRoutineBtn'];
  for(const id of legacy){const el=document.getElementById(id);if(el){el.classList.add('file-legacy');document.querySelector(`label[for="${id}"]`)?.classList.add('file-legacy');}}
  for(const el of [exampleSelect,exampleButton,...printButtons,...clear])if(el){el.classList.add('file-legacy');document.querySelector(`label[for="${el.id}"]`)?.classList.add('file-legacy');}
  const share=[...document.querySelectorAll('button')].find(b=>b.textContent==='Share by email');share?.classList.add('file-legacy');
  function groupControls(){const toolbar=document.querySelector('.visual-toolbar');if(!toolbar)return;
-  if(currentType==='routine'){toolbar.querySelectorAll('.toolbar-group').forEach((group,i)=>{const d=document.createElement('details');d.className='editor-options';d.open=i===0;const s=document.createElement('summary');s.textContent=i===0?'Content':'Timing';group.before(d);d.append(s,group);});toolbar.querySelectorAll('h2').forEach(h=>{if(/Save|Routine setup/.test(h.textContent))h.hidden=true;});return;}
-  const groups={};for(const label of ['Content','Appearance','Layout']){const d=document.createElement('details');d.className='editor-options';d.open=label==='Content';const s=document.createElement('summary');s.textContent=label;const content=document.createElement('div');content.className='editor-fields';d.append(s,content);groups[label]={d,content};}
+  if(currentType==='routine'){toolbar.querySelectorAll('.toolbar-group').forEach((group,i)=>{const d=document.createElement('details');d.className='editor-options';d.open=false;const s=document.createElement('summary');s.textContent=i===0?'Routine details':'Timing';group.before(d);d.append(s,group);});toolbar.querySelectorAll('h2').forEach(h=>{if(/Save|Routine setup/.test(h.textContent))h.hidden=true;});return;}
+  const groups={};for(const label of ['Content','Appearance','Layout']){const d=document.createElement('details');d.className='editor-options';d.open=false;const s=document.createElement('summary');s.textContent=label==='Content'?'Board details':label==='Appearance'?'Style':label;const content=document.createElement('div');content.className='editor-fields';d.append(s,content);groups[label]={d,content};}
   const controls=[...toolbar.querySelectorAll('.controls')].filter(el=>el.tagName!=='FORM');
   const settings=toolbar.querySelector('form#settings');if(settings)groups.Content.content.append(settings);
   for(const control of controls){for(const el of [...control.children]){if(el.classList.contains('file-legacy')||el.matches('label[for]')||el.type==='file')continue;const field=el.matches('input,select,button')?el:el.querySelector('input,select,button');const id=field?.id||'';if(!field)continue;
@@ -88,8 +97,8 @@
  const routineTab=view=>document.querySelector(`.view-tab[data-view="${view}"]`);
  document.querySelector('.view-tabs')?.classList.add('file-legacy');
  const setMode=mode=>{document.body.dataset.boardMode=mode;document.body.classList.toggle('board-print-preview',mode==='print'&&currentType!=='routine');modes.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));};
- const build=button(modes,'Build',()=>{setMode('build');if(currentType==='routine')routineTab('builder').click();});build.dataset.mode='build';
- const print=button(modes,'Print',()=>{setMode('print');if(currentType==='routine')routineTab('print').click();else document.dispatchEvent(new Event('board-print-preview'));});print.dataset.mode='print';
+ const build=button(modes,'Edit',()=>{setMode('build');if(currentType==='routine')routineTab('builder').click();});build.dataset.mode='build';
+ const print=button(modes,'Print preview',()=>{setMode('print');if(currentType==='routine')routineTab('print').click();else document.dispatchEvent(new Event('board-print-preview'));});print.dataset.mode='print';
  const printActions=document.createElement('div');printActions.className='board-print-actions no-print';bar.after(printActions);button(printActions,'Print / Save PDF…',()=>printDialog.showModal());
  function runPlanner(){
   const sheet=document.querySelector('.sheet');
@@ -105,7 +114,7 @@
   else if(currentType==='self-monitor')document.getElementById('project').click();
   else if(currentType==='token-board')document.getElementById('runMode').click();
   else {const existing=document.querySelector('.file-run');if(existing)existing.click();else if(currentType==='homework-planner')runPlanner();else throw Error('Session controls are still loading. Try again.');}
- });launch.dataset.mode='run';
+ });launch.dataset.mode='run';launch.classList.add('file-primary-action');launch.textContent='Start session';
 
  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)setMode(currentType==='routine'?'run':'build');});
  setMode('build');

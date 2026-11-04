@@ -67,9 +67,11 @@ function render() {
     picture.onclick=()=>openPicker(card);
     const label=document.createElement('p');label.className='card-label';label.textContent=card.label || 'Write a label';
     const input=document.createElement('input');input.className='edit-label no-print';input.value=card.label;input.maxLength=100;input.placeholder='Write a label';input.setAttribute('aria-label',`Label for ${slot.textContent.toLowerCase()}`);
-    input.oninput=()=>{card.label=input.value;card.revision++;label.textContent=card.label || 'Write a label';picture.setAttribute('aria-label',`Choose picture for ${card.label || 'card'}`);article.querySelectorAll('.card-actions button').forEach(button=>button.setAttribute('aria-label',`${button.textContent}: ${card.label || slot.textContent}`));const mark=article.querySelector('.mark');if(mark)mark.setAttribute('aria-label',`${isChoice ? 'Choose' : 'Mark done'}: ${card.label || slot.textContent}`);};
+    input.oninput=()=>{card.label=input.value;card.revision++;label.textContent=card.label || 'Write a label';picture.setAttribute('aria-label',`Choose picture for ${card.label || 'card'}`);article.querySelector('.card-actions summary')?.setAttribute('aria-label',`Card actions for ${card.label || slot.textContent}`);article.querySelectorAll('.card-actions button').forEach(button=>button.setAttribute('aria-label',`${button.textContent}: ${card.label || slot.textContent}`));const mark=article.querySelector('.mark');if(mark)mark.setAttribute('aria-label',`${isChoice ? 'Choose' : 'Mark done'}: ${card.label || slot.textContent}`);};
     input.onchange=()=>suggest(card);
-    const actions=document.createElement('div');actions.className='card-actions no-print';
+    const actions=document.createElement('details');actions.className='card-actions no-print';
+    const actionSummary=document.createElement('summary');actionSummary.textContent='•••';actionSummary.setAttribute('aria-label',`Card actions for ${card.label || slot.textContent}`);actions.append(actionSummary);
+    actions.addEventListener('toggle',()=>{if(actions.open)boardElement.querySelectorAll('.card-actions').forEach(other=>{if(other!==actions)other.open=false;});});
     for (const [name,delta] of [['Move earlier',-1],['Move later',1]]) {
       const button=document.createElement('button');button.textContent=name;button.setAttribute('aria-label',`${name}: ${card.label || slot.textContent}`);button.disabled=index+delta<0 || index+delta>=cards.length;button.onclick=()=>moveCard(index,delta);actions.append(button);
     }
@@ -174,3 +176,7 @@ BoardSession.mount({
  reset:()=>cards.forEach(card=>card.marked=false),
  exit:render
 });
+
+// Keep card editing actions available without covering the rest of the board.
+document.addEventListener('click',event=>{document.querySelectorAll('.card-actions[open]').forEach(menu=>{if(!menu.contains(event.target))menu.open=false;});});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){const open=document.querySelector('.card-actions[open]');if(open){event.preventDefault();open.open=false;open.querySelector('summary').focus();}}});
