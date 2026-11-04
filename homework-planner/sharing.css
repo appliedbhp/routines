@@ -1,0 +1,54 @@
+.homework-share-entry { margin: 0 0 16px; }
+.homework-share-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); }
+.homework-share-dialog > header,.homework-share-line { display:flex; align-items:end; flex-wrap:wrap; gap:12px; }
+.homework-share-dialog > header { align-items:center; justify-content:space-between; }
+.homework-share-dialog > header h2 { margin:0; }
+.homework-share-line { margin:14px 0; }
+.homework-share-line label,.homework-share-subject label { display:grid; gap:5px; min-width:0; }
+.homework-share-line label { flex:1 1 155px; }
+.homework-share-line .homework-check,.homework-check { display:flex; gap:8px; align-items:baseline; }
+.homework-share-subject { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:10px; align-items:end; border-top:1px solid #e2e8f0; padding:12px 0; }
+.homework-share-assignment { grid-column:1 / -1; display:grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap:10px; align-items:end; }
+.homework-share-dialog input,.homework-share-dialog textarea,.homework-share-dialog select { width:100%; }
+.homework-share-dialog input[type=checkbox] { width:auto; }
+.homework-share-assignment[hidden],.homework-share-line[hidden] { display:none; }
+.homework-share-dialog [data-message]:empty { display:none; }
+.homework-family { margin:0; color:#202b3c; background:#f8fafc; font:16px/1.5 system-ui,sans-serif; }
+.homework-family main { max-width:760px; margin:auto; padding:32px 20px; }
+.homework-family h1 { margin:16px 0 4px; line-height:1.2; }
+.family-heading a { color:#475569; font-size:.875rem; }
+.family-heading p { margin:4px 0; }
+.family-muted { color:#52627a; }
+.family-actions,.family-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0; }
+.homework-family button { background:#fff; color:#284261; border:1px solid #c9d7e9; padding:8px 14px; min-height:44px; border-radius:8px; font:inherit; cursor:pointer; }
+.homework-family button[aria-pressed=true] { background:#e9effb; color:#1947a5; border-color:#a9bee6; font-weight:650; }
+.homework-family :focus-visible { outline:3px solid #2459d3; outline-offset:3px; }
+.family-day { background:#fff; border:1px solid #dce5f0; border-radius:12px; margin:12px 0; padding:16px; }
+.family-day h2 { margin:0; font-size:1.1rem; }
+.family-day dl { margin:0; }
+.family-day dl div { border-top:1px solid #e2e8f0; margin-top:12px; padding-top:10px; }
+.family-day dt { font-weight:650; }
+.family-day dd { margin:4px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.family-day small,.family-print small { display:block; }
+.family-print { display:none; }
+@media(max-width:550px) {
+ .homework-share-subject { grid-template-columns:1fr 1fr; }
+ .homework-share-subject button { justify-self:start; }
+ .homework-share-assignment { grid-template-columns:1fr; }
+}
+@media print {
+ .homework-family { background:white; color:#111; font-size:10pt; }
+ .homework-family main { max-width:none; padding:0; }
+ .family-screen { display:none; }
+ .family-print { display:block; }
+ .family-print h1 { margin:0; font-size:18pt; }
+ .family-print p { margin:3px 0; }
+ .family-print table { border-collapse:collapse; width:100%; table-layout:fixed; margin:12px 0; }
+ .family-print th,.family-print td { border:1px solid #888; padding:5px; vertical-align:top; text-align:left; white-space:pre-wrap; overflow-wrap:anywhere; }
+ .family-print tr { break-inside:avoid; }
+ .family-write-space { height:.46in; }
+ .family-verify { margin-top:6px; font-size:8pt; }
+ .family-check-box { display:inline-block; width:8pt; height:8pt; border:1px solid #333; vertical-align:middle; }
+ .family-print footer { display:flex; gap:10px; align-items:center; break-inside:avoid; }
+ .family-print footer svg { width:1.05in; height:1.05in; display:block; }
+}

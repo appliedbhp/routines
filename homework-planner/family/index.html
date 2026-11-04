@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Class homework · Applied Behavioral Health Practice</title>
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../sharing.css">
+<script src="../../self-monitor/vendor/qrcode.js" defer></script>
+<script type="module" src="app.js"></script>
+</head>
+<body class="homework-family">
+<main>
+<section class="family-screen">
+<header class="family-heading">
+<a href="../../">Applied Behavioral Health Practice</a>
+<h1 id="classTitle">Class homework</h1>
+<p id="week"></p>
+<p id="updated" class="family-muted"></p>
+</header>
+<p id="loadStatus" role="status">Opening the homework chart…</p>
+<div id="familyTools" hidden>
+<nav class="family-actions" aria-label="Print copies">
+<button id="printStudent" type="button">Print student copy</button>
+<button id="printParent" type="button">Print family copy</button>
+</nav>
+<div class="family-tabs" role="group" aria-label="Homework view">
+<button type="button" id="today" aria-pressed="true">Today</button>
+<button type="button" id="fullWeek" aria-pressed="false">Full week</button>
+</div>
+<div id="assignments"></div>
+</div>
+</section>
+<section id="printCopy" class="family-print"></section>
+</main>
+</body>
+</html>
