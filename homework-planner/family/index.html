@@ -7,10 +7,10 @@
 <meta name="referrer" content="no-referrer">
 <title>Class homework · Applied Behavioral Health Practice</title>
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../sharing.css">
+<link rel="stylesheet" href="../sharing.css?v=2">
 <script src="../../self-monitor/vendor/qrcode.js" defer></script>
-<script src="../pdf.js" defer></script>
-<script type="module" src="app.js"></script>
+<script src="../pdf.js?v=2" defer></script>
+<script type="module" src="app.js?v=2"></script>
 <style>@page { size: letter landscape; margin: .45in; }</style>
 </head>
 <body class="homework-family">
@@ -25,10 +25,11 @@
 <p id="loadStatus" role="status">Opening the homework chart…</p>
 <div id="familyTools" hidden>
 <nav class="family-actions" aria-label="Print copies">
-<button id="printStudent" type="button">Download student PDF</button>
-<button id="printParent" type="button">Download family PDF</button>
+<button id="printStudent" type="button">Prepare student PDF</button>
+<button id="printParent" type="button">Prepare family PDF</button>
 </nav>
-<p class="family-muted" id="pdfStatus" role="status">Open a downloaded PDF to print it.</p>
+<p class="family-muted" id="pdfStatus" role="status">Choose a copy to prepare a PDF.</p>
+<p class="homework-pdf-download"><a id="familyPDF" hidden>Save homework PDF</a></p>
 <div class="family-tabs" role="group" aria-label="Homework view">
 <button type="button" id="today" aria-pressed="true">Today</button>
 <button type="button" id="fullWeek" aria-pressed="false">Full week</button>

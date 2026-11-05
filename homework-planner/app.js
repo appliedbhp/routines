@@ -30,7 +30,7 @@ $('loadBoard').onclick=()=>{try{const entry=library().find(item=>item.id===$('sa
 $('deleteBoard').onclick=()=>{try{const saved=library(),entry=saved.find(item=>item.id===$('savedBoards').value);if(!entry)throw Error('Choose a saved planner first.');if(!confirm(`Delete the saved copy of “${entry.payload.board.title}”? The open planner stays on screen.`))return;localStorage.setItem(key,JSON.stringify(saved.filter(item=>item.id!==entry.id)));if(savedId===entry.id)savedId=null;refresh();say('Saved copy deleted.');}catch(e){say(e.message);}};
 $('exportBoard').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(currentPayload(),null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`homework-${planner.title.replace(/[^a-z0-9_-]+/gi,'-')||'planner'}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 $('importBoard').onclick=()=>$('importFile').click();$('importFile').onchange=async()=>{const file=$('importFile').files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error('Choose a file smaller than 5 MB.');const validated=HomeworkData.validate(JSON.parse(await file.text()));planner=validated;savedId=null;sync();refresh();say('Imported. Save board to keep this planner in your browser.');}catch(e){say(`Could not import: ${e.message} Your planner is unchanged.`);}finally{$('importFile').value='';}};
-function downloadPlanner(landscape){
+function preparePlannerPDF(landscape){
  try{
   const shownDays=planner.layout==='day'?[planner.day]:Array.from({length:planner.weekends?7:5},(_,i)=>i);
   const headers=['Subject',...shownDays.map(day=>day<0?'Day: __________________':[HomeworkData.days[day],HomeworkData.dateLabel(planner.week,day)].filter(Boolean).join(' '))];
@@ -40,8 +40,8 @@ function downloadPlanner(landscape){
    if(simple)return entry.homework==='yes'?'☑ Yes    ☐ No':entry.homework==='no'?'☐ Yes    ☑ No':'☐ Yes    ☐ No';
    return [entry.assignment,(entry.done?'☑':'☐')+' Done'].filter(Boolean).join('\n');
   })]}));
-  HomeworkPDF.download({title:planner.title||'Homework planner',details:[planner.person,planner.week?'Week starting '+planner.week:'',simple?'Mark Yes or No for each subject.':'Record your assignments and check Done when finished.'].filter(Boolean),headers,rows,landscape,footer:'Applied Behavioral Health Practice · routines.getadhd.care'},'homework-planner.pdf');
-  say('PDF downloaded. Open the file to print.');
+  HomeworkPDF.prepareDownload({title:planner.title||'Homework planner',details:[planner.person,planner.week?'Week starting '+planner.week:'',simple?'Mark Yes or No for each subject.':'Record your assignments and check Done when finished.'].filter(Boolean),headers,rows,landscape,footer:'Applied Behavioral Health Practice · routines.getadhd.care'},'homework-planner.pdf',$('plannerPDF'));
+  say('Your PDF is ready. Select Save homework PDF, then open the saved file to print.');
  }catch{say('Could not create the PDF. Reload the planner and try again.');}
 }
-$('printPortrait').onclick=()=>downloadPlanner(false);$('printBoard').onclick=()=>downloadPlanner(true);sync();refresh();
+$('printPortrait').onclick=()=>preparePlannerPDF(false);$('printBoard').onclick=()=>preparePlannerPDF(true);sync();refresh();

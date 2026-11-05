@@ -53,3 +53,8 @@
  .family-print footer a { display:block; overflow-wrap:anywhere; font-size:8pt; }
  .family-print footer svg { width:1.05in; height:1.05in; display:block; }
 }
+.homework-pdf-download:has(a[hidden]) { display:none; }
+.homework-pdf-download a { display:inline-block; border-radius:8px; padding:10px 16px; background:#2459d3; color:#fff; font-weight:650; text-decoration:none; }
+.homework-pdf-download a[hidden] { display:none; }
+.homework-pdf-download a:focus-visible { outline:3px solid #2459d3; outline-offset:3px; }
+@media print { .homework-pdf-download { display:none!important; } }

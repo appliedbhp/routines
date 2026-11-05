@@ -106,10 +106,13 @@ const HomeworkPDF=(()=>{
   finish();
   return encode(pages,width,height);
  }
- function download(model,filename){
+ function prepareDownload(model,filename,link){
   const url=URL.createObjectURL(render(model));
-  const link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),60000);
+  if(link.href.startsWith('blob:'))URL.revokeObjectURL(link.href);
+  link.href=url;
+  link.download=filename;
+  link.hidden=false;
+  link.focus();
  }
- return {download};
+ return {prepareDownload};
 })();
