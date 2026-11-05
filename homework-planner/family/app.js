@@ -4,6 +4,8 @@ import {dateKey,dayDate,days,displayDate,element,familyURL,statusText,visibleDay
 const byId=id=>document.getElementById(id);
 const linkId=new URLSearchParams(location.search).get('chart');
 let chart;
+const studentChoices=['None','Not posted yet'];
+const studentInstructions='Student copy · Write the assignment or check None or Not posted yet.';
 
 function dayLabel(day){
  return days[day]+' · '+displayDate(dateKey(dayDate(chart.week,day)));
@@ -47,11 +49,11 @@ function prepareCopyPDF(student){
   preparePrintCopy(student);
   const count=chart.weekends?7:5,url=familyURL(linkId);
   const rows=chart.subjects.map(subject=>({writing:student,cells:[subject.name,...subject.entries.slice(0,count).map(entry=>
-   student?'':[describe(entry),dueText(entry),entry.status!=='pending'?'☐ Verified':''].filter(Boolean).join('\n')
+   student?studentChoices.map(choice=>'☐ '+choice).join('\n'):[describe(entry),dueText(entry),entry.status!=='pending'?'☐ Verified':''].filter(Boolean).join('\n')
   )]}));
   HomeworkPDF.prepareDownload({
    title:chart.title,
-   details:[byId('week').textContent,student?'Student copy · Record each assignment or mark No homework.':'Family copy · Mark Verified after comparing with the student’s copy.',...(!student?[byId('updated').textContent]:[])],
+   details:[byId('week').textContent,student?studentInstructions:'Family copy · Mark Verified after comparing with the student’s copy.',...(!student?[byId('updated').textContent]:[])],
    headers:['Subject',...Array.from({length:count},(_,day)=>dayLabel(day))],rows,
    footer:'Scan to check this week’s homework.\n'+url.href,qr:chartQR(url)
   },student?'homework-student-copy.pdf':'homework-family-copy.pdf',byId('familyPDF'));
@@ -71,7 +73,15 @@ function preparePrintCopy(student){
   const row=element('tr'),label=element('th',subject.name);label.scope='row';row.append(label);
   for(const entry of subject.entries.slice(0,count)){
    const cell=element('td');
-   if(student){cell.className='family-write-space';}
+   if(student){
+    cell.className='family-write-space';
+    for(const choice of studentChoices){
+     const label=element('div');label.className='family-student-choice';
+     const box=element('span');box.className='family-check-box';
+     label.append(box,' '+choice);cell.append(label);
+    }
+    const writing=element('div');writing.className='family-writing-line';cell.append(writing);
+   }
    else{
     cell.append(element('span',describe(entry)));
     const due=dueText(entry);
@@ -94,7 +104,7 @@ function preparePrintCopy(student){
  caption.append(element('strong',code.firstChild?'Scan to check this week’s homework.':'Check this week’s homework online.'));
  const link=element('a',url.href);link.href=url.href;caption.append(link);
  footer.append(code,caption);
- const instructions=student?'Student copy · Write each assignment or mark No homework.':'Family copy · Mark Verified after comparing with the student’s copy.';
+ const instructions=student?studentInstructions:'Family copy · Mark Verified after comparing with the student’s copy.';
  target.replaceChildren(heading,element('p',byId('week').textContent),element('p',instructions));
  if(!student)target.append(element('p',byId('updated').textContent));
  target.append(table,footer);

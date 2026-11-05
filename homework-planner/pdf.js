@@ -71,7 +71,7 @@ const HomeworkPDF=(()=>{
     ctx.strokeStyle='#718096';ctx.lineWidth=.65;ctx.strokeRect(x,y,columns[i],rowHeight);
     font(10,heading||i===0);ctx.fillStyle='#17283f';
     lines.forEach((line,index)=>ctx.fillText(line,x+padding,y+padding+index*lineHeight));
-    if(writing&&i>0){ctx.strokeStyle='#d9e0e9';for(let dy=21;dy<rowHeight-4;dy+=16){ctx.beginPath();ctx.moveTo(x+padding,y+dy);ctx.lineTo(x+columns[i]-padding,y+dy);ctx.stroke();}}
+    if(writing&&i>0){ctx.strokeStyle='#d9e0e9';for(let dy=Math.max(21,padding+lines.length*lineHeight+5);dy<rowHeight-4;dy+=16){ctx.beginPath();ctx.moveTo(x+padding,y+dy);ctx.lineTo(x+columns[i]-padding,y+dy);ctx.stroke();}}
     x+=columns[i];
    });
    y+=rowHeight;

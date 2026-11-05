@@ -46,7 +46,9 @@
  .family-print table { border-collapse:collapse; width:100%; table-layout:fixed; margin:12px 0; }
  .family-print th,.family-print td { border:1px solid #888; padding:5px; vertical-align:top; text-align:left; white-space:pre-wrap; overflow-wrap:anywhere; }
  .family-print tr { break-inside:avoid; }
- .family-write-space { height:.46in; }
+ .family-write-space { height:.68in; }
+ .family-student-choice { font-size:8pt; line-height:1.6; }
+ .family-writing-line { min-height:16pt; border-bottom:1px solid #cbd5e1; }
  .family-verify { margin-top:6px; font-size:8pt; }
  .family-check-box { display:inline-block; width:8pt; height:8pt; border:1px solid #333; vertical-align:middle; }
  .family-print footer { display:flex; gap:10px; align-items:center; break-inside:avoid; }
