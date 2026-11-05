@@ -11,7 +11,10 @@ const required=(value,label,max=100)=>{
 export function validateRecord(input,categories,ages){
  const title=required(input.title,'a title');
  const category=categories.find(row=>row.id===input.category);
- const age=ages.find(row=>row.id===input.age_strand);
+ if(input.visual_mode!==undefined&&!['character','object'].includes(input.visual_mode))throw new VisualError('Choose character or object mode.');
+ const objectMode=input.visual_mode==='object';
+ const age=objectMode?{id:'shared',min_age:0,max_age:18}:ages.find(row=>row.id===input.age_strand);
+ if(objectMode&&(input.face_variant||input.reference_id))throw new VisualError('Objects use no face or character reference.');
  if(!category||!age)throw new VisualError('Choose an age strand and category from the library.');
  const id=required(input.id,'a visual ID');
  if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id))throw new VisualError('Invalid visual ID.');
@@ -26,6 +29,8 @@ export function validateRecord(input,categories,ages){
   generation_prompt:required(input.generation_prompt,'the creation prompt',12000),
   source:required(input.source,'creation or source information',500),
   usage_rights:required(input.usage_rights,'usage-rights information',1500)};
+ if(input.visual_mode)record.visual_mode=input.visual_mode;
+ if(objectMode)record.asset_type='object';
  if(input.face_variant!==undefined){
   if(!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
   record.face_variant=input.face_variant;
@@ -86,7 +91,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
      if(image_sha256!==row.digest||JSON.stringify(saved)!==JSON.stringify(row.record))throw new VisualError('A visual ID was already used for different artwork. Start a new set before publishing changed artwork.',409);
     }else pending.push(row);
    }
-   const results=records.map(({record})=>({id:record.id,age_strand:record.age_strand,face_variant:record.face_variant||'default',url:'https://github.com/'+REPOSITORY+'/blob/main/'+record.assets[0]}));
+   const results=records.map(({record})=>({id:record.id,age_strand:record.age_strand,face_variant:record.face_variant||null,visual_mode:record.visual_mode||'character',url:'https://github.com/'+REPOSITORY+'/blob/main/'+record.assets[0]}));
    if(!pending.length)return {visuals:results,already_saved:true};
    const files=[];
    for(const {input,digest,record} of pending){
@@ -132,13 +137,22 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    if(input.action==='generate'){
     if(!openaiKey)throw new VisualError('Add ROUTINES_OPENAI_KEY to the server secrets to enable image generation.',503);
+    if(input.visual_mode!==undefined&&!['character','object'].includes(input.visual_mode))throw new VisualError('Choose character or object mode.');
+    const objectMode=input.visual_mode==='object';
     if(input.face_variant!==undefined&&!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
-    const character=getCharacter(input.face_variant||'default');
-    const prompt=character.instructions+'Requested visual: '+required(input.prompt,'an image prompt',12000);
-    const form=new FormData();
-    for(const [key,value] of Object.entries({model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:'1',quality:'medium',input_fidelity:'high'}))form.set(key,value);
-    form.append('image[]',new Blob([Uint8Array.from(atob(character.image),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
-    const response=await request('https://api.openai.com/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+openaiKey},body:form,signal:AbortSignal.timeout(140000)});
+    const character=objectMode?null:getCharacter(input.face_variant||'default');
+    const objectInstructions='Create one nonhuman object visual for the shared all-age library. Show only the requested object and essential props. No people, body parts, faces, eyes, mouths, or anthropomorphism. Use clean flat closed shapes, medium rounded dark contours, and a palette of ink #24243B, white #FFFFFF, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. No gradients, shading, shadows, texture, 3D, scenery, borders, logos, letters or numbers. Center the complete object with ten percent safe margins. Keep white objects opaque and the surrounding canvas genuinely transparent. ';
+    const prompt=(objectMode?objectInstructions:character.instructions)+'Requested visual: '+required(input.prompt,'an image prompt',12000);
+    const options={model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:1,quality:'medium'};
+    let body,headers={Authorization:'Bearer '+openaiKey};
+    if(objectMode){
+     headers['Content-Type']='application/json';body=JSON.stringify(options);
+    }else{
+     body=new FormData();
+     for(const [key,value] of Object.entries({...options,input_fidelity:'high'}))body.set(key,String(value));
+     body.append('image[]',new Blob([Uint8Array.from(atob(character.image),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
+    }
+    const response=await request('https://api.openai.com/v1/images/'+(objectMode?'generations':'edits'),{method:'POST',headers,body,signal:AbortSignal.timeout(140000)});
     if(!response.ok){
      let failure;try{failure=await response.json();}catch{}
      const code=failure?.error?.code;
@@ -154,7 +168,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     }
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+' using the DiceBear Adventurer reference',reference_id:character.reference.id,face_variant:input.face_variant||'default'});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':' using the DiceBear Adventurer reference'),reference_id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
    }
    if(input.action==='publish'){
     const result=await publishMany([input]);return respond({...result,...result.visuals[0]});

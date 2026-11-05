@@ -5,8 +5,8 @@ if(host){
  <button type="button" data-connect>Open visual creator</button><div class="visual-feedback" data-feedback><p data-status role="status"></p><progress data-progress aria-label="Visual set progress" hidden></progress><p data-elapsed></p></div>
  <form data-form hidden>
  <div class="visual-fields">
- <label>Title<input name="title" maxlength="100" required></label>
- <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset><fieldset><legend>Face versions</legend><label class="visual-check"><input type="checkbox" name="face_versions" value="default" checked> Default face</label><label class="visual-check"><input type="checkbox" name="face_versions" value="blank" checked> Blank face</label></fieldset>
+ <label>Visual mode<select name="visual_mode"><option value="character">Character</option><option value="object">Object · no people</option></select></label><label>Title<input name="title" maxlength="100" required></label>
+ <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset><fieldset data-faces><legend>Face versions</legend><label class="visual-check"><input type="checkbox" name="face_versions" value="default" checked> Default face</label><label class="visual-check"><input type="checkbox" name="face_versions" value="blank" checked> Blank face</label></fieldset>
  <label>Category<select name="category" required></select></label>
  <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
@@ -30,12 +30,18 @@ if(host){
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  const faces=()=>[...form.querySelectorAll('[name=face_versions]:checked')].map(input=>input.value);
- const selected=()=>ages().flatMap(age=>faces().map(face=>{
+ const objectMode=()=>field('visual_mode').value==='object';
+ const selected=()=>{
+  if(objectMode()){
+   if(!variants.has('object'))variants.set('object',{key:'object',age:'shared',face:null,mode:'object',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
+   return [variants.get('object')];
+  }
+  return ages().flatMap(age=>faces().map(face=>{
   const key=age+':'+face;
-  if(!variants.has(key))variants.set(key,{key,age,face,id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
+  if(!variants.has(key))variants.set(key,{key,age,face,mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
   return variants.get(key);
- }));
- const label=row=>'Ages '+row.age+' · '+(row.face==='blank'?'Blank face':'Default face');
+ }));};
+ const label=row=>row.mode==='object'?'Object · All ages':'Ages '+row.age+' · '+(row.face==='blank'?'Blank face':'Default face');
  const el=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
  function say(text,error=false){
   q('[data-status]').textContent=text;q('[data-feedback]').dataset.error=String(error);
@@ -138,15 +144,24 @@ if(host){
  };}
  function matches(){
   const title=field('title').value.trim().toLowerCase();
-  const found=catalog.filter(row=>ages().includes(row.age_strand)&&row.category===field('category').value&&(!title||[row.title,...row.keywords||[]].join(' ').toLowerCase().includes(title))).slice(0,8);
+  const found=catalog.filter(row=>(objectMode()?row.age_strand==='shared':ages().includes(row.age_strand))&&row.category===field('category').value&&(!title||[row.title,...row.keywords||[]].join(' ').toLowerCase().includes(title))).slice(0,8);
   const target=q('[data-matches]');target.replaceChildren(el('p',found.length?'Existing library entries to check':'No matching library entries.'));
   for(const row of found){
-   const line=el('p',row.title+' · Ages '+row.age_strand+' · '+(row.face_variant||'default')+' · '+row.status);
+   const line=el('p',row.title+' · '+(row.age_strand==='shared'?'Shared object':'Ages '+row.age_strand+' · '+(row.face_variant||'default'))+' · '+row.status);
    if(row.assets?.[0]){const link=el('a','View ↗');link.href='https://github.com/appliedbhp/visual-supports/blob/main/'+row.assets[0];link.target='_blank';link.rel='noopener noreferrer';line.append(' ',link);}
    target.append(line);
   }
  }
- function sync(){q('[data-review-all]').checked=false;render();matches();}
+ function sync(){
+  const isObject=objectMode();
+  field('action').closest('label').firstChild.textContent=isObject?'Object and essential props':'Action and essential props';
+  field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
+  for(const selector of ['[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])q(selector).hidden=isObject;
+  field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
+  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each selected age strand gets the selected face versions. Previews appear as they finish.';
+  q('[data-review-all]').checked=false;render();matches();
+ }
+ field('visual_mode').onchange=()=>{field('generation_prompt').value='';sync();say(objectMode()?'Object mode selected. Describe the object to create one shared preview.':'Character mode selected. Choose age strands and face versions.');};
  q('[data-connect]').onclick=run(async revision=>{
   say('Checking administrator access and GitHub connection…');
   const result=await call({action:'status'});
@@ -168,19 +183,24 @@ if(host){
  function buildPrompt(){
   const action=field('action').value.trim()||field('title').value.trim();
   if(!action)throw Error('Enter a title or describe the action first.');
+  if(objectMode()){
+   field('generation_prompt').value='Create one square standalone transparent PNG object visual. Subject: '+action+'. Shared all-age library. Use clean flat shapes, medium rounded dark contours, and ink #24243B, white, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. Only the object and essential props; no people, faces or anthropomorphism. No text, labels, numbers, logos, backgrounds, gradients or shadows. Center the object with generous margins. Keep white surfaces opaque and the surrounding canvas transparent.';
+   return;
+  }
   field('generation_prompt').value='Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached Adventurer character and the requested face version. Use clean flat shapes, dark contours, opaque white skin, a bald head, and no glasses. Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
  }
  q('[data-prompt]').onclick=()=>{try{buildPrompt();invalidate();render();say('Prompt ready. You can edit it before generating.');}catch(error){say(error.message,true);}};
  function promptFor(row){
   const template=field('generation_prompt').value.trim();
   if(!template)throw Error('Enter or build a creation prompt.');
+  if(row.mode==='object')return template+' Shared all-age object visual; no human character or face.';
   const base=template.includes('{{age_strand}}')?template.replaceAll('{{age_strand}}',row.age):template+' Age strand: '+row.age+'.';
   return base+' Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':'Use mouth variant02, eyes variant24, and eyebrows variant10.')+' Adapt proportions and context respectfully for ages '+row.age+'.';
  }
  async function generateOne(row,revision){
   row.state='Generating';row.error='';row.started=Date.now();render();
   try{
-   const result=await call({action:'generate',prompt:promptFor(row),face_variant:row.face});
+   const result=await call({action:'generate',prompt:promptFor(row),visual_mode:row.mode,...(row.face?{face_variant:row.face}:{})});
    if(revision!==sessionRevision)return;
    Object.assign(row,{image:result.image,prompt:result.prompt,source:result.source,referenceId:result.reference_id,state:'Ready to review',error:'',reviewed:false,ready:false});
    row.alt||=field('action').value.trim()||field('title').value.trim();
@@ -207,7 +227,7 @@ if(host){
   say(failed.length?failed.length+' preview(s) failed. Read the message on each card and retry. Completed previews are kept.':'All previews are ready. Review the set below, confirm usage rights, then save together.',!!failed.length);
  });
  form.addEventListener('input',event=>{
-  if(['title','category','style','action','generation_prompt','keywords','usage_rights'].includes(event.target.name)){invalidate();for(const input of host.querySelectorAll('[data-reviewed]'))input.checked=false;}
+  if(['visual_mode','title','category','style','action','generation_prompt','keywords','usage_rights'].includes(event.target.name)){invalidate();for(const input of host.querySelectorAll('[data-reviewed]'))input.checked=false;}
  });
  q('[data-review-all]').onchange=()=>{
   const checked=q('[data-review-all]').checked;
@@ -224,14 +244,14 @@ if(host){
    for(const row of pending)if(!row.image||!row.alt.trim()||!row.source.trim()||!row.reviewed)throw Error('Finish the image, description, source and review for '+label(row)+'.');
    if(!field('rights_confirmed').checked)throw Error('Confirm the usage rights before saving.');
    if(!pending.length){say('All selected previews are already saved.');return;}
-   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,face_variant:row.face,image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
+   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
    for(const row of pending)row.state='Saving';render();
    say('Saving all '+pending.length+' previews together in one GitHub commit…');
    try{
     const result=await call({action:'publish_batch',visuals});
     if(revision!==sessionRevision)return;
     for(const row of pending){
-     const saved=result.visuals.find(item=>item.age_strand===row.age&&item.face_variant===row.face);
+     const saved=result.visuals.find(item=>item.age_strand===row.age&&(row.mode==='object'?item.visual_mode==='object':item.face_variant===row.face));
      if(!saved)throw Error('The save response was incomplete. Retry to confirm the saved set.');
      Object.assign(row,{published:true,url:saved.url,state:'Saved',error:''});
     }

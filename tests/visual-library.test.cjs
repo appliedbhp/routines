@@ -102,3 +102,28 @@ test('blank-face generation attaches its own image and has no facial feature ins
  assert.equal(response.status,200);
  assert.equal((await response.json()).reference_id,'dicebear-adventurer-blank-v1');
 });
+
+test('object mode creates an age-independent shared record and uses no face reference',async()=>{
+ const {validateRecord,createVisualHandler}=await modulePromise;
+ const object={...input,visual_mode:'object',age_strand:undefined};
+ const record=validateRecord(object,categories,ages);
+ assert.equal(record.age_strand,'shared');
+ assert.match(record.assets[0],/^visuals\/shared\/communication\//);
+ assert.equal(record.asset_type,'object');
+ assert.equal(record.character_reference,undefined);
+ assert.equal(record.face_variant,undefined);
+ assert.throws(()=>validateRecord({...object,face_variant:'default'},categories,ages));
+ const handle=createVisualHandler({authenticate:async()=>true,openaiKey:'test',fetch:async(url,{body})=>{
+  assert.equal(url,'https://api.openai.com/v1/images/generations');
+  const payload=JSON.parse(body);
+  assert.match(payload.prompt,/No people, body parts, faces/);
+  assert.doesNotMatch(payload.prompt,/mouth variant02/);
+  return new Response(JSON.stringify({data:[{b64_json:png}]}));
+ }});
+ const response=await handle(request({action:'generate',visual_mode:'object',prompt:'One blue notebook.'}));
+ assert.equal(response.status,200);
+ const data=await response.json();
+ assert.equal(data.visual_mode,'object');
+ assert.equal(data.reference_id,null);
+ assert.equal(data.face_variant,null);
+});
