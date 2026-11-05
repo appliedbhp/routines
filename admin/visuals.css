@@ -11,3 +11,6 @@
 #visualLibrary .visual-matches{font-size:13px;max-height:180px;overflow:auto;border-left:3px solid #d7e0ec;padding-left:12px}
 #visualLibrary [hidden]{display:none!important}
 @media(max-width:550px){#visualLibrary .visual-fields{grid-template-columns:1fr}}
+#visualLibrary fieldset{border:1px solid #d7e0ec;border-radius:8px;min-width:0;padding:8px 12px}
+#visualLibrary [data-age-options]{display:flex;flex-wrap:wrap;gap:8px 16px}
+#visualLibrary [data-age-options] label{display:flex;align-items:center;gap:6px;margin:4px 0}
