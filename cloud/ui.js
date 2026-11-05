@@ -13,31 +13,40 @@ async function start(){
  entry.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.9 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>';
  const header=document.querySelector('.workspace-header,.app-header');
  if(header){header.classList.add('has-cloud-entry');header.append(entry);}else document.body.append(entry);
- const dialog=document.createElement('dialog');dialog.className='cloud-dialog no-print';dialog.setAttribute('aria-labelledby','cloudTitle');
+ const accountHost=document.getElementById('cloudAccount');
+ const dialog=document.createElement(accountHost?'section':'dialog');dialog.className='cloud-dialog no-print';dialog.setAttribute('aria-labelledby','cloudTitle');
  dialog.innerHTML=`<header><h2 id="cloudTitle">My cloud boards</h2><button type="button" data-close aria-label="Close cloud boards">Close</button></header>
  <p>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>
  <form data-login>
- <label>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label>
+ <div class="auth-options" aria-label="Sign-in options"><button type="button" data-auth-choice="password" aria-pressed="true">Email &amp; password</button><button type="button" data-auth-choice="link" aria-pressed="false">Email me a magic link</button></div><label>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label>
  <label>Your adult account email<input data-email type="email" autocomplete="username" required maxlength="254"></label>
  <label data-password-field>Password<input data-password type="password" autocomplete="current-password" required maxlength="72"></label>
  <label data-adult class="cloud-check" hidden><input type="checkbox"> I am an adult creating or accessing my own account. <a href="${new URL('routine/#privacy-policy',root)}">Privacy details</a></label>
- <button type="submit" data-auth-submit>Sign in</button></form>
+ <p data-auth-help>Enter your email and password to sign in.</p><button type="submit" data-auth-submit>Sign in</button></form>
  <form data-recovery hidden><label>New password<input data-new-password type="password" autocomplete="new-password" required minlength="12" maxlength="72"></label><p>Use at least 12 characters.</p><button type="submit">Save password</button></form>
  <section data-library hidden><p data-user></p><div data-slots></div><button type="button" data-set-password>Set or reset password</button><button type="button" data-signout>Sign out on this device</button></section>
  <section data-review hidden><h3>Review before saving</h3><p>Only settings will upload. Person/team names, dates, checkmarks, earned tokens, homework entries, custom images, and session results are excluded. Review all remaining text below. Go back to the editor to remove anything personal.</p><ul data-text></ul><details><summary>See every setting being uploaded</summary><pre data-preview></pre></details><label class="cloud-check"><input type="checkbox" data-attest> <span data-statement></span></label><div class="cloud-actions"><button type="button" data-save disabled>Confirm and save</button><button type="button" data-back>Back</button></div></section>`;
- document.body.append(dialog);
+ if(accountHost){accountHost.replaceChildren(dialog);dialog.classList.add('cloud-account-page');dialog.showModal=()=>{};dialog.close=()=>{};dialog.querySelector('[data-close]').hidden=true;}else document.body.append(dialog);
  const q=s=>dialog.querySelector(s),status=q('[data-status]');q('[data-statement]').textContent=S.ATTESTATION;
  let client,user,rows=[],pending=null,busy=false,authRevision=0,recovery=false;
  const message=t=>{status.textContent=t;};
+ const accountNav=document.createElement('nav');accountNav.className='workspace-account';accountNav.setAttribute('aria-label','Account');
+ const signIn=document.createElement('a');signIn.href=new URL('account/',root);signIn.title='Sign in';signIn.setAttribute('aria-label','Sign in');
+ const signOut=document.createElement('button');signOut.type='button';signOut.title='Sign out on this device';signOut.setAttribute('aria-label','Sign out on this device');signOut.hidden=true;
+ const icon=out=>`<svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${out?'M17 7l-1.41 1.41L18.17 11H9v2h9.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z':'M11 7 9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z'}"/></svg>`;
+ signIn.innerHTML=icon(false)+'<span class="nav-label">Sign in</span>';signOut.innerHTML=icon(true)+'<span class="nav-label">Sign out</span>';
+ accountNav.append(signIn,signOut);document.querySelector('.workspace-sidebar')?.append(accountNav);
+ function accountState(signedIn){signIn.hidden=signedIn;signOut.hidden=!signedIn;const title=document.getElementById('accountPageTitle');if(title)title.textContent=signedIn?'My account':'Sign in';q('#cloudTitle').textContent=signedIn?'My cloud boards':'Sign in to your account';}
+ signOut.onclick=()=>{dialog.showModal();q('[data-signout]').click();};
  async function sdk(){
   if(!navigator.onLine)throw Error("Cloud accounts need internet. Use a local save or downloaded offline copy instead.");
   if(!client){client=await accountClient();
-   client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recovery=true;showRecovery();}if(event==='SIGNED_OUT'){recovery=false;q('[data-recovery]').hidden=true;dispatchEvent(new Event('board-cloud-signedout'));authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
+   client.auth.onAuthStateChange((event,session)=>{accountState(!!session?.user);if(event==='PASSWORD_RECOVERY'){recovery=true;showRecovery();}if(event==='SIGNED_OUT'){recovery=false;q('[data-recovery]').hidden=true;dispatchEvent(new Event('board-cloud-signedout'));authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
   }return client;
  }
  async function refresh(){
   pending=null;q('[data-review]').hidden=true;q('[data-attest]').checked=false;q('[data-save]').disabled=true;
-  const c=await sdk(),{data,error}=await c.auth.getUser();user=error?null:data.user;
+  const c=await sdk(),{data,error}=await c.auth.getUser();user=error?null:data.user;accountState(!!user);
   if(recovery){showRecovery();return;}
   q('[data-login]').hidden=!!user;q('[data-library]').hidden=!user;q('[data-slots]').replaceChildren();rows=[];
   if(!user)return;
@@ -92,7 +101,9 @@ async function start(){
   q('[data-password-field]').hidden=!usesPassword;password.disabled=!usesPassword;password.required=usesPassword;
   password.autocomplete=mode==='signup'?'new-password':'current-password';password.minLength=mode==='signup'?12:0;password.value='';
   q('[data-adult]').hidden=!(mode==='signup'||mode==='link');adult.disabled=q('[data-adult]').hidden;adult.required=!adult.disabled;
-  q('[data-auth-submit]').textContent=authLabels[mode];message('');
+  q('[data-auth-submit]').textContent=authLabels[mode];
+  q('[data-auth-help]').textContent=mode==='link'?'No password needed. We’ll email you a one-use sign-in link. New here? This also creates your free account.':mode==='signup'?'Create your free account with a password of at least 12 characters.':mode==='reset'?'We’ll email you a link to set or reset your password.':'Enter your email and password to sign in.';
+  dialog.querySelectorAll('[data-auth-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.authChoice===mode)));message('');
  };
  function showRecovery(){
   q('[data-login]').hidden=true;q('[data-library]').hidden=true;q('[data-review]').hidden=true;
@@ -122,7 +133,7 @@ async function start(){
   if(error)throw Error('Sign-in failed. Check your email and password, or choose Set or reset my password.');
   password.value='';await refresh();message('Signed in.');
  });};
- q('[data-set-password]').onclick=run(async()=>{if(user?.email)await sendReset(await sdk(),user.email);});
+ q('[data-set-password]').onclick=()=>run(async()=>{if(user?.email)await sendReset(await sdk(),user.email);});
  q('[data-recovery]').onsubmit=e=>{e.preventDefault();run(async()=>{
   if(!recovery)throw Error('Open a fresh password setup link from your email.');
   const c=await sdk(),field=q('[data-new-password]');
@@ -130,6 +141,7 @@ async function start(){
   if(error)throw Error(error.code==='weak_password'?'Choose a stronger password and try again.':error.code==='same_password'?'Choose a password different from your current one.':'Could not change the password. Try again or request a fresh link.');
   field.value='';recovery=false;q('[data-recovery]').hidden=true;await refresh();message('Password saved. You can now sign in with it.');
  });};
+ dialog.querySelectorAll('[data-auth-choice]').forEach(button=>button.onclick=()=>{authMode.value=button.dataset.authChoice;authMode.onchange();});
  authMode.onchange();
  q('[data-signout]').onclick=()=>run(async()=>{const {error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Sign-out failed. Try again.');await refresh();message('Signed out on this device.');});
  q('[data-save]').onclick=()=>run(async()=>{
@@ -141,12 +153,8 @@ async function start(){
   if(response.error){let details;try{details=await response.error.context?.json();}catch{}throw Error(details?.error||'Cloud save failed. Your local board is unchanged. Review and try again.');}
   await refresh();const saved=rows.find(r=>r.slot===snapshot.slot);dispatchEvent(new CustomEvent('board-cloud-saved',{detail:{payload:snapshot.original,slot:snapshot.slot,revision:saved?.revision,userId:user.id,count:rows.length}}));message('Settings saved to the cloud. Session results remain on this device.');dialog.close();
  });
- const accountHost=document.getElementById('cloudAccount');
- if(accountHost){
-  const accountButton=document.createElement('button');accountButton.type='button';accountButton.textContent='Open account';
-  accountButton.onclick=()=>entry.click();accountHost.append(accountButton);
- }
  // Sign-in return and cross-tool opening never auto-upload any local data.
+ if(!accountHost){try{const c=await sdk();const {data}=await c.auth.getSession();accountState(!!data.session?.user);}catch{accountState(false);}}
  if(accountHost||new URLSearchParams(location.search).has('cloudSlot')){
   await run(async()=>{dialog.showModal();await refresh();if(recovery)return;const slot=Number(new URLSearchParams(location.search).get('cloudSlot'));history.replaceState(null,'',location.pathname);const row=rows.find(r=>r.slot===slot);if(row)await open(row);else if(!user)message('Sign in to open your cloud boards.');});
  }
