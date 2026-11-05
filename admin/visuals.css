@@ -19,3 +19,23 @@
 #visualLibrary .visual-character-reference p{font-size:12px;margin:5px 0}
 #visualLibrary .visual-character-reference a{font-size:12px}
 @media(max-width:550px){#visualLibrary .visual-character-reference{align-items:start;flex-direction:column}}
+#visualLibrary .visual-feedback{position:sticky;top:8px;z-index:40;background:#eff6ff;border:1px solid #c5d9f8;border-radius:10px;padding:10px 14px;margin:14px 0;box-shadow:0 4px 16px #17283f12}
+#visualLibrary .visual-feedback p{margin:3px 0}
+#visualLibrary .visual-feedback:has([data-status]:empty){display:none}
+#visualLibrary .visual-feedback[data-error=true]{background:#fff1f2;border-color:#f1afb7;color:#8f1830}
+#visualLibrary progress{width:100%;height:8px}
+#visualLibrary .visual-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+#visualLibrary .visual-preview-card{padding:12px;border:1px solid #cdd9e9;border-radius:12px;min-width:0;background:#fff}
+#visualLibrary .visual-preview-card h3{font-size:15px;margin:0}
+#visualLibrary .visual-variant-status{font-size:12px;min-height:32px;overflow-wrap:anywhere;white-space:pre-wrap}
+#visualLibrary .visual-variant-status[data-state=error]{color:#a21f38}
+#visualLibrary .visual-variant-status[data-state=Generating]::before{content:"";display:inline-block;width:10px;height:10px;border:2px solid #c7d5ed;border-top-color:#2459d3;border-radius:50%;margin-right:6px;animation:visual-spin .8s linear infinite}
+#visualLibrary .visual-image-button{width:100%;padding:0;background:#edf2f7;border:0;display:block}
+#visualLibrary .visual-image-button img{display:block;width:100%;aspect-ratio:1;object-fit:contain}
+#visualLibrary .visual-placeholder{display:grid;place-items:center;aspect-ratio:1;background:#edf2f7;color:#52627a;font-size:13px;padding:12px;border-radius:8px}
+.visual-zoom{width:min(800px,calc(100vw - 24px));max-height:90dvh;overflow:auto}
+.visual-zoom img{display:block;width:100%;background:#edf2f7}
+@keyframes visual-spin{to{transform:rotate(360deg)}}
+@media(max-width:850px){#visualLibrary .visual-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#visualLibrary .visual-preview-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#visualLibrary .visual-variant-status[data-state=Generating]::before{animation:none}}

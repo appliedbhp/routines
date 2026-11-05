@@ -35,3 +35,9 @@ PNG and its settings/license beside the catalog, includes the reference metadata
 on each visual, and appends its attribution to the usage-rights field. Existing
 uploaded artwork retains its recorded source; it does not acquire a character
 reference just because it was uploaded through this interface.
+
+## Age and face sets
+
+The creator displays selected age strands with both default and blank faces. Two generation requests run at a time, with per-card state and elapsed time. Completed previews survive retries within the page. Review can be confirmed per card or for the selected set.
+
+The publish_batch action validates up to six previews, archives both versioned character references, and updates all artwork, metadata and catalog entries with one Git ref update. Batch retries preserve visual IDs and reject changed content for an existing ID. Older single-visual publish requests remain supported.

@@ -3,13 +3,13 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const modulePromise=import(require('node:url').pathToFileURL(require('node:path').resolve('cloud/visual-library/handler.js')).href);
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jk1cAAAAASUVORK5CYII=';
-const categories=[{id:'communication',name:'Communication'}],ages=[{id:'6-11',min_age:6,max_age:11}];
+const categories=[{id:'communication',name:'Communication'}],ages=[{id:'0-5',min_age:0,max_age:5},{id:'6-11',min_age:6,max_age:11},{id:'12-18',min_age:12,max_age:18}];
 const input={action:'publish',id:'f0086d47-e069-44c4-b515-44a83b8d0815',title:'I need help',category:'communication',age_strand:'6-11',style:'simple-symbol',keywords:'help, communication',alt_text:'A figure raises a hand.',generation_prompt:'An original figure raises a hand.',source:'Original artwork',usage_rights:'Owned by the library creator',reviewed:true,rights_confirmed:true,ready:false,image:png};
 
 function githubMock(conflict=false){
  let catalog=[],head='base',tree=null,failed=false,calls=0;
  const json=value=>new Response(JSON.stringify(value),{status:200});
- return {catalog:()=>catalog,calls:()=>calls,async fetch(url,options={}){
+ return {tree:()=>tree,catalog:()=>catalog,calls:()=>calls,async fetch(url,options={}){
   calls++;const path=new URL(url).pathname.split('/visual-supports')[1],body=options.body?JSON.parse(options.body):null;
   if(path==='/git/ref/heads/main')return json({object:{sha:head}});
   if(path.startsWith('/contents/')){
@@ -73,4 +73,32 @@ test('generation attaches the exact reference image and records the reference se
  assert.equal(saved.character_reference.options.skinColor,'ffffff');
  assert.equal(saved.character_reference.options.hairProbability,'0');
  assert.match(saved.usage_rights,/Lisa Wischofsky/);
+});
+
+test('six age and face previews publish in one atomic batch and replay safely',async()=>{
+ const {createVisualHandler}=await modulePromise,mock=githubMock();
+ const visuals=ages.flatMap((age,index)=>['default','blank'].map((face,offset)=>({...input,id:'f0086d47-e069-44c4-b515-44a83b8d081'+(index*2+offset),age_strand:age.id,face_variant:face,reference_id:'dicebear-adventurer-'+(face==='blank'?'blank':'default')+'-v1'})));
+ const handle=createVisualHandler({authenticate:async()=>true,fetch:mock.fetch,githubToken:'secret'});
+ const response=await handle(request({action:'publish_batch',visuals}));
+ assert.equal(response.status,200);assert.equal((await response.json()).visuals.length,6);
+ assert.equal(mock.catalog().length,6);
+ assert.ok(mock.tree().some(file=>file.path==='references/dicebear-adventurer-blank-v1.png'));
+ assert.ok(mock.tree().some(file=>file.path==='references/dicebear-adventurer-default-v1.png'));
+ const replay=await handle(request({action:'publish_batch',visuals}));
+ assert.equal((await replay.json()).already_saved,true);
+ assert.equal(mock.catalog().length,6);
+});
+
+test('blank-face generation attaches its own image and has no facial feature instructions',async()=>{
+ const {createVisualHandler}=await modulePromise;
+ const {blankCharacterImageBase64}=await import(require('node:url').pathToFileURL(require('node:path').resolve('cloud/visual-library/character.js')).href);
+ const handle=createVisualHandler({authenticate:async()=>true,openaiKey:'test',fetch:async(url,{body})=>{
+  assert.match(body.get('prompt'),/Keep the face completely blank/);
+  assert.doesNotMatch(body.get('prompt'),/mouth variant02/);
+  assert.equal(Buffer.from(await body.get('image[]').arrayBuffer()).toString('base64'),blankCharacterImageBase64);
+  return new Response(JSON.stringify({data:[{b64_json:png}]}));
+ }});
+ const response=await handle(request({action:'generate',face_variant:'blank',prompt:'Read a book.'}));
+ assert.equal(response.status,200);
+ assert.equal((await response.json()).reference_id,'dicebear-adventurer-blank-v1');
 });

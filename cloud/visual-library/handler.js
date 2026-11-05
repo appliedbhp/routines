@@ -1,4 +1,4 @@
-import {characterReference,characterImageBase64,characterInstructions} from './character.js';
+import {characterReference,blankCharacterReference,getCharacter} from './character.js';
 const REPOSITORY='appliedbhp/visual-supports';
 const API='https://api.github.com/repos/'+REPOSITORY;
 export class VisualError extends Error {
@@ -26,10 +26,16 @@ export function validateRecord(input,categories,ages){
   generation_prompt:required(input.generation_prompt,'the creation prompt',12000),
   source:required(input.source,'creation or source information',500),
   usage_rights:required(input.usage_rights,'usage-rights information',1500)};
+ if(input.face_variant!==undefined){
+  if(!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
+  record.face_variant=input.face_variant;
+ }
  if(input.reference_id){
-  if(input.reference_id!==characterReference.id)throw new VisualError('Unknown character reference.');
-  record.character_reference=characterReference;
-  if(!record.usage_rights.includes(characterReference.attribution))record.usage_rights+=' '+characterReference.attribution;
+  const reference=[characterReference,blankCharacterReference].find(row=>row.id===input.reference_id);
+  if(!reference)throw new VisualError('Unknown character reference.');
+  if(input.face_variant&&reference.id!==getCharacter(input.face_variant).reference.id)throw new VisualError('The face and reference do not match.');
+  record.character_reference=reference;
+  if(!record.usage_rights.includes(reference.attribution))record.usage_rights+=' '+reference.attribution;
  }
  return record;
 }
@@ -61,37 +67,49 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
   const [categories,ages,catalog]=await Promise.all(['catalog/categories.json','catalog/age-strands.json','catalog/visuals.json'].map(async path=>JSON.parse(await file(path,sha))));
   return {sha,categories,ages,catalog};
  }
- async function publish(input){
-  const bytes=pngBytes(input.image);
-  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
-  // A stable request ID lets a retry find the same visual after a lost response.
+ async function publishMany(inputs){
+  if(!Array.isArray(inputs)||inputs.length<1||inputs.length>6)throw new VisualError('Save between one and six age and face variants.');
+  const images=await Promise.all(inputs.map(async input=>{
+   const bytes=pngBytes(input.image);
+   const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+   return {input,digest};
+  }));
   for(let attempt=0;attempt<3;attempt++){
-   const state=await snapshot(),record=validateRecord(input,state.categories,state.ages);
-   const existing=state.catalog.find(row=>row.id===record.id);
-   if(existing){
-    const {image_sha256,created_at,...saved}=existing;
-    if(image_sha256===digest&&JSON.stringify(saved)===JSON.stringify(record))return {url:'https://github.com/'+REPOSITORY+'/blob/main/'+existing.assets[0],already_saved:true};
-    throw new VisualError('This visual ID was already used. Start a new visual before publishing different artwork.',409);
+   const state=await snapshot();
+   const records=images.map(({input,digest})=>({input,digest,record:validateRecord(input,state.categories,state.ages)}));
+   if(new Set(records.map(row=>row.record.id)).size!==records.length||new Set(records.map(row=>row.record.age_strand+':'+(row.record.face_variant||'default'))).size!==records.length)throw new VisualError('Each selected strand needs its own visual ID.');
+   const pending=[];
+   for(const row of records){
+    const existing=state.catalog.find(saved=>saved.id===row.record.id);
+    if(existing){
+     const {image_sha256,created_at,...saved}=existing;
+     if(image_sha256!==row.digest||JSON.stringify(saved)!==JSON.stringify(row.record))throw new VisualError('A visual ID was already used for different artwork. Start a new set before publishing changed artwork.',409);
+    }else pending.push(row);
    }
-   record.image_sha256=digest;record.created_at=new Date().toISOString();
-   const blob=await github('/git/blobs','POST',{content:input.image,encoding:'base64'});
+   const results=records.map(({record})=>({id:record.id,age_strand:record.age_strand,face_variant:record.face_variant||'default',url:'https://github.com/'+REPOSITORY+'/blob/main/'+record.assets[0]}));
+   if(!pending.length)return {visuals:results,already_saved:true};
+   const files=[];
+   for(const {input,digest,record} of pending){
+    record.image_sha256=digest;record.created_at=new Date().toISOString();
+    const blob=await github('/git/blobs','POST',{content:input.image,encoding:'base64'});
+    files.push({path:record.assets[0],mode:'100644',type:'blob',sha:blob.sha},
+     {path:record.assets[0].replace(/\.png$/,'.json'),mode:'100644',type:'blob',content:JSON.stringify(record,null,2)+'\n'});
+   }
+   const references=new Map(pending.filter(row=>row.record.character_reference).map(row=>[row.record.character_reference.id,row.record.character_reference]));
+   for(const reference of references.values()){
+    const character=getCharacter(reference.id===blankCharacterReference.id?'blank':'default');
+    const referenceBlob=await github('/git/blobs','POST',{content:character.image,encoding:'base64'});
+    files.push({path:reference.asset,mode:'100644',type:'blob',sha:referenceBlob.sha},
+     {path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
+   }
+   if(references.size)files.push({path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character references\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
+   files.push({path:'catalog/visuals.json',mode:'100644',type:'blob',content:JSON.stringify([...state.catalog,...pending.map(row=>row.record)],null,2)+'\n'});
    const base=await github('/git/commits/'+state.sha);
-   const referenceFiles=[];
-   if(record.character_reference){
-    const referenceBlob=await github('/git/blobs','POST',{content:characterImageBase64,encoding:'base64'});
-    referenceFiles.push({path:characterReference.asset,mode:'100644',type:'blob',sha:referenceBlob.sha},
-     {path:'references/dicebear-adventurer-default-v1.json',mode:'100644',type:'blob',content:JSON.stringify(characterReference,null,2)+'\n'},
-     {path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character reference\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
-   }
-   const tree=await github('/git/trees','POST',{base_tree:base.tree.sha,tree:[...referenceFiles,
-    {path:record.assets[0],mode:'100644',type:'blob',sha:blob.sha},
-    {path:'catalog/visuals.json',mode:'100644',type:'blob',content:JSON.stringify([...state.catalog,record],null,2)+'\n'},
-    {path:record.assets[0].replace(/\.png$/,'.json'),mode:'100644',type:'blob',content:JSON.stringify(record,null,2)+'\n'}
-   ]});
-   const commit=await github('/git/commits','POST',{message:'Add '+record.title+' ('+record.age_strand+') as '+record.status,tree:tree.sha,parents:[state.sha]});
+   const tree=await github('/git/trees','POST',{base_tree:base.tree.sha,tree:files});
+   const commit=await github('/git/commits','POST',{message:'Add '+pending.length+' visual'+(pending.length===1?'':'s')+' · '+pending[0].record.title,tree:tree.sha,parents:[state.sha]});
    try{
     await github('/git/refs/heads/main','PATCH',{sha:commit.sha,force:false});
-    return {url:'https://github.com/'+REPOSITORY+'/blob/main/'+record.assets[0],commit_url:'https://github.com/'+REPOSITORY+'/commit/'+commit.sha};
+    return {visuals:results,commit_url:'https://github.com/'+REPOSITORY+'/commit/'+commit.sha};
    }catch(error){if(error.status!==409||attempt===2)throw error;}
   }
  }
@@ -104,9 +122,9 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
   if(req.method!=='POST')return respond({error:'Use POST.'},405);
   try{
    if(!await authenticate(req.headers.get('authorization')||''))return respond({error:'Administrator sign-in required.'},403);
-   if(Number(req.headers.get('content-length'))>9000000)throw new VisualError('The image is too large.');
+   if(Number(req.headers.get('content-length'))>52000000)throw new VisualError('The image is too large.');
    const text=await req.text();
-   if(text.length>9000000)throw new VisualError('The image is too large.');
+   if(text.length>52000000)throw new VisualError('The image is too large.');
    let input;try{input=JSON.parse(text);}catch{throw new VisualError('Invalid request.');}
    if(input.action==='status'){
     const [state,guide,repo]=await Promise.all([snapshot(),file('CREATING-VISUALS.md','main'),github('')]);
@@ -114,18 +132,37 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    if(input.action==='generate'){
     if(!openaiKey)throw new VisualError('Add ROUTINES_OPENAI_KEY to the server secrets to enable image generation.',503);
-    const prompt=characterInstructions+'Requested visual: '+required(input.prompt,'an image prompt',12000);
+    if(input.face_variant!==undefined&&!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
+    const character=getCharacter(input.face_variant||'default');
+    const prompt=character.instructions+'Requested visual: '+required(input.prompt,'an image prompt',12000);
     const form=new FormData();
     for(const [key,value] of Object.entries({model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:'1',quality:'medium',input_fidelity:'high'}))form.set(key,value);
-    form.append('image[]',new Blob([Uint8Array.from(atob(characterImageBase64),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
+    form.append('image[]',new Blob([Uint8Array.from(atob(character.image),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
     const response=await request('https://api.openai.com/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+openaiKey},body:form,signal:AbortSignal.timeout(140000)});
-    if(!response.ok)throw new VisualError('The image service could not generate this visual. Check the OpenAI key, model access, and billing, or try another prompt.',502);
+    if(!response.ok){
+     let failure;try{failure=await response.json();}catch{}
+     const code=failure?.error?.code;
+     const messages={
+      insufficient_quota:'The OpenAI account has no available API credit. Check its billing and spending limit.',
+      invalid_api_key:'OpenAI rejected ROUTINES_OPENAI_KEY. Replace the server secret with a valid API key.',
+      model_not_found:'The OpenAI account cannot access the configured image model.',
+      rate_limit_exceeded:'OpenAI is temporarily limiting image requests. Wait a minute, then retry this strand.',
+      content_policy_violation:'The image service declined this prompt. Revise the action description and retry.'
+     };
+     const requestId=response.headers.get('x-request-id');
+     throw new VisualError((messages[code]||'OpenAI could not generate the image (HTTP '+response.status+'). Check model access or try revising the prompt.')+(requestId?' Reference: '+requestId:''),502);
+    }
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+' using the DiceBear Adventurer reference',reference_id:characterReference.id});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+' using the DiceBear Adventurer reference',reference_id:character.reference.id,face_variant:input.face_variant||'default'});
    }
-   if(input.action==='publish')return respond(await publish(input));
+   if(input.action==='publish'){
+    const result=await publishMany([input]);return respond({...result,...result.visuals[0]});
+   }
+   if(input.action==='publish_batch')return respond(await publishMany(input.visuals));
    throw new VisualError('Unknown action.');
-  }catch(error){return respond({error:error instanceof VisualError?error.message:'The request could not finish. Try again. Publish retries keep the same visual ID.'},error instanceof VisualError?error.status:500);}
+   }catch(error){
+   if(error?.name==='TimeoutError')return respond({error:'Image generation timed out. Your completed previews are kept. Retry the missing strand.'},504);
+   return respond({error:error instanceof VisualError?error.message:'The request could not finish. Try again. Publish retries keep the same visual ID.'},error instanceof VisualError?error.status:500);}
  };
 }
