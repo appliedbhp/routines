@@ -38,7 +38,7 @@ function render(week=false){
   section.append(entries);target.append(section);
  }
 }
-function printCopy(student){
+function preparePrintCopy(student){
  const target=byId('printCopy'),heading=element('h1',chart.title);
  const count=chart.weekends?7:5;
  const table=element('table'),thead=element('thead'),head=element('tr'),body=element('tbody');
@@ -68,16 +68,19 @@ function printCopy(student){
  }
  table.append(thead,body);
  const footer=element('footer'),code=element('div'),url=familyURL(linkId);
- const qr=qrcode(0,'M');qr.addData(url.href);qr.make();
- code.innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});
+ if(typeof qrcode==='function'){
+  const qr=qrcode(0,'M');qr.addData(url.href);qr.make();
+  code.innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});
+ }
  const caption=element('div');
- caption.append(element('strong','Scan to check this week’s homework.'),element('p','The link opens the teacher’s latest chart for this week.'));
+ caption.append(element('strong',code.firstChild?'Scan to check this week’s homework.':'Check this week’s homework online.'));
+ const link=element('a',url.href);link.href=url.href;caption.append(link);
  footer.append(code,caption);
  const instructions=student?'Student copy · Write each assignment or mark No homework.':'Family copy · Mark Verified after comparing with the student’s copy.';
- const pageSize=element('style');pageSize.textContent='@page { size: letter landscape; margin: .45in; }';
- target.replaceChildren(pageSize,heading,element('p',byId('week').textContent),element('p',instructions));
+ target.replaceChildren(heading,element('p',byId('week').textContent),element('p',instructions));
  if(!student)target.append(element('p',byId('updated').textContent));
- target.append(table,footer);window.print();
+ target.append(table,footer);
+ document.body.classList.add('family-print-ready');
 }
 async function load(){
  if(!linkId||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(linkId))throw Error('This homework link is incomplete. Ask the teacher for a new copy.');
@@ -92,7 +95,9 @@ async function load(){
  byId('week').textContent='Week of '+new Intl.DateTimeFormat(undefined,{dateStyle:'long',timeZone:'UTC'}).format(dayDate(chart.week,0));
  byId('updated').textContent='Updated '+new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(chart.updated_at));
  byId('today').onclick=()=>render(false);byId('fullWeek').onclick=()=>render(true);
- byId('printStudent').onclick=()=>printCopy(true);byId('printParent').onclick=()=>printCopy(false);
+ preparePrintCopy(false);
+ byId('printStudent').onclick=()=>{preparePrintCopy(true);window.print();};
+ byId('printParent').onclick=()=>{preparePrintCopy(false);window.print();};
  render();byId('loadStatus').hidden=true;byId('familyTools').hidden=false;
 }
 load().catch(error=>{byId('loadStatus').textContent=error.message==='Failed to fetch'?'Could not open the homework chart. Check your connection and try again.':error.message;});

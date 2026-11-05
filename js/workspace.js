@@ -79,6 +79,7 @@
     const controls = [...main.querySelectorAll(':scope > .controls')];
     if (controls.length) { controls[0].before(toolbar); controls.forEach(control => toolbar.append(control)); }
   }
+  const portalScript=document.createElement('script');portalScript.type='module';portalScript.src=new URL('admin/portal.js',root);document.head.append(portalScript);
   const header=document.querySelector('.workspace-header,.app-header');
   if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
 })();

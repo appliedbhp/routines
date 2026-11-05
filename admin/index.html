@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Routines administration</title>
+<link rel="stylesheet" href="../supports/style.css">
+<link rel="stylesheet" href="../css/workspace.css">
+<link rel="stylesheet" href="../css/visual-system.css">
+<script src="../js/workspace.js" defer></script>
+</head>
+<body>
+<main id="adminWorkspace">
+<h1>Administration</h1>
+<p id="adminStatus" role="status">Checking administrator access…</p>
+<section id="adminTools" class="portal-admin-tools" hidden>
+<div class="portal-panel">
+<h2>Find a user</h2>
+<form id="adminSearch"><label>Email address<input id="adminEmail" type="email" maxlength="254" required autocomplete="off"></label><button class="primary">Search</button></form>
+<p id="searchStatus" role="status"></p>
+<div id="searchResult"></div>
+</div>
+<div class="portal-panel"><h2>Billing</h2><p>Connect Stripe billing to track subscriptions, seat counts, and payouts here.</p></div>
+</section>
+</main>
+</body>
+</html>

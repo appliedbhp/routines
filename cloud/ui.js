@@ -41,6 +41,7 @@ async function start(){
   if(recovery){showRecovery();return;}
   q('[data-login]').hidden=!!user;q('[data-library]').hidden=!user;q('[data-slots]').replaceChildren();rows=[];
   if(!user)return;
+  dispatchEvent(new Event('routines-account-signed-in'));
   const response=await c.from('routine_cloud_boards').select('slot,payload,revision,updated_at').order('slot');
   if(response.error)throw Error('Cloud boards could not be loaded. Try again.');rows=response.data;
   q('[data-user]').textContent=`${user.email} · ${rows.length} of 2 boards saved`;
