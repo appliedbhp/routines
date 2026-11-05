@@ -1,0 +1,13 @@
+#visualLibrary label{display:grid;gap:5px;margin:12px 0}
+#visualLibrary input:not([type=checkbox]),#visualLibrary textarea,#visualLibrary select{width:100%;box-sizing:border-box}
+#visualLibrary .visual-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+#visualLibrary .visual-check{display:flex;align-items:baseline;gap:8px}
+#visualLibrary input[type=checkbox]{flex:none}
+#visualLibrary .visual-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0}
+#visualLibrary figure{margin:16px 0;padding:16px;border:1px solid #d7e0ec;border-radius:10px;background:#f1f5f9}
+#visualLibrary figure img{display:block;width:100%;max-width:400px;aspect-ratio:1;object-fit:contain}
+#visualLibrary figcaption,#visualLibrary [data-generation-note]{font-size:12px;color:#52627a}
+#visualLibrary pre{white-space:pre-wrap;max-height:240px;overflow:auto;font:13px/1.5 system-ui}
+#visualLibrary .visual-matches{font-size:13px;max-height:180px;overflow:auto;border-left:3px solid #d7e0ec;padding-left:12px}
+#visualLibrary [hidden]{display:none!important}
+@media(max-width:550px){#visualLibrary .visual-fields{grid-template-columns:1fr}}
