@@ -11,3 +11,6 @@
  .cloud-entry:focus-visible{outline:3px solid #17283f;outline-offset:3px}
  @media(max-width:760px){.cloud-entry{top:12px;right:12px}.visual-workspace .has-cloud-entry{padding-right:68px}}
 }
+
+.cloud-dialog [data-login] select,.cloud-dialog input[type=password]{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:10px}
+.cloud-dialog [hidden]{display:none!important}

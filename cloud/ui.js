@@ -16,22 +16,29 @@ async function start(){
  const dialog=document.createElement('dialog');dialog.className='cloud-dialog no-print';dialog.setAttribute('aria-labelledby','cloudTitle');
  dialog.innerHTML=`<header><h2 id="cloudTitle">My cloud boards</h2><button type="button" data-close aria-label="Close cloud boards">Close</button></header>
  <p>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>
- <form data-login><label>Your adult account email<input type="email" autocomplete="email" required maxlength="254"></label><label class="cloud-check"><input type="checkbox" required> I am an adult creating or accessing my own account. I understand my email is used for sign-in and my saved board settings are stored in the cloud.</label><button>Send sign-in link</button><p>Check your email, then open the sign-in link. <a href="${new URL('routine/#privacy-policy',root)}">Privacy details</a></p></form>
- <section data-library hidden><p data-user></p><div data-slots></div><button type="button" data-signout>Sign out on this device</button></section>
+ <form data-login>
+ <label>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label>
+ <label>Your adult account email<input data-email type="email" autocomplete="username" required maxlength="254"></label>
+ <label data-password-field>Password<input data-password type="password" autocomplete="current-password" required maxlength="72"></label>
+ <label data-adult class="cloud-check" hidden><input type="checkbox"> I am an adult creating or accessing my own account. <a href="${new URL('routine/#privacy-policy',root)}">Privacy details</a></label>
+ <button type="submit" data-auth-submit>Sign in</button></form>
+ <form data-recovery hidden><label>New password<input data-new-password type="password" autocomplete="new-password" required minlength="12" maxlength="72"></label><p>Use at least 12 characters.</p><button type="submit">Save password</button></form>
+ <section data-library hidden><p data-user></p><div data-slots></div><button type="button" data-set-password>Set or reset password</button><button type="button" data-signout>Sign out on this device</button></section>
  <section data-review hidden><h3>Review before saving</h3><p>Only settings will upload. Person/team names, dates, checkmarks, earned tokens, homework entries, custom images, and session results are excluded. Review all remaining text below. Go back to the editor to remove anything personal.</p><ul data-text></ul><details><summary>See every setting being uploaded</summary><pre data-preview></pre></details><label class="cloud-check"><input type="checkbox" data-attest> <span data-statement></span></label><div class="cloud-actions"><button type="button" data-save disabled>Confirm and save</button><button type="button" data-back>Back</button></div></section>`;
  document.body.append(dialog);
  const q=s=>dialog.querySelector(s),status=q('[data-status]');q('[data-statement]').textContent=S.ATTESTATION;
- let client,user,rows=[],pending=null,busy=false,authRevision=0;
+ let client,user,rows=[],pending=null,busy=false,authRevision=0,recovery=false;
  const message=t=>{status.textContent=t;};
  async function sdk(){
   if(!navigator.onLine)throw Error("Cloud accounts need internet. Use a local save or downloaded offline copy instead.");
   if(!client){client=await accountClient();
-   client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){dispatchEvent(new Event('board-cloud-signedout'));authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
+   client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recovery=true;showRecovery();}if(event==='SIGNED_OUT'){recovery=false;q('[data-recovery]').hidden=true;dispatchEvent(new Event('board-cloud-signedout'));authRevision++;user=null;rows=[];pending=null;q('[data-slots]').replaceChildren();q('[data-user]').textContent='';q('[data-review]').hidden=true;q('[data-library]').hidden=true;q('[data-login]').hidden=false;q('[data-attest]').checked=false;q('[data-save]').disabled=true;}});
   }return client;
  }
  async function refresh(){
   pending=null;q('[data-review]').hidden=true;q('[data-attest]').checked=false;q('[data-save]').disabled=true;
   const c=await sdk(),{data,error}=await c.auth.getUser();user=error?null:data.user;
+  if(recovery){showRecovery();return;}
   q('[data-login]').hidden=!!user;q('[data-library]').hidden=!user;q('[data-slots]').replaceChildren();rows=[];
   if(!user)return;
   const response=await c.from('routine_cloud_boards').select('slot,payload,revision,updated_at').order('slot');
@@ -72,14 +79,57 @@ async function start(){
   if(!confirm('Open this cloud board? Unsaved edits in the current visual will be replaced.'))return;
   CloudBoardAdapter.open(S.clean(row.payload));dispatchEvent(new CustomEvent('board-cloud-opened',{detail:{payload:S.clean(row.payload),slot:row.slot,revision:row.revision,userId:user.id,count:rows.length}}));dialog.close();
  }
- entry.onclick=()=>run(async()=>{dialog.showModal();message('Loading…');await refresh();message(user?'Your cloud boards are private to this account.':'Sign in to save and open your two free boards.');});
- q('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{pending=null;q('[data-attest]').checked=false;q('[data-save]').disabled=true;entry.focus();});
+ entry.onclick=()=>run(async()=>{dialog.showModal();message('Loading…');await refresh();if(!recovery)message(user?'Your cloud boards are private to this account.':'Sign in to save and open your two free boards.');});
+ q('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{pending=null;q('[data-attest]').checked=false;q('[data-save]').disabled=true;q('[data-password]').value='';q('[data-new-password]').value='';entry.focus();});
  q('[data-back]').onclick=()=>run(refresh);
  q('[data-attest]').onchange=()=>{q('[data-save]').disabled=!q('[data-attest]').checked;};
+ const authReturn=new URL('account/',root).href;
+ const authMode=q('[data-auth-mode]'),password=q('[data-password]'),adult=q('[data-adult] input');
+ const authLabels={password:'Sign in',signup:'Create account',link:'Send sign-in link',reset:'Send password setup link'};
+ authMode.onchange=()=>{
+  const mode=authMode.value,usesPassword=mode==='password'||mode==='signup';
+  q('[data-password-field]').hidden=!usesPassword;password.disabled=!usesPassword;password.required=usesPassword;
+  password.autocomplete=mode==='signup'?'new-password':'current-password';password.minLength=mode==='signup'?12:0;password.value='';
+  q('[data-adult]').hidden=!(mode==='signup'||mode==='link');adult.disabled=q('[data-adult]').hidden;adult.required=!adult.disabled;
+  q('[data-auth-submit]').textContent=authLabels[mode];message('');
+ };
+ function showRecovery(){
+  q('[data-login]').hidden=true;q('[data-library]').hidden=true;q('[data-review]').hidden=true;
+  q('[data-recovery]').hidden=false;
+  if(!dialog.open)dialog.showModal();
+  q('[data-new-password]').focus();message('Choose a new password for your account.');
+ }
+ async function sendReset(c,email){
+  const {error}=await c.auth.resetPasswordForEmail(email,{redirectTo:authReturn});
+  if(error)throw Error('Could not send the password setup link. Please wait and try again.');
+  message('If this address has an account, check your email for a password setup link.');
+ }
  q('[data-login]').onsubmit=e=>{e.preventDefault();run(async()=>{
-  const c=await sdk(),email=q('input[type=email]').value.trim();const {error}=await c.auth.signInWithOtp({email,options:{emailRedirectTo:new URL('account/',root).href}});
-  if(error)throw Error('Could not send a sign-in link. Please wait a minute and try again.');message('Check your email for a sign-in link. You can close this window; your current visual stays here.');
+  const c=await sdk(),email=q('[data-email]').value.trim(),mode=authMode.value;
+  if(mode==='reset'){await sendReset(c,email);return;}
+  if(mode==='link'){
+   const {error}=await c.auth.signInWithOtp({email,options:{emailRedirectTo:authReturn}});
+   if(error)throw Error('Could not send a sign-in link. Please wait a minute and try again.');
+   message('Check your email for a sign-in link. You can close this window; your current visual stays here.');return;
+  }
+  if(mode==='signup'){
+   const {error}=await c.auth.signUp({email,password:password.value,options:{emailRedirectTo:authReturn}});
+   if(error)throw Error(error.code==='weak_password'?'Choose a stronger password and try again.':'Could not create the account. Check your email and password or try again later.');
+   password.value='';message('Check your email for a verification link. Already have an account? Use Set or reset my password.');return;
+  }
+  const {error}=await c.auth.signInWithPassword({email,password:password.value});
+  if(error)throw Error('Sign-in failed. Check your email and password, or choose Set or reset my password.');
+  password.value='';await refresh();message('Signed in.');
  });};
+ q('[data-set-password]').onclick=run(async()=>{if(user?.email)await sendReset(await sdk(),user.email);});
+ q('[data-recovery]').onsubmit=e=>{e.preventDefault();run(async()=>{
+  if(!recovery)throw Error('Open a fresh password setup link from your email.');
+  const c=await sdk(),field=q('[data-new-password]');
+  const {error}=await c.auth.updateUser({password:field.value});
+  if(error)throw Error(error.code==='weak_password'?'Choose a stronger password and try again.':error.code==='same_password'?'Choose a password different from your current one.':'Could not change the password. Try again or request a fresh link.');
+  field.value='';recovery=false;q('[data-recovery]').hidden=true;await refresh();message('Password saved. You can now sign in with it.');
+ });};
+ authMode.onchange();
  q('[data-signout]').onclick=()=>run(async()=>{const {error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Sign-out failed. Try again.');await refresh();message('Signed out on this device.');});
  q('[data-save]').onclick=()=>run(async()=>{
   if(!pending||!q('[data-attest]').checked)throw Error('Review the board and confirm the privacy statement.');
@@ -90,8 +140,13 @@ async function start(){
   if(response.error){let details;try{details=await response.error.context?.json();}catch{}throw Error(details?.error||'Cloud save failed. Your local board is unchanged. Review and try again.');}
   await refresh();const saved=rows.find(r=>r.slot===snapshot.slot);dispatchEvent(new CustomEvent('board-cloud-saved',{detail:{payload:snapshot.original,slot:snapshot.slot,revision:saved?.revision,userId:user.id,count:rows.length}}));message('Settings saved to the cloud. Session results remain on this device.');dialog.close();
  });
+ const accountHost=document.getElementById('cloudAccount');
+ if(accountHost){
+  const accountButton=document.createElement('button');accountButton.type='button';accountButton.textContent='Open account';
+  accountButton.onclick=()=>entry.click();accountHost.append(accountButton);
+ }
  // Sign-in return and cross-tool opening never auto-upload any local data.
- if(document.getElementById('cloudAccount')||new URLSearchParams(location.search).has('cloudSlot')){
-  await run(async()=>{dialog.showModal();await refresh();const slot=Number(new URLSearchParams(location.search).get('cloudSlot'));history.replaceState(null,'',location.pathname);const row=rows.find(r=>r.slot===slot);if(row)await open(row);else if(!user)message('Sign in to open your cloud boards.');});
+ if(accountHost||new URLSearchParams(location.search).has('cloudSlot')){
+  await run(async()=>{dialog.showModal();await refresh();if(recovery)return;const slot=Number(new URLSearchParams(location.search).get('cloudSlot'));history.replaceState(null,'',location.pathname);const row=rows.find(r=>r.slot===slot);if(row)await open(row);else if(!user)message('Sign in to open your cloud boards.');});
  }
 }
