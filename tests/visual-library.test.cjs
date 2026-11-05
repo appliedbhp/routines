@@ -1,7 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const modulePromise=import('data:text/javascript;base64,'+fs.readFileSync('cloud/visual-library/handler.js').toString('base64'));
+const modulePromise=import(require('node:url').pathToFileURL(require('node:path').resolve('cloud/visual-library/handler.js')).href);
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jk1cAAAAASUVORK5CYII=';
 const categories=[{id:'communication',name:'Communication'}],ages=[{id:'6-11',min_age:6,max_age:11}];
 const input={action:'publish',id:'f0086d47-e069-44c4-b515-44a83b8d0815',title:'I need help',category:'communication',age_strand:'6-11',style:'simple-symbol',keywords:'help, communication',alt_text:'A figure raises a hand.',generation_prompt:'An original figure raises a hand.',source:'Original artwork',usage_rights:'Owned by the library creator',reviewed:true,rights_confirmed:true,ready:false,image:png};
@@ -50,4 +50,27 @@ test('review, rights and category are validated before a write',async()=>{
  assert.throws(()=>validateRecord({...input,rights_confirmed:false},categories,ages));
  assert.throws(()=>validateRecord({...input,category:'../../invalid'},categories,ages));
  assert.equal(validateRecord({...input,ready:true},categories,ages).status,'ready');
+});
+
+test('generation attaches the exact reference image and records the reference settings',async()=>{
+ const {createVisualHandler,validateRecord}=await modulePromise;
+ const {characterReference,characterImageBase64}=await import(require('node:url').pathToFileURL(require('node:path').resolve('cloud/visual-library/character.js')).href);
+ let called=false;
+ const handle=createVisualHandler({authenticate:async()=>true,openaiKey:'test-secret',fetch:async(url,options)=>{
+  assert.equal(url,'https://api.openai.com/v1/images/edits');
+  assert.ok(options.body instanceof FormData);
+  assert.match(options.body.get('prompt'),/mouth variant02, eyes variant24, and eyebrows variant10/);
+  assert.equal(options.body.get('background'),'transparent');
+  const image=options.body.get('image[]');
+  assert.equal(Buffer.from(await image.arrayBuffer()).toString('base64'),characterImageBase64);
+  called=true;return new Response(JSON.stringify({data:[{b64_json:png}]}));
+ }});
+ const response=await handle(request({action:'generate',prompt:'Wash hands for ages 6–11.'}));
+ const data=await response.json();
+ assert.equal(response.status,200);assert.equal(called,true);
+ assert.equal(data.reference_id,characterReference.id);
+ const saved=validateRecord({...input,reference_id:data.reference_id},categories,ages);
+ assert.equal(saved.character_reference.options.skinColor,'ffffff');
+ assert.equal(saved.character_reference.options.hairProbability,'0');
+ assert.match(saved.usage_rights,/Lisa Wischofsky/);
 });

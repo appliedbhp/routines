@@ -1,3 +1,4 @@
+import {characterReference,characterImageBase64,characterInstructions} from './character.js';
 const REPOSITORY='appliedbhp/visual-supports';
 const API='https://api.github.com/repos/'+REPOSITORY;
 export class VisualError extends Error {
@@ -17,7 +18,7 @@ export function validateRecord(input,categories,ages){
  const slug=title.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'visual';
  if(!['illustration','simple-symbol','photo'].includes(input.style))throw new VisualError('Choose a visual style.');
  if(input.reviewed!==true||input.rights_confirmed!==true)throw new VisualError('Review the image and confirm its usage rights before publishing.');
- return {id:'admin-'+id,title,age_strand:age.id,min_age:age.min_age,max_age:age.max_age,category:category.id,
+ const record={id:'admin-'+id,title,age_strand:age.id,min_age:age.min_age,max_age:age.max_age,category:category.id,
   keywords:required(input.keywords,'search keywords',500).split(',').map(word=>word.trim()).filter(Boolean).slice(0,30),
   status:input.ready===true?'ready':'draft',style:input.style,
   assets:['visuals/'+age.id+'/'+category.id+'/'+slug+'-'+id+'.png'],
@@ -25,6 +26,12 @@ export function validateRecord(input,categories,ages){
   generation_prompt:required(input.generation_prompt,'the creation prompt',12000),
   source:required(input.source,'creation or source information',500),
   usage_rights:required(input.usage_rights,'usage-rights information',1500)};
+ if(input.reference_id){
+  if(input.reference_id!==characterReference.id)throw new VisualError('Unknown character reference.');
+  record.character_reference=characterReference;
+  if(!record.usage_rights.includes(characterReference.attribution))record.usage_rights+=' '+characterReference.attribution;
+ }
+ return record;
 }
 export function pngBytes(base64){
  if(typeof base64!=='string'||base64.length>8500000||!/^[A-Za-z0-9+/]+={0,2}$/.test(base64))throw new VisualError('Use a PNG image smaller than 6 MB.');
@@ -69,7 +76,14 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    record.image_sha256=digest;record.created_at=new Date().toISOString();
    const blob=await github('/git/blobs','POST',{content:input.image,encoding:'base64'});
    const base=await github('/git/commits/'+state.sha);
-   const tree=await github('/git/trees','POST',{base_tree:base.tree.sha,tree:[
+   const referenceFiles=[];
+   if(record.character_reference){
+    const referenceBlob=await github('/git/blobs','POST',{content:characterImageBase64,encoding:'base64'});
+    referenceFiles.push({path:characterReference.asset,mode:'100644',type:'blob',sha:referenceBlob.sha},
+     {path:'references/dicebear-adventurer-default-v1.json',mode:'100644',type:'blob',content:JSON.stringify(characterReference,null,2)+'\n'},
+     {path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character reference\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
+   }
+   const tree=await github('/git/trees','POST',{base_tree:base.tree.sha,tree:[...referenceFiles,
     {path:record.assets[0],mode:'100644',type:'blob',sha:blob.sha},
     {path:'catalog/visuals.json',mode:'100644',type:'blob',content:JSON.stringify([...state.catalog,record],null,2)+'\n'},
     {path:record.assets[0].replace(/\.png$/,'.json'),mode:'100644',type:'blob',content:JSON.stringify(record,null,2)+'\n'}
@@ -100,12 +114,15 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    if(input.action==='generate'){
     if(!openaiKey)throw new VisualError('Add ROUTINES_OPENAI_KEY to the server secrets to enable image generation.',503);
-    const prompt=required(input.prompt,'an image prompt',12000);
-    const response=await request('https://api.openai.com/v1/images/generations',{method:'POST',headers:{Authorization:'Bearer '+openaiKey,'Content-Type':'application/json'},body:JSON.stringify({model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:1,quality:'medium'}),signal:AbortSignal.timeout(140000)});
+    const prompt=characterInstructions+'Requested visual: '+required(input.prompt,'an image prompt',12000);
+    const form=new FormData();
+    for(const [key,value] of Object.entries({model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:'1',quality:'medium',input_fidelity:'high'}))form.set(key,value);
+    form.append('image[]',new Blob([Uint8Array.from(atob(characterImageBase64),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
+    const response=await request('https://api.openai.com/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+openaiKey},body:form,signal:AbortSignal.timeout(140000)});
     if(!response.ok)throw new VisualError('The image service could not generate this visual. Check the OpenAI key, model access, and billing, or try another prompt.',502);
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+' using the DiceBear Adventurer reference',reference_id:characterReference.id});
    }
    if(input.action==='publish')return respond(await publish(input));
    throw new VisualError('Unknown action.');

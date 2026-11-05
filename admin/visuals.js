@@ -8,9 +8,9 @@ if(host){
  <label>Title<input name="title" maxlength="100" required></label>
  <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset>
  <label>Category<select name="category" required></select></label>
- <label>Style<select name="style"><option value="illustration">Editorial illustration</option><option value="simple-symbol">Simple symbol</option><option value="photo">Photo style</option></select></label>
+ <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
- <div data-matches class="visual-matches" aria-live="polite"></div>
+ <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Standard character reference</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Every generated strand uses this same image reference.</p><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><div data-matches class="visual-matches" aria-live="polite"></div>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
  <label>Creation prompt<textarea name="generation_prompt" maxlength="12000" rows="7" required></textarea></label>
@@ -32,7 +32,7 @@ if(host){
  let catalog=[],variants=new Map(),activeAge='',busy=false,sessionRevision=0,canWrite=false;
  const selectedAges=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  function variant(age=activeAge){
-  if(!variants.has(age))variants.set(age,{id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:''});
+  if(!variants.has(age))variants.set(age,{id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null});
   return variants.get(age);
  }
  function storeReview(){
@@ -73,8 +73,8 @@ if(host){
   if(all){for(const current of variants.values()){current.reviewed=false;current.ready=false;}}
   field('reviewed').checked=false;field('ready').checked=false;field('rights_confirmed').checked=false;
  }
- function showImage(age,base64,prompt,source){
-  const current=variant(age);Object.assign(current,{image:base64,prompt,source,reviewed:false,ready:false});
+ function showImage(age,base64,prompt,source,referenceId=null){
+  const current=variant(age);Object.assign(current,{image:base64,prompt,source,referenceId,reviewed:false,ready:false});
   if(age===activeAge)renderVariant();
  }
  async function call(body){
@@ -131,8 +131,8 @@ if(host){
  q('[data-prompt]').onclick=()=>{
   const action=field('action').value.trim()||field('title').value.trim();
   if(!action){say('Describe the action or enter a title first.');return;}
-  const style={illustration:'Mature editorial illustration with thin, confident dark contours and flat solid colors.', 'simple-symbol':'A simple, uncluttered pictogram with clear shapes and strong contrast.',photo:'A clear photographic-style image with only the essential subject and props.'}[field('style').value];
-  field('generation_prompt').value='Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. '+style+' Use an age-respectful, race-neutral and gender-neutral abstract character when a person is needed. Keep the action easy to recognize at small size. Center the whole action with generous margins and essential props fully visible. Use a genuinely transparent background. Use clear contrast and meaning that does not depend on color alone. No text, letters, numbers, logos, borders, card layouts, or identifying personal information. For illustration or symbol styles, use a restrained palette of ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B; avoid gradients and shadows.';
+  const style={illustration:'Clean flat illustration matching the attached Adventurer character reference.', 'simple-symbol':'A simple, uncluttered pictogram matching the Adventurer character, clear shapes, and dark contours.',photo:'A clear photographic-style image with only the essential subject and props.'}[field('style').value];
+  field('generation_prompt').value='Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. '+style+' Use the standard Adventurer reference character with white skin, no hair, no glasses, mouth variant02, eyes variant24, and eyebrows variant10 when a person is needed. Keep the action easy to recognize at small size. Center the whole action with generous margins and essential props fully visible. Use a genuinely transparent background. Use clear contrast and meaning that does not depend on color alone. No text, letters, numbers, logos, borders, card layouts, or identifying personal information. For illustration or symbol styles, use a restrained palette of ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B; avoid gradients and shadows.';
   reviewed(true);say('Prompt built. {{age_strand}} will be replaced for each selected strand.');
  };
  function promptFor(age){
@@ -144,7 +144,7 @@ if(host){
  async function generateAge(age,revision){
   const result=await call({action:'generate',prompt:promptFor(age)});
   if(revision!==sessionRevision)return;
-  showImage(age,result.image,result.prompt,result.source);
+  showImage(age,result.image,result.prompt,result.source,result.reference_id);
  }
  q('[data-generate]').onclick=run(async revision=>{
   storeReview();
@@ -204,7 +204,7 @@ if(host){
     const current=variant(age);
     if(current.published)continue;
     say('Saving ages '+age+' to GitHub…');
-    const result=await call({...values,action:'publish',age_strand:age,id:current.id,image:current.image,generation_prompt:current.prompt||promptFor(age),alt_text:current.alt,source:current.source,reviewed:current.reviewed,rights_confirmed:true,ready:current.ready});
+    const result=await call({...values,action:'publish',age_strand:age,id:current.id,image:current.image,generation_prompt:current.prompt||promptFor(age),alt_text:current.alt,source:current.source,reference_id:current.referenceId,reviewed:current.reviewed,rights_confirmed:true,ready:current.ready});
     if(revision!==sessionRevision)return;
     current.published=true;current.url=result.url;renderVariant();
    }

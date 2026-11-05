@@ -20,3 +20,18 @@ Deploy index.ts with handler.js as routines-visual-library. The UI reads categor
 age strands, the catalog, and CREATING-VISUALS.md from the fixed library repository.
 Generation is explicit and uses the administrator's API account. No automatic generation
 or publishing occurs on page load.
+
+## Standard character reference
+
+Generation uses the OpenAI image-edit endpoint with a fixed DiceBear Adventurer PNG
+attached as its image input. character.js stores the reference pixels, pinned
+configuration, and attribution. The creator previews the matching local SVG.
+Defaults are no hair, transparent background, mouth variant02, eyes variant24,
+eyebrows variant10, no glasses, and opaque white skin. Additional facial details
+and earrings are disabled for consistency.
+
+Generated results carry a versioned reference ID. Publishing archives the reference
+PNG and its settings/license beside the catalog, includes the reference metadata
+on each visual, and appends its attribution to the usage-rights field. Existing
+uploaded artwork retains its recorded source; it does not acquire a character
+reference just because it was uploaded through this interface.
