@@ -19,11 +19,11 @@
     try {
       const payload=kind==='board'?await currentPayload():kind==='chart'?await currentChart():{format:'routine-visual-timer',version:1,routine:normalizeRoutine(routineRecord())};
       const title=kind==='board'?payload.board.title:kind==='chart'?payload.chart.name:payload.routine.name;
-      const filename=`${kind}-${(title || 'visual').replace(/[^a-z0-9_-]+/gi,'-').slice(0,80)}.json`;
+      const filename=`${kind}-${(title || 'visual').replace(/[^a-z0-9_-]+/gi,'-').slice(0,80)}.abhp`;
       const file=new File([JSON.stringify(payload,null,2)],filename,{type:'application/json'});
       const path=kind==='board'?`${payload.board.type}/`:kind==='chart'?'chore-chart/':'routine/';
       const importLabel=`Import ${kind}`;const saveLabel=kind==='routine'?'Save':`Save ${kind}`;
-      const body=`I'm sharing “${title || 'My visual'}” with you.\n\nHow to open it:\n1. Download the attached ${filename} file to your device.\n2. Open https://routines.getadhd.care/${path} in your browser.${kind==='routine'?' Select Builder.':''}\n3. Select “${importLabel}” and choose the downloaded JSON file.\n4. The visual opens immediately. Review it, then select “${saveLabel}” to keep it in this browser.\n5. Next time, open the same page in the same browser, choose it from the saved ${kind==='routine'?'routines':kind==='chart'?'charts':'boards'} menu, and select “Load${kind==='routine'?'':` ${kind}`}”.\n\nSaved visuals stay in that browser on that device. Keep the attached file as a backup.`;
+      const body=`I'm sharing “${title || 'My visual'}” with you.\n\nHow to open it:\n1. Download the attached ${filename} file to your device.\n2. Open https://routines.getadhd.care/${path} in your browser.${kind==='routine'?' Select Builder.':''}\n3. Select “${importLabel}” and choose the downloaded .abhp file.\n4. The visual opens immediately. Review it, then select “${saveLabel}” to keep it in this browser.\n5. Next time, open the same page in the same browser, choose it from the saved ${kind==='routine'?'routines':kind==='chart'?'charts':'boards'} menu, and select “Load${kind==='routine'?'':` ${kind}`}”.\n\nSaved visuals stay in that browser on that device. Keep the attached file as a backup.`;
       directions.value=body;
       download.disabled=false;draft.disabled=false;
       draft.onclick=()=>{
@@ -31,8 +31,8 @@
         const boundary=`visual-${crypto.randomUUID()}`;
         const subject=base64(`A visual for you: ${title || 'My visual'}`).replace(/\r\n/g,'');
         const eml=['X-Unsent: 1',`Subject: =?UTF-8?B?${subject}?=`,'MIME-Version: 1.0',`Content-Type: multipart/mixed; boundary="${boundary}"`,'',`--${boundary}`,'Content-Type: text/plain; charset=UTF-8','Content-Transfer-Encoding: base64','',base64(body),`--${boundary}`,'Content-Type: application/json',`Content-Disposition: attachment; filename="${filename}"`,'Content-Transfer-Encoding: base64','',base64(JSON.stringify(payload,null,2)),`--${boundary}--`,''].join('\r\n');
-        const url=URL.createObjectURL(new Blob([eml],{type:'message/rfc822'}));const link=document.createElement('a');link.href=url;link.download=filename.replace(/\.json$/,'.eml');document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-        message.textContent='Email file downloaded with the JSON attachment and instructions included. Open it in a compatible desktop email app, then choose Edit as new or Forward if needed, add the recipient, and send.';
+        const url=URL.createObjectURL(new Blob([eml],{type:'message/rfc822'}));const link=document.createElement('a');link.href=url;link.download=filename.replace(/\.abhp$/,'.eml');document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        message.textContent='Email file downloaded with the .abhp attachment and instructions included. Open it in a compatible desktop email app, then choose Edit as new or Forward if needed, add the recipient, and send.';
       };
       email.href=`mailto:?subject=${encodeURIComponent(`A visual for you: ${title || 'My visual'}`)}&body=${encodeURIComponent(body)}`;
       download.onclick=()=>{const url=URL.createObjectURL(file);const link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);message.textContent=`Downloaded ${filename}. This browser cannot attach it automatically: open the prefilled email and attach the file, or download the email file with its attachment already included.`;};

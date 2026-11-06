@@ -3,6 +3,7 @@
   const root = new URL('../', document.currentScript.src);
   await import(new URL('js/audience.js',root).href);
   const audience=globalThis.RoutineAudience;
+  globalThis.ABHPFileScriptURL=new URL('js/abhp-files.js',root).href;await import(globalThis.ABHPFileScriptURL);
   const tools = [
     ['routine/', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
     ['first-then/', 'First–Then board', 'checklist_rtl'], ['choice-board/', 'Choice board', 'developer_board'],
@@ -11,6 +12,7 @@
     ['self-monitor/', 'Self-monitor', 'done_all'],
     ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
+    ['yearly-planner/', 'Yearly & quarterly planner', '▦'], ['committed-action-tracker/', 'Committed Action Tracker', '✓'],
     ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
@@ -29,8 +31,8 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','What’s New':'Resources'};
-  const order=['Daily routines','Choices & transitions','Learning & focus','Resources'];
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly & quarterly planner':'Planning & values','Committed Action Tracker':'Planning & values','What’s New':'Resources'};
+  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
     const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;label.dataset.toolGroup=group;nav.append(label);lastGroup=group;}

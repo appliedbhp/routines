@@ -44,6 +44,7 @@ document.getElementById('visual-navigation')?.append(adminLink);
 
 const settingsDialog=modal('Settings');settingsDialog.classList.add('settings-dialog');
 const audience=globalThis.RoutineAudience;
+import('../cloud/preferences.js');
 const layout=make('div');layout.className='settings-layout';
 const settingsNav=make('nav');settingsNav.setAttribute('aria-label','Settings sections');
 const accountPanel=make('section'),userPanel=make('section');accountPanel.id='settingsAccount';userPanel.id='settingsUser';
@@ -65,11 +66,12 @@ const ageLabel=make('label','Default age group'),age=make('select');age.id='audi
 for(const [value,profile] of Object.entries(audience.profiles))age.add(new Option(profile.label,value));ageLabel.append(age);
 const themeLabel=make('label','Default theme'),theme=make('select');for(const [key,palette] of Object.entries(audience.themes))theme.add(new Option(palette[0],key));themeLabel.append(theme);
 const textLabel=make('label'),textOnly=make('input');textOnly.type='checkbox';textLabel.className='portal-text-only';textLabel.append(textOnly,make('span','Routine timer: text only (hide pictures)'));
-const note=make('p','Saved on this browser. The theme colors the whole site and becomes the starting theme in tools that support it. Saved boards keep their own theme.');note.className='portal-note';
+const note=make('p','Your age preference syncs with your account when signed in. Theme and display preferences stay on this browser. The theme colors the whole site and becomes the starting theme in tools that support it. Saved boards keep their own theme.');note.className='portal-note';
 const saved=make('p');saved.setAttribute('role','status');
 function syncPreferences(){const pref=audience.read();age.value=pref.age;textOnly.checked=pref.textOnly;theme.value=pref.theme;}
 function savePreferences(){audience.save({age:age.value,textOnly:textOnly.checked,theme:theme.value});saved.textContent='Settings saved on this browser.';}
-age.onchange=textOnly.onchange=theme.onchange=savePreferences;
+textOnly.onchange=theme.onchange=savePreferences;
+age.onchange=async()=>{savePreferences();try{if(await globalThis.RoutineAccountPreferences?.saveAge(age.value))saved.textContent='Age preference saved to your account.';}catch{saved.textContent='Saved on this browser. Could not update your account; try again when connected.';}};
 addEventListener('routines-audience-change',syncPreferences);addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)syncPreferences();});syncPreferences();
 userPanel.append(ageLabel,themeLabel,textLabel,note,saved,make('h4','Avatar'),make('p','Avatar builder is coming soon.'));
 settings.onclick=()=>{settingsDialog.showModal();loadAccount();};

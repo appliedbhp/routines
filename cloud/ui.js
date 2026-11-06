@@ -59,7 +59,7 @@ async function start(){
    const h=document.createElement('h3');h.textContent=row?S.title(row.payload):`Empty board slot ${slot}`;card.append(h);
    if(row){const description=document.createElement('p');description.textContent=`${S.type(row.payload).replaceAll('-',' ')} · Updated ${new Date(row.updated_at).toLocaleString()}`;card.append(description);
     action(card,'Open board',()=>open(row));
-    action(card,'Export settings',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(row.payload,null,2)],{type:'application/json'}));a.href=url;a.download='board-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    action(card,'Export settings',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(row.payload,null,2)],{type:'application/json'}));a.href=url;a.download='board-settings.abhp';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
     action(card,'Delete from cloud',async()=>{if(!confirm(`Delete “${S.title(row.payload)}” from the cloud? This cannot be undone. Export it first if you need a backup.`))return;const {data,error}=await client.from('routine_cloud_boards').delete().eq('slot',slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Refresh and try again.');await refresh();message('Cloud copy deleted. Local boards are unchanged.');});
    }
    if(editor)action(card,row?'Replace with current board':'Save current board here',()=>review(row,slot));

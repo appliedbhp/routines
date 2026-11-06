@@ -275,7 +275,7 @@ document.getElementById('exportChart').onclick = async () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = (payload.chart.name.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'weekly-chore-chart') + '.json';
+    link.download = (payload.chart.name.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'weekly-chore-chart') + '.abhp';
     document.body.append(link);
     link.click();
     link.remove();

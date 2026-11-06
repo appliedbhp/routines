@@ -16,7 +16,7 @@ for(const kind of ['board','chart','routine'])test(`${kind} sharing prepares cor
  assert.ok(body.includes(kind==='board'?'/task-strip/':kind==='chart'?'/chore-chart/':'routines.getadhd.care/'));
  assert.equal(blobs.length,1,'unsupported browsers download JSON automatically');
  elements.find(e=>e.textContent==='Download email with attachment (.eml)').onclick();
- const eml=await blobs[1].text();assert.match(eml,/Content-Disposition: attachment; filename=".*\.json"/);assert.match(eml,/X-Unsent: 1/);
+ const eml=await blobs[1].text();assert.match(eml,/Content-Disposition: attachment; filename=".*\.abhp"/);assert.match(eml,/X-Unsent: 1/);
  const encoded=eml.split('Content-Transfer-Encoding: base64\r\n\r\n')[2].split('\r\n--')[0];
  const decoded=JSON.parse(Buffer.from(encoded,'base64').toString('utf8'));
  assert.equal(kind==='board'?decoded.board.title:kind==='chart'?decoded.chart.name:decoded.routine.name,'Ready & go');

@@ -1016,7 +1016,7 @@ function exportRoutine() {
     const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${record.name.replace(/[^a-z0-9_-]+/gi, "-").slice(0, 80) || "routine"}.json`;
+    link.download = `${record.name.replace(/[^a-z0-9_-]+/gi, "-").slice(0, 80) || "routine"}.abhp`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showSaveStatus("Routine exported with its theme, settings, and icon positions.");
