@@ -34,3 +34,5 @@ body[data-planner] .file-bar{z-index:20}body[data-planner].board-print-preview .
 .planning-paper.quarterly-values-page .quarterly-reflection{display:flex;flex-direction:column;flex:1;min-height:70px}
 .planning-paper.quarterly-values-page .quarterly-reflection textarea,.planning-paper.quarterly-values-page .quarterly-reflection .paper-answer{flex:1;min-height:0;height:auto}
 .planning-paper.quarterly-values-page .quarterly-reflection .field-label{flex:none}
+
+.mindful-widget #mindfulPlayer{max-height:calc(100dvh - 100px);overflow-y:auto;box-sizing:border-box}.mindful-select{display:grid;gap:7px;font-size:13px;font-weight:600}.mindful-select select{width:100%;min-width:0;padding:10px 8px;border:1px solid #b9c7d8;border-radius:8px;background:white;color:#17283f;font:inherit}.mindful-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.mindful-actions a{display:inline-block;border:1px solid #bccce0;border-radius:8px;padding:9px 10px;text-decoration:none}.mindful-actions a:hover{background:#edf4ff}.mindful-actions a:last-child{background:#2459a6;color:white;border-color:#2459a6}
