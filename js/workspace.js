@@ -12,8 +12,8 @@
     ['self-monitor/', 'Self-monitor', 'done_all'],
     ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
-    ['yearly-planner/', 'Yearly planning', 'calendar_year'], ['quarterly-planner/', 'Quarterly planning', 'calendar_quarter'], ['monthly-planner/', 'Monthly planning', 'calendar_month'], ['committed-action-tracker/', 'Committed actions', '✓'],
-    ['meal-planner/', 'Meal planning', 'restaurant'], ['implementation-intentions/', 'Implementation intentions', '◎'],
+    ['yearly-planner/', 'Yearly', 'calendar_year'], ['quarterly-planner/', 'Quarterly', 'calendar_quarter'], ['monthly-planner/', 'Monthly', 'calendar_month'], ['weekly-planner/', 'Weekly', 'calendar_month'], ['daily-planner/', 'Daily', 'calendar_month'], ['committed-action-tracker/', 'Commitments', '✓'],
+    ['meal-planner/', 'Meal planning', 'restaurant'], ['implementation-intentions/', 'Intentions', '◎'],
     ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
@@ -32,13 +32,15 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Monthly planning':'Planning & values','Committed actions':'Planning & values','Meal planning':'Planning & values','Implementation intentions':'Goal setting','Maintenance':'Memory','Touchpoints':'Memory','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
-  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Goal setting','Memory','Arcade','Resources'];
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly':'Planning','Quarterly':'Planning','Monthly':'Planning','Weekly':'Planning','Daily':'Planning','Commitments':'Values and actions','Meal planning':'Planning','Intentions':'Values and actions','Maintenance':'Memory','Touchpoints':'Memory','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
+  globalThis.RoutineToolCatalog=tools.filter(t=>t[0]!=='whats-new/').map(t=>({id:t[0].replace('/',''),label:t[1],group:groupFor[t[1]]}));
+  let collapsedGroups={};try{collapsedGroups=JSON.parse(localStorage.getItem('routines.collapsedGroups.v1')||'{}');}catch{}
+  const order=['Daily routines','Choices & transitions','Learning & focus','Planning','Values and actions','Memory','Arcade','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
-    const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;label.dataset.toolGroup=group;nav.append(label);lastGroup=group;}
+    const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.dataset.toolGroup=group;const fold=document.createElement('button');fold.type='button';fold.textContent=group;fold.setAttribute('aria-expanded',String(!collapsedGroups[group]));fold.onclick=()=>{collapsedGroups[group]=!collapsedGroups[group];fold.setAttribute('aria-expanded',String(!collapsedGroups[group]));nav.querySelectorAll('a[data-tool-group]').forEach(a=>{if(a.dataset.toolGroup===group)a.classList.toggle('category-collapsed',!!collapsedGroups[group]);});try{localStorage.setItem('routines.collapsedGroups.v1',JSON.stringify(collapsedGroups));}catch{}};label.append(fold);nav.append(label);lastGroup=group;}
     const link = document.createElement('a'); link.href = new URL(path, root).href;
-    link.dataset.tool=path.replace(/\/$/,'');link.dataset.toolGroup=group;
+    link.dataset.tool=path.replace(/\/$/,'');link.dataset.toolGroup=group;link.classList.toggle('category-collapsed',!!collapsedGroups[group]);
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
     if(['timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all','calendar_year','calendar_quarter','calendar_month','restaurant','person'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
@@ -49,7 +51,7 @@
     nav.append(link);
   }
   function applyAudience(preference=audience.read()){
-    for(const link of nav.querySelectorAll('[data-tool]'))link.hidden=link.dataset.tool!=='whats-new'&&!audience.allows(preference.age,link.dataset.tool);
+    for(const link of nav.querySelectorAll('[data-tool]'))link.hidden=link.dataset.tool!=='whats-new'&&!audience.allows(preference.age,link.dataset.tool,preference.tools);
     for(const heading of nav.querySelectorAll('p[data-tool-group]'))heading.hidden=![...nav.querySelectorAll('a[data-tool-group]')].some(link=>link.dataset.toolGroup===heading.dataset.toolGroup&&!link.hidden);
     document.body.classList.toggle('routine-text-only',preference.textOnly);
     const palette=audience.themes[preference.theme];document.body.dataset.siteTheme=preference.theme;

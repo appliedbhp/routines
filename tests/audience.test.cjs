@@ -3,7 +3,7 @@ const audience=require('../js/audience.js');
 test('age profiles contain exactly the requested tool sets',()=>{
  assert.deepEqual(audience.profiles.young.tools,['routine','chore-chart','task-strip','now-next-later','first-then','choice-board','token-board']);
  assert.deepEqual(audience.profiles.child.tools,['routine','chore-chart','task-strip','now-next-later','choice-board','token-board','self-monitor','homework-planner']);
- assert.deepEqual(audience.profiles.teen.tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','meal-planner','committed-action-tracker','values-blaster','my-character','maintenance','touchpoints']);
+ assert.deepEqual(audience.profiles.teen.tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','weekly-planner','daily-planner','meal-planner','committed-action-tracker','values-blaster','my-character','maintenance','touchpoints']);
  assert.deepEqual(audience.profiles.adult.tools,['implementation-intentions',...audience.profiles.teen.tools]);
  assert.equal(audience.allows('child','first-then'),false);assert.equal(audience.allows('all','future-tool'),true);
 });
@@ -25,3 +25,4 @@ test('tool defaults select supported themes and preserve a restored self-monitor
  vm.runInNewContext(source.slice(start,end)+';defaultToolTheme();',context);assert.equal(select.value,'ocean');assert.equal(changes,1);
  restored=true;select.value='forest';context.defaultToolTheme();assert.equal(select.value,'forest');assert.equal(changes,1);
 });
+test('custom tool selection overrides age defaults and can be reset',()=>{assert.equal(audience.allows('young','daily-planner',['daily-planner']),true);assert.equal(audience.allows('all','routine',[]),false);assert.deepEqual(audience.normalize({tools:['routine','routine',null]}).tools,['routine']);assert.equal(audience.allows('young','routine',undefined),true);});

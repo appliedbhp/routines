@@ -47,10 +47,11 @@ const audience=globalThis.RoutineAudience;
 import('../cloud/preferences.js');
 const layout=make('div');layout.className='settings-layout';
 const settingsNav=make('nav');settingsNav.setAttribute('aria-label','Settings sections');
-const accountPanel=make('section'),userPanel=make('section');accountPanel.id='settingsAccount';userPanel.id='settingsUser';
-const accountTab=make('button','Account'),userTab=make('button','User');
-for(const [button,panel] of [[accountTab,accountPanel],[userTab,userPanel]]){button.type='button';button.setAttribute('aria-controls',panel.id);button.onclick=()=>{accountPanel.hidden=panel!==accountPanel;userPanel.hidden=panel!==userPanel;accountTab.setAttribute('aria-pressed',String(panel===accountPanel));userTab.setAttribute('aria-pressed',String(panel===userPanel));};settingsNav.append(button);}
-const panels=make('div');panels.append(accountPanel,userPanel);layout.append(settingsNav,panels);settingsDialog.append(layout);accountTab.click();
+const accountPanel=make('section'),userPanel=make('section'),storagePanel=make('section');storagePanel.id='settingsStorage';accountPanel.id='settingsAccount';userPanel.id='settingsUser';
+const accountTab=make('button','Account'),userTab=make('button','User'),storageTab=make('button','Storage');
+const settingsPairs=[[accountTab,accountPanel],[userTab,userPanel],[storageTab,storagePanel]];
+for(const [button,panel] of settingsPairs){button.type='button';button.setAttribute('aria-controls',panel.id);button.onclick=()=>{for(const [b,p] of settingsPairs){p.hidden=p!==panel;b.setAttribute('aria-pressed',String(p===panel));}if(panel===storagePanel)globalThis.refreshStorageSettings?.();};settingsNav.append(button);}
+const panels=make('div');panels.append(accountPanel,userPanel,storagePanel);layout.append(settingsNav,panels);settingsDialog.append(layout);accountTab.click();
 accountPanel.append(make('h3','Account'));
 const identity=make('dl'),username=make('dd','Not signed in'),email=make('dd','Not signed in');identity.append(make('dt','Username'),username,make('dt','Email'),email);
 const password=make('a','Set or reset password');password.href=new URL('account/',root);password.onclick=()=>{try{sessionStorage.setItem('routines.account.mode','reset');}catch{}};
@@ -69,12 +70,13 @@ const textLabel=make('label'),textOnly=make('input');textOnly.type='checkbox';te
 const note=make('p','Your age preference syncs with your account when signed in. Theme and display preferences stay on this browser. The theme colors the whole site and becomes the starting theme in tools that support it. Saved boards keep their own theme.');note.className='portal-note';
 const saved=make('p');saved.setAttribute('role','status');
 function syncPreferences(){const pref=audience.read();age.value=pref.age;textOnly.checked=pref.textOnly;theme.value=pref.theme;}
-function savePreferences(){audience.save({age:age.value,textOnly:textOnly.checked,theme:theme.value});saved.textContent='Settings saved on this browser.';}
+function savePreferences(){audience.save({...audience.read(),age:age.value,textOnly:textOnly.checked,theme:theme.value});saved.textContent='Settings saved on this browser.';}
 textOnly.onchange=theme.onchange=savePreferences;
 age.onchange=async()=>{savePreferences();try{if(await globalThis.RoutineAccountPreferences?.saveAge(age.value))saved.textContent='Age preference saved to your account.';}catch{saved.textContent='Saved on this browser. Could not update your account; try again when connected.';}};
 addEventListener('routines-audience-change',syncPreferences);addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)syncPreferences();});syncPreferences();
-userPanel.append(ageLabel,themeLabel,textLabel,note,saved,make('h4','Avatar'),make('p','Avatar builder is coming soon.'));
-settings.onclick=()=>{settingsDialog.showModal();loadAccount();};
+userPanel.append(ageLabel,themeLabel,textLabel,note,saved);
+settings.onclick=()=>{settingsDialog.showModal();loadAccount();globalThis.refreshCharacterSettings?.();globalThis.refreshStorageSettings?.();};
+import('./settings-extras.js').then(m=>m.mount({userPanel,storagePanel,settingsDialog,root}));
 
 const preview=modal('Portal preview');
 const context=make('p');context.className='portal-note';
