@@ -1,0 +1,7 @@
+Adventurer artwork by Lisa Wischofsky, via DiceBear @dicebear/adventurer 9.2.4.
+Source: https://www.figma.com/community/file/1184595184137881796
+Creator: https://www.instagram.com/lischi_art/
+Artwork license: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Modifications: ABHP hair-only gradient and character studio integration.
+DiceBear core and package code: MIT. See DICEBEAR-MIT.txt.
