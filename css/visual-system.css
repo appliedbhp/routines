@@ -91,3 +91,4 @@
 .calm-ui .file-modes button[aria-pressed=true],.calm-ui button.primary,.calm-ui .file-primary-action{background:var(--ui-blue);border-color:var(--ui-blue);color:white}
 .calm-ui .portal-dialog,.calm-ui .cloud-dialog{background:var(--ui-canvas);color:var(--ui-ink)}
 }
+@media screen{.calm-ui #visual-navigation>a[data-tool]{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:center;column-gap:10px;box-sizing:border-box;min-height:44px;padding:10px;line-height:20px}.calm-ui #visual-navigation .nav-icon{width:20px;height:20px;line-height:20px;display:grid;place-items:center}.calm-ui #visual-navigation .sidebar-heading{margin:20px 10px 5px;padding:0;line-height:14px}.calm-ui.sidebar-collapsed #visual-navigation>a[data-tool]{grid-template-columns:20px;justify-content:center;padding:10px 0}}

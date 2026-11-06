@@ -1,6 +1,6 @@
 /* .abhp is a versioned JSON document, never executable code. */
 (function(root){
- const paths={'routine-visual-timer':'routine','weekly-chore-chart':'chore-chart','token-board':'token-board','homework-planner':'homework-planner','self-monitor':'self-monitor','yearly-planner':'yearly-planner','quarterly-planner':'quarterly-planner','monthly-planner':'monthly-planner','committed-action-tracker':'committed-action-tracker'};
+ const paths={'routine-visual-timer':'routine','weekly-chore-chart':'chore-chart','token-board':'token-board','homework-planner':'homework-planner','self-monitor':'self-monitor','yearly-planner':'yearly-planner','quarterly-planner':'quarterly-planner','monthly-planner':'monthly-planner','meal-planner':'meal-planner','implementation-intentions':'implementation-intentions','committed-action-tracker':'committed-action-tracker'};
  function destination(p){if(!p||![1,2].includes(p.version))throw Error('Unsupported ABHP file version.');if(p.format==='visual-support-board'&&['first-then','choice-board','task-strip','now-next-later','calm-down'].includes(p.board?.type))return p.board.type;if(paths[p.format])return paths[p.format];throw Error('This file is not a supported board, routine, or setup.');}
  const api={destination};root.ABHPFiles=api;if(typeof module!=='undefined'){module.exports=api;return;}
  const siteRoot=new URL('../',root.ABHPFileScriptURL);

@@ -3,7 +3,8 @@ const audience=require('../js/audience.js');
 test('age profiles contain exactly the requested tool sets',()=>{
  assert.deepEqual(audience.profiles.young.tools,['routine','chore-chart','task-strip','now-next-later','first-then','choice-board','token-board']);
  assert.deepEqual(audience.profiles.child.tools,['routine','chore-chart','task-strip','now-next-later','choice-board','token-board','self-monitor','homework-planner']);
- for(const age of ['teen','adult'])assert.deepEqual(audience.profiles[age].tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','committed-action-tracker']);
+ assert.deepEqual(audience.profiles.teen.tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','meal-planner','committed-action-tracker']);
+ assert.deepEqual(audience.profiles.adult.tools,['implementation-intentions',...audience.profiles.teen.tools]);
  assert.equal(audience.allows('child','first-then'),false);assert.equal(audience.allows('all','future-tool'),true);
 });
 test('missing or invalid local preferences keep all tools visible',()=>{
