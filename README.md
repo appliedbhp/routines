@@ -263,3 +263,6 @@ Theme and presentation changes preserve session state and pairing. Realtime uses
 Peer-presence grace is 90 seconds to allow ordinary browser background timer throttling. An explicit channel failure disables adult controls immediately; a fresh channel reconnects after three seconds while retaining ECDH keys and replay protection. The two-hour invitation/session expiry remains intentional.
 
 Both peers request a channel rebuild after 15 seconds without peer messages, including silent stalls where the socket still reports connected. Failed sends also trigger recovery. Adult rating controls remain visible while waiting or reconnecting and enable only for a current, connected check-in.
+
+### Age-based navigation
+Settings stores the selected age group and routine text-only preference in this browser under `routines.audience.v1`; neither is uploaded to an account. `js/audience.js` owns the audience-to-tool mapping. Add future teen/adult tool slugs to those profile lists and register their navigation entries in `js/workspace.js`. The default is All ages, and All tools remains an unrestricted directory. The text-only preference hides routine pictures in editing, printing, and presentation without changing saved image data.

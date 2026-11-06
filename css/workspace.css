@@ -126,3 +126,9 @@
  @media(max-width:1000px){.visual-workspace .builder-layout{grid-template-columns:minmax(0,1fr)}}
  @media(max-width:480px){.visual-workspace .builder-left{padding:14px}.visual-workspace .step-row{grid-template-columns:40px minmax(0,1fr) 48px 24px;gap:8px}.visual-workspace .step-minutes-input{width:48px}.visual-workspace .step-row .min-label{display:none}}
 }
+
+/* Age preferences only tailor navigation; they never restrict access or erase boards. */
+.workspace-sidebar [data-tool][hidden],.workspace-sidebar [data-tool-group][hidden]{display:none!important}
+.routine-text-only .wheel-movable[data-kind="icon"],.routine-text-only .wheel-icon,.routine-text-only .wheel-icon-halo,.routine-text-only #projCurrentIcon,.routine-text-only .step-thumb{display:none!important}
+.visual-workspace.routine-text-only .step-row{grid-template-columns:minmax(0,1fr) 60px auto 32px}
+@media(max-width:480px){.visual-workspace.routine-text-only .step-row{grid-template-columns:minmax(0,1fr) 48px 24px}}

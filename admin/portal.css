@@ -27,3 +27,5 @@
  }
 }
 .portal-dialog label[hidden]{display:none}
+
+.portal-dialog>label{margin-top:20px}.portal-dialog .portal-text-only{display:flex;align-items:center;gap:10px}.portal-text-only input{width:20px;height:20px;flex:none}.portal-dialog [role=status]{font-size:.875rem;color:#315b43}

@@ -43,6 +43,19 @@ if(adminPage){adminLink.setAttribute('aria-current','page');admin.setAttribute('
 document.getElementById('visual-navigation')?.append(adminLink);
 
 const settingsDialog=modal('Settings');
+const audience=globalThis.RoutineAudience;
+const ageLabel=make('label','Age group'),age=make('select');age.id='audienceAge';
+for(const [value,profile] of Object.entries(audience.profiles))age.add(new Option(profile.label,value));
+age.value=audience.read().age;ageLabel.append(age);
+const textLabel=make('label'),textOnly=make('input');textOnly.type='checkbox';textOnly.checked=audience.read().textOnly;
+textLabel.className='portal-text-only';textLabel.append(textOnly,make('span','Routine timer: text only (hide pictures)'));
+const preferenceNote=make('p','Personalizes the side menu on this browser. All tools remain available from All tools. No birthdate or child profile is collected.');preferenceNote.className='portal-note';
+const saved=make('p');saved.setAttribute('role','status');
+function saveAudience(){audience.save({age:age.value,textOnly:textOnly.checked});saved.textContent='Settings saved on this browser.';}
+age.onchange=saveAudience;textOnly.onchange=saveAudience;
+addEventListener('routines-audience-change',event=>{age.value=event.detail.age;textOnly.checked=event.detail.textOnly;});
+addEventListener('storage',event=>{if(event.key===audience.key||event.key===null){const pref=audience.read();age.value=pref.age;textOnly.checked=pref.textOnly;}});
+settingsDialog.append(ageLabel,textLabel,preferenceNote,saved);
 const account=make('a','Account and sign-in');account.href=new URL('account/',root);
 const privacy=make('a','Privacy policy');privacy.href=new URL('routine/#privacy-policy',root);
 const navButton=make('button','Toggle sidebar');navButton.type='button';

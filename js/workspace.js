@@ -1,6 +1,8 @@
 /* Shared visual-tool navigation; existing editors keep their own state and events. */
-(() => {
+(async () => {
   const root = new URL('../', document.currentScript.src);
+  await import(new URL('js/audience.js',root).href);
+  const audience=globalThis.RoutineAudience;
   const tools = [
     ['routine/', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
     ['first-then/', 'First–Then board', 'checklist_rtl'], ['choice-board/', 'Choice board', 'developer_board'],
@@ -31,8 +33,9 @@
   const order=['Daily routines','Choices & transitions','Learning & focus','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
-    const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;nav.append(label);lastGroup=group;}
+    const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;label.dataset.toolGroup=group;nav.append(label);lastGroup=group;}
     const link = document.createElement('a'); link.href = new URL(path, root).href;
+    link.dataset.tool=path.replace(/\/$/,'');link.dataset.toolGroup=group;
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
     if(['timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
@@ -42,6 +45,14 @@
     if (new URL(link.href).pathname === location.pathname.replace(/index\.html$/, '')) link.setAttribute('aria-current', 'page');
     nav.append(link);
   }
+  function applyAudience(preference=audience.read()){
+    for(const link of nav.querySelectorAll('[data-tool]'))link.hidden=link.dataset.tool!=='whats-new'&&!audience.allows(preference.age,link.dataset.tool);
+    for(const heading of nav.querySelectorAll('p[data-tool-group]'))heading.hidden=![...nav.querySelectorAll('a[data-tool-group]')].some(link=>link.dataset.toolGroup===heading.dataset.toolGroup&&!link.hidden);
+    document.body.classList.toggle('routine-text-only',preference.textOnly);
+  }
+  applyAudience();
+  addEventListener('routines-audience-change',event=>applyAudience(event.detail));
+  addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)applyAudience();});
   sidebar.append(home,toggle,nav);
   const backdrop=document.createElement('button');backdrop.type='button';backdrop.className='workspace-backdrop no-print';backdrop.setAttribute('aria-label','Close tool navigation');backdrop.hidden=true;document.body.prepend(backdrop);
   const mobileToggle=document.createElement('button');mobileToggle.type='button';mobileToggle.className='workspace-mobile-toggle no-print';mobileToggle.textContent='☰';mobileToggle.setAttribute('aria-label','Browse visual tools');mobileToggle.setAttribute('aria-controls','visual-navigation');
