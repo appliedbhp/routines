@@ -7,7 +7,20 @@ test('age profiles contain exactly the requested tool sets',()=>{
  assert.equal(audience.allows('child','first-then'),false);assert.equal(audience.allows('all','future-tool'),true);
 });
 test('missing or invalid local preferences keep all tools visible',()=>{
- assert.deepEqual(audience.normalize({age:'invalid',textOnly:'true'}),{age:'all',textOnly:false});
- assert.deepEqual(audience.read(),{age:'all',textOnly:false});
- assert.deepEqual(audience.normalize({age:'teen',textOnly:true,name:'not stored'}),{age:'teen',textOnly:true});
+ assert.deepEqual(audience.normalize({age:'invalid',textOnly:'true'}),{age:'all',textOnly:false,theme:'classic'});
+ assert.deepEqual(audience.read(),{age:'all',textOnly:false,theme:'classic'});
+ assert.deepEqual(audience.normalize({age:'teen',textOnly:true,name:'not stored'}),{age:'teen',textOnly:true,theme:'classic'});
+});
+
+test('theme preferences support existing tool themes and reject unknown values',()=>{
+ assert.equal(audience.normalize({theme:'ocean'}).theme,'ocean');
+ assert.equal(audience.normalize({theme:'unknown'}).theme,'classic');
+ assert.equal(audience.normalize({age:'child',textOnly:true,theme:'forest'}).theme,'forest');
+});
+test('tool defaults select supported themes and preserve a restored self-monitor session',()=>{
+ const fs=require('node:fs'),vm=require('node:vm');const source=fs.readFileSync('js/workspace.js','utf8');const start=source.indexOf('  function defaultToolTheme(){'),end=source.indexOf("  if(document.readyState",start);let restored=false,changes=0;
+ const select={tagName:'SELECT',options:[{value:'classic'},{value:'ocean'}],value:'classic',dispatchEvent(){changes++;}};
+ const context={audience:{read:()=>({theme:'ocean'})},sessionStorage:{getItem:()=>restored?'saved':null},document:{getElementById:id=>id==='setupName'?{}:id==='theme'?select:null},Event:class{}};
+ vm.runInNewContext(source.slice(start,end)+';defaultToolTheme();',context);assert.equal(select.value,'ocean');assert.equal(changes,1);
+ restored=true;select.value='forest';context.defaultToolTheme();assert.equal(select.value,'forest');assert.equal(changes,1);
 });

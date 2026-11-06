@@ -42,28 +42,37 @@ const adminLabel=make('span','Administration');adminLabel.className='nav-label';
 if(adminPage){adminLink.setAttribute('aria-current','page');admin.setAttribute('aria-current','page');}
 document.getElementById('visual-navigation')?.append(adminLink);
 
-const settingsDialog=modal('Settings');
+const settingsDialog=modal('Settings');settingsDialog.classList.add('settings-dialog');
 const audience=globalThis.RoutineAudience;
-const ageLabel=make('label','Age group'),age=make('select');age.id='audienceAge';
-for(const [value,profile] of Object.entries(audience.profiles))age.add(new Option(profile.label,value));
-age.value=audience.read().age;ageLabel.append(age);
-const textLabel=make('label'),textOnly=make('input');textOnly.type='checkbox';textOnly.checked=audience.read().textOnly;
-textLabel.className='portal-text-only';textLabel.append(textOnly,make('span','Routine timer: text only (hide pictures)'));
-const preferenceNote=make('p','Personalizes the side menu on this browser. All tools remain available from All tools. No birthdate or child profile is collected.');preferenceNote.className='portal-note';
-const saved=make('p');saved.setAttribute('role','status');
-function saveAudience(){audience.save({age:age.value,textOnly:textOnly.checked});saved.textContent='Settings saved on this browser.';}
-age.onchange=saveAudience;textOnly.onchange=saveAudience;
-addEventListener('routines-audience-change',event=>{age.value=event.detail.age;textOnly.checked=event.detail.textOnly;});
-addEventListener('storage',event=>{if(event.key===audience.key||event.key===null){const pref=audience.read();age.value=pref.age;textOnly.checked=pref.textOnly;}});
-settingsDialog.append(ageLabel,textLabel,preferenceNote,saved);
-const account=make('a','Account and sign-in');account.href=new URL('account/',root);
+const layout=make('div');layout.className='settings-layout';
+const settingsNav=make('nav');settingsNav.setAttribute('aria-label','Settings sections');
+const accountPanel=make('section'),userPanel=make('section');accountPanel.id='settingsAccount';userPanel.id='settingsUser';
+const accountTab=make('button','Account'),userTab=make('button','User');
+for(const [button,panel] of [[accountTab,accountPanel],[userTab,userPanel]]){button.type='button';button.setAttribute('aria-controls',panel.id);button.onclick=()=>{accountPanel.hidden=panel!==accountPanel;userPanel.hidden=panel!==userPanel;accountTab.setAttribute('aria-pressed',String(panel===accountPanel));userTab.setAttribute('aria-pressed',String(panel===userPanel));};settingsNav.append(button);}
+const panels=make('div');panels.append(accountPanel,userPanel);layout.append(settingsNav,panels);settingsDialog.append(layout);accountTab.click();
+accountPanel.append(make('h3','Account'));
+const identity=make('dl'),username=make('dd','Not signed in'),email=make('dd','Not signed in');identity.append(make('dt','Username'),username,make('dt','Email'),email);
+const password=make('a','Set or reset password');password.href=new URL('account/',root);password.onclick=()=>{try{sessionStorage.setItem('routines.account.mode','reset');}catch{}};
 const privacy=make('a','Privacy policy');privacy.href=new URL('routine/#privacy-policy',root);
-const navButton=make('button','Toggle sidebar');navButton.type='button';
-navButton.onclick=()=>{settingsDialog.close();document.querySelector('.sidebar-toggle')?.click();};
-for(const control of [account,privacy,navButton]){
- const row=make('p');row.append(control);settingsDialog.append(row);
-}
-settings.onclick=()=>settingsDialog.showModal();
+const login=make('a','Log in');login.href=new URL('account/',root);
+const logout=make('button','Log out on this device');logout.type='button';logout.hidden=true;
+const accountStatus=make('p');accountStatus.setAttribute('role','status');
+logout.onclick=async()=>{logout.disabled=true;try{const client=await accountClient();const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;await loadAccount();accountStatus.textContent='Logged out on this device.';}catch{accountStatus.textContent='Could not log out. Check your connection and try again.';}finally{logout.disabled=false;}};
+accountPanel.append(identity,make('h4','Password'),make('p','Passwords are never displayed. Use the secure email link to set or reset yours.'),password,make('h4','Privacy'),privacy,make('hr'),login,logout,accountStatus);
+async function loadAccount(){try{const client=await accountClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;let user=null;if(sessionData.session){const {data,error}=await client.auth.getUser();if(error)throw error;user=data.user;}username.textContent=user?(user.user_metadata?.username||user.user_metadata?.display_name||'Not set (sign in with email)'):'Not signed in';email.textContent=user?.email||'Not signed in';login.hidden=!!user;logout.hidden=!user;}catch{username.textContent='Unavailable';email.textContent='Sign in or reconnect to view your account';login.hidden=false;logout.hidden=true;}}
+userPanel.append(make('h3','User'));
+const ageLabel=make('label','Default age group'),age=make('select');age.id='audienceAge';
+for(const [value,profile] of Object.entries(audience.profiles))age.add(new Option(profile.label,value));ageLabel.append(age);
+const themeLabel=make('label','Default theme'),theme=make('select');for(const [key,palette] of Object.entries(audience.themes))theme.add(new Option(palette[0],key));themeLabel.append(theme);
+const textLabel=make('label'),textOnly=make('input');textOnly.type='checkbox';textLabel.className='portal-text-only';textLabel.append(textOnly,make('span','Routine timer: text only (hide pictures)'));
+const note=make('p','Saved on this browser. The theme colors the whole site and becomes the starting theme in tools that support it. Saved boards keep their own theme.');note.className='portal-note';
+const saved=make('p');saved.setAttribute('role','status');
+function syncPreferences(){const pref=audience.read();age.value=pref.age;textOnly.checked=pref.textOnly;theme.value=pref.theme;}
+function savePreferences(){audience.save({age:age.value,textOnly:textOnly.checked,theme:theme.value});saved.textContent='Settings saved on this browser.';}
+age.onchange=textOnly.onchange=theme.onchange=savePreferences;
+addEventListener('routines-audience-change',syncPreferences);addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)syncPreferences();});syncPreferences();
+userPanel.append(ageLabel,themeLabel,textLabel,note,saved,make('h4','Avatar'),make('p','Avatar builder is coming soon.'));
+settings.onclick=()=>{settingsDialog.showModal();loadAccount();};
 
 const preview=modal('Portal preview');
 const context=make('p');context.className='portal-note';

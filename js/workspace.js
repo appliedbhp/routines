@@ -25,8 +25,8 @@
   nav.id = 'visual-navigation';
   nav.setAttribute('aria-label', 'Create a visual');
   const home = document.createElement('a');home.className='workspace-home';home.href=root.href;
-  const homeMark=document.createElement('span');homeMark.className='workspace-home-mark';homeMark.setAttribute('aria-hidden','true');homeMark.textContent='✦';
-  const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Visual supports';home.append(homeMark,homeName);
+  const homeMark=document.createElement('span');homeMark.className='workspace-home-mark';homeMark.setAttribute('aria-hidden','true');homeMark.innerHTML='<svg viewBox="0 0 16 16" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M6.705 8.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m-6.202-4.751 1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2a7.03 7.03 0 0 1-2.949-2.951M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/></svg>';
+  const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
   const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','What’s New':'Resources'};
@@ -49,9 +49,21 @@
     for(const link of nav.querySelectorAll('[data-tool]'))link.hidden=link.dataset.tool!=='whats-new'&&!audience.allows(preference.age,link.dataset.tool);
     for(const heading of nav.querySelectorAll('p[data-tool-group]'))heading.hidden=![...nav.querySelectorAll('a[data-tool-group]')].some(link=>link.dataset.toolGroup===heading.dataset.toolGroup&&!link.hidden);
     document.body.classList.toggle('routine-text-only',preference.textOnly);
+    const palette=audience.themes[preference.theme];document.body.dataset.siteTheme=preference.theme;
+    ['--ui-blue','--ui-soft','--ui-canvas','--ui-ink'].forEach((key,i)=>document.documentElement.style.setProperty(key,palette[i+1]));
+    document.documentElement.style.setProperty('--ui-blue-hover',palette[1]);
+
   }
+  function defaultToolTheme(){
+    // Defaults apply once at page startup; loading a saved board afterward keeps its theme.
+    try{if(sessionStorage.getItem('routineVisualTimer.selfMonitor.active.v1')&&document.getElementById('setupName'))return;}catch{}
+    const theme=audience.read().theme;
+    for(const id of ['theme','themeSelect','boardTheme']){const select=document.getElementById(id);if(select?.tagName==='SELECT'&&[...select.options].some(option=>option.value===theme)){select.value=theme;select.dispatchEvent(new Event('change',{bubbles:true}));}}
+  }
+  if(document.readyState==='complete')defaultToolTheme();else addEventListener('load',defaultToolTheme,{once:true});
   applyAudience();
-  addEventListener('routines-audience-change',event=>applyAudience(event.detail));
+  let lastDefaultTheme=audience.read().theme;
+  addEventListener('routines-audience-change',event=>{applyAudience(event.detail);if(event.detail.theme!==lastDefaultTheme){lastDefaultTheme=event.detail.theme;defaultToolTheme();}});
   addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)applyAudience();});
   sidebar.append(home,toggle,nav);
   const backdrop=document.createElement('button');backdrop.type='button';backdrop.className='workspace-backdrop no-print';backdrop.setAttribute('aria-label','Close tool navigation');backdrop.hidden=true;document.body.prepend(backdrop);

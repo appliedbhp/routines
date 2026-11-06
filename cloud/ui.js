@@ -142,6 +142,7 @@ async function start(){
   field.value='';recovery=false;q('[data-recovery]').hidden=true;await refresh();message('Password saved. You can now sign in with it.');
  });};
  dialog.querySelectorAll('[data-auth-choice]').forEach(button=>button.onclick=()=>{authMode.value=button.dataset.authChoice;authMode.onchange();});
+ try{const requested=sessionStorage.getItem('routines.account.mode');if(accountHost&&requested==='reset'){authMode.value='reset';sessionStorage.removeItem('routines.account.mode');}}catch{}
  authMode.onchange();
  q('[data-signout]').onclick=()=>run(async()=>{const {error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Sign-out failed. Try again.');await refresh();message('Signed out on this device.');});
  q('[data-save]').onclick=()=>run(async()=>{

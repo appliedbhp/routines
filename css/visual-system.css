@@ -84,3 +84,10 @@
  .calm-ui .file-quick-actions button{display:grid;place-items:center;width:44px;min-height:44px;padding:0}
  .file-quick-actions svg{width:19px;height:19px}
 }
+@media screen{
+.calm-ui .workspace-home-mark{background:transparent;color:var(--ui-blue);border-radius:0}.calm-ui .workspace-home-mark svg{width:30px;height:30px}
+.calm-ui .workspace-sidebar,.calm-ui .workspace-header,.calm-ui .app-header{background:color-mix(in srgb,var(--ui-soft) 40%,white)}
+.calm-ui .workspace-sidebar nav a[aria-current=page]{color:var(--ui-blue);background:var(--ui-soft)}
+.calm-ui .file-modes button[aria-pressed=true],.calm-ui button.primary,.calm-ui .file-primary-action{background:var(--ui-blue);border-color:var(--ui-blue);color:white}
+.calm-ui .portal-dialog,.calm-ui .cloud-dialog{background:var(--ui-canvas);color:var(--ui-ink)}
+}
