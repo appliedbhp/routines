@@ -81,6 +81,7 @@ async function start(){
   async rename(row,name){dialog.showModal();await run(async()=>{await refresh();const fresh=rows.find(r=>r.slot===row.slot);if(!fresh||fresh.revision!==row.revision)throw Error('This board changed. Reopen the library.');await review(fresh,row.slot,BoardFiles.rename(row.payload,name));});},
   async remove(row){const c=await sdk();const {data,error}=await c.from('routine_cloud_boards').delete().eq('slot',row.slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Reopen the library.');dispatchEvent(new CustomEvent('board-cloud-deleted',{detail:{slot:row.slot}}));}
  };
+ dispatchEvent(new Event('routines-cloud-ready'));
  function action(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>run(fn);parent.append(b);}
  async function run(fn){if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');try{await fn();}catch(e){message(e.message||'That action could not be completed. Try again.');}finally{busy=false;dialog.removeAttribute('aria-busy');}}
  async function open(row){
