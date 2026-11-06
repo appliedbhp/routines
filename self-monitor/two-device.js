@@ -4,15 +4,16 @@
  let link=null,inv=null,adult=null,candidate=null,remote=null,lastSeen=0,connecting=false,ending=false,generation=0,shortInvite=null;
  try{mode.value=sessionStorage.getItem('routines.selfMonitor.mode')==='two'?'two':'one';}catch{}
  const enabled=()=>mode.value==='two';
+ const praise=()=>globalThis.RoutinePraise?.read()||'playful';
  const allowReaction=MonitorReactions.gate();let reactionTimer;
- function showReaction(m){if(!session||!$('showReactions').checked||!allowReaction(m))return false;
+ function showReaction(m){if(!session||!$('showReactions').checked||!MonitorReactions.allowed(m.kind,praise())||!allowReaction(m))return false;
   document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);
-  const reaction=MonitorReactions.choices[m.kind],effect=document.createElement('div');effect.className='monitor-reaction no-print';effect.setAttribute('role','status');
+  const reaction=MonitorReactions.choices[m.kind],effect=document.createElement('div');effect.className='monitor-reaction no-print'+(praise()!=='playful'?' praise-subtle':'');effect.setAttribute('role','status');
   effect.style.setProperty('--reaction-x',`${18+Math.random()*64}vw`);effect.style.setProperty('--reaction-y',`${18+Math.random()*42}vh`);
   effect.setAttribute('aria-label',reaction.label);
   if(reaction.phrase){const pill=document.createElement('span');pill.className='reaction-caption reaction-pill';pill.textContent=reaction.label;effect.append(pill);}else{
    const symbol=document.createElement('span');symbol.className='reaction-symbol';symbol.setAttribute('aria-hidden','true');symbol.textContent=reaction.emoji;effect.append(symbol);
-   for(let i=0;i<4;i++){const ghost=document.createElement('span');ghost.className='reaction-ghost';ghost.textContent=reaction.emoji;ghost.setAttribute('aria-hidden','true');ghost.style.setProperty('--drift',`${(Math.random()-.5)*140}px`);ghost.style.setProperty('--delay',`${.3+i*.22}s`);effect.append(ghost);}
+   for(let i=0;i<(praise()==='playful'?4:0);i++){const ghost=document.createElement('span');ghost.className='reaction-ghost';ghost.textContent=reaction.emoji;ghost.setAttribute('aria-hidden','true');ghost.style.setProperty('--drift',`${(Math.random()-.5)*140}px`);ghost.style.setProperty('--delay',`${.3+i*.22}s`);effect.append(ghost);}
   }
   ($('checkin').open?$('checkin'):$('sessionView')).append(effect);reactionTimer=setTimeout(()=>effect.remove(),4200);
   session.encouragement=MonitorReactions.history([...(session.encouragement||[]),{kind:m.kind,elapsed:session.elapsed}]);MonitorReactions.renderHistory($('encouragementList'),session.encouragement);persistSession(true);publish();return true;
@@ -23,7 +24,7 @@
  function saveInvite(){try{if(inv)sessionStorage.setItem(inviteKey,JSON.stringify(inv));else sessionStorage.removeItem(inviteKey);}catch{}}
  function removeCode(){const old=shortInvite;shortInvite=null;if(old)ShortCode.request({action:"remove",code:old.code,owner:old.owner}).catch(()=>{});}
  function resetLink(){removeCode();$("showPair").hidden=false;document.querySelector('.monitor-reaction')?.remove();clearTimeout(reactionTimer);generation++;connecting=false;const previous=link;if(previous)previous.sendPrivate({type:'ended'}).finally(()=>previous.close());link=null;inv=null;adult=null;candidate=null;remote=null;lastSeen=0;saveInvite();pair.hidden=true;$('approveAdult').hidden=true;$('pairCode').textContent='Waiting for adult';$('pairLink').value='';$('pairQR').replaceChildren();}
- function snapshot(){return {type:'state',adult,encouragement:MonitorReactions.history(session?.encouragement),reactionsEnabled:$('showReactions').checked,stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
+ function snapshot(){return {type:'state',adult,encouragement:MonitorReactions.history(session?.encouragement),praiseStyle:praise(),reactionsEnabled:$('showReactions').checked&&praise()!=='off',stage:session?.stage||'ready',index:session?.index||0,total:session?.total||0,elapsed:session?.elapsed||0,points:session?.points||0,count:session?.ends.length||0,records:(session?.records||[]).map(({number,elapsed,student,adult,points})=>({number,elapsed,student,adult,points})),expires:inv?.expires};}
  function publish(){if(link&&adult&&!ending)link.sendPrivate(snapshot());}
  function finish(){if(session?.stage==='adult'&&remote?.index===session.index&&typeof remote.value==='boolean'){const value=remote.value;remote=null;originalAnswer(value);persistSession(true);publish();}}
  function showWaiting(){if(!session||session.stage!=='adult')return;$('checkin').close();say(adult?'Your answer is saved. Waiting for the adult’s independent rating.':'Your answer is saved. Ask the adult to scan your QR code.');pair.hidden=!!adult;}
@@ -50,7 +51,7 @@
    const url=new URL('join/',location.href);url.hash=LiveLink.pack(inv);
    try{const owner=LiveLink.invitation().key,code=await ShortCode.request({action:'create',invitation:LiveLink.pack(inv),owner});if(attempt!==generation){ShortCode.request({action:'remove',code:code.code,owner}).catch(()=>{});return;}shortInvite={...code,owner};url.pathname='/join/';url.hash=code.code;$('shortPairHint').textContent='Or open '+url.host+'/join and enter '+code.code+' · Code expires in 15 minutes.';}catch{$('shortPairHint').textContent='Short code unavailable. Scan the QR code or copy the private link.';}
    if(attempt!==generation)return;
-   $('pairLink').value=url.href;
+   $('pairLink').value=url.href;dispatchEvent(new Event('self-monitor-invite-ready'));
    const qr=qrcode(0,'M');qr.addData(url.href);qr.make();$('pairQR').innerHTML=qr.createSvgTag({cellSize:4,margin:4,scalable:true});pair.hidden=!!adult;if(adult)removeCode();
   }catch(e){say(e.message);}finally{if(attempt===generation)connecting=false;}
  }
@@ -67,6 +68,7 @@
  const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){MonitorReactions.renderHistory($('encouragementList'),[]);resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
  const originalTick=tick;tick=function(){originalTick();if(enabled()&&session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers on their phone.';};
  setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}if(adult&&Date.now()-lastSeen>15000)link.recover?.(true);publish();if(adult&&Date.now()-lastSeen>90000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
+ addEventListener('routines-praise-change',()=>{document.querySelector('.monitor-reaction')?.remove();publish();});
  addEventListener('self-monitor-presentation',()=>{link?.recover?.();publish();});
  addEventListener('online',()=>{if(enabled())connect();});
  MonitorReactions.renderHistory($('encouragementList'),session?.encouragement);

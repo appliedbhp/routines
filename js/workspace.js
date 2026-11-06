@@ -94,6 +94,8 @@
   update();
   if(document.body.dataset.planner){const mindfulScript=document.createElement('script');mindfulScript.src=new URL('planning/mindful.js',root);document.head.append(mindfulScript);}
   const valuesScript=document.createElement('script');valuesScript.type='module';valuesScript.src=new URL('cloud/values.js',root).href;document.head.append(valuesScript);
+  import(new URL('cloud/links.js',root).href);
+  import(new URL('js/praise.js',root).href);
   const cloudScript=document.createElement('script');cloudScript.type='module';cloudScript.src=new URL('cloud/ui.js',root).href;document.head.append(cloudScript);
   const fileScript=document.createElement('script');fileScript.src=new URL('js/file-menu.js?v=planning-2',root);document.head.append(fileScript);
   const offlineScript=document.createElement('script');offlineScript.src=new URL('js/offline.js',root);if(document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn'))document.head.append(offlineScript);

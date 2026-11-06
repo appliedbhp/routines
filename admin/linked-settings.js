@@ -1,0 +1,28 @@
+import * as Links from '../cloud/links.js';
+import '../cloud/dates.js';
+export function mount(accountPanel){
+ const box=document.createElement('section');box.className='linked-settings';accountPanel.append(box);
+ const make=(tag,text)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e;};
+ let busy=false;
+ function render(){const s=Links.read();box.replaceChildren();box.append(make('h4','Linked accounts'));const status=make('p');status.setAttribute('role','status');
+ const button=(label,fn,parent=box)=>{const b=make('button',label);b.type='button';b.onclick=async()=>{if(busy)return;busy=true;b.disabled=true;try{await fn();}catch(e){status.textContent=e.message;}finally{busy=false;b.disabled=false;}};parent.append(b);return b;};
+ if(!s.signedIn){box.append(make('p',s.error||'Sign in to connect a family or classroom.'));return;}
+ const owned=s.groups.find(g=>g.owner);document.querySelector('.settings-account-plan strong').textContent=owned?.kind==='classroom'?'Free educator plan':'Free family plan';
+ box.append(make('p','Choose a free plan. Family groups include 2 accounts total; educator groups include 3. Each account keeps its own boards. Linking shares your account email and only dates and values you choose.'));
+ const plans=make('div');plans.className='linked-actions';box.append(plans);for(const [kind,label] of [['family','Free family · 2 accounts'],['classroom','Free educator · 3 accounts']]){const b=button(label,async()=>{await Links.change('plan',{kind});render();},plans);b.setAttribute('aria-pressed',String(owned?.kind===kind));}
+ const join=make('a','Enter a link code →');join.href=new URL('../link/',import.meta.url);box.append(join);
+ for(const g of s.groups){const card=make('section');card.className='linked-group';card.append(make('h5',`${g.kind==='family'?'Family':'Classroom'} · ${g.members.length}/${g.capacity} accounts`));
+ for(const m of g.members){const row=make('div');row.className='linked-member';row.append(make('span',m.email+(m.owner?' · '+(g.kind==='classroom'?'Teacher':'Group owner'):'')));if(g.owner||m.id===s.userId)button(m.owner?'Close group':m.id===s.userId?'Leave group':'Unlink',async()=>{if(!confirm('Stop linking this account? Shared dates and values will no longer be available through this group. Private files stay unchanged.'))return;await Links.change('unlink',{groupId:g.id,userId:m.id});render();},row);card.append(row);}
+ if(g.owner&&g.members.length<g.capacity){const label=make('label','Invite email (optional for a code)');const input=make('input');input.type='email';input.maxLength=254;label.append(input);card.append(label);const result=make('div');result.className='linked-invitation';button('Create invitation',async()=>{if(input.value&&!input.reportValidity())return;const r=await Links.change('invite',{groupId:g.id,email:input.value.trim()});const output=make('input');output.readOnly=true;output.value=r.url;output.setAttribute('aria-label','Private invitation link');result.replaceChildren(make('p',r.emailSent?'Invitation email sent.':'Private invitation ready. '+(input.value?'Email could not be delivered; copy the link instead.':'')),make('strong','Code: '+r.code),output,make('p','Expires in 24 hours. One use. Share only with the person you want to link.'));button('Copy invitation',async()=>{await navigator.clipboard.writeText(r.url);status.textContent='Invitation copied.';},result);},card);card.append(result);}
+ for(const inv of g.invites||[]){const row=make('p',`Pending invitation${inv.recipient?' · '+inv.recipient:''}`);button('Revoke',async()=>{await Links.change('revoke',{groupId:g.id,inviteId:inv.id});render();},row);card.append(row);}
+ const values=globalThis.RoutineValues?.read().values||[];card.append(make('h5',g.kind==='family'?'Family values':'Classroom values'));
+ for(const v of g.values||[]){const row=make('p',v.value);if(v.userId===s.userId)button('Stop sharing',async()=>{await Links.change('value',{groupId:g.id,value:v.value,share:false});render();},row);card.append(row);}
+ const options=values.filter(v=>!g.values.some(x=>x.userId===s.userId&&x.value===v));if(options.length){const label=make('label','Share one of my values');const select=make('select');options.forEach(v=>select.add(new Option(v,v)));label.append(select);card.append(label);button('Make a '+(g.kind==='family'?'family':'classroom')+' value',async()=>{await Links.change('value',{groupId:g.id,value:select.value,share:true});render();},card);}else card.append(make('p','Save values in Values Blaster to share them here.'));
+ const dates=globalThis.RoutineDates?.read().rows.filter(d=>!d.shared)||[];card.append(make('h5','Dates shared with this group'));
+ for(const date of dates){const label=make('label');label.className='linked-date';const check=make('input');check.type='checkbox';check.checked=g.dateIds.includes(date.id);label.append(check,make('span',date.label+' · '+date.event_date));check.onchange=async()=>{check.disabled=true;try{await Links.change('date',{groupId:g.id,dateId:date.id,share:check.checked});}catch(e){check.checked=!check.checked;status.textContent=e.message;}finally{check.disabled=false;}};card.append(label);}
+ if(!dates.length)card.append(make('p','Save a date in a planning or Memory tool, then select it here to share it.'));box.append(card);
+ }box.append(status);
+ }
+ // Do not replace active invitation output when the request itself refreshes state.
+ addEventListener('routines-links-change',()=>{if(!busy)render();});addEventListener('routines-values-change',()=>{if(!busy)render();});addEventListener('routines-dates-change',()=>{if(!busy)render();});render();
+}

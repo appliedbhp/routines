@@ -1,0 +1,3 @@
+const test=require('node:test'),assert=require('node:assert/strict');const R=require('../self-monitor/reactions.js');
+test('words-only praise suppresses emojis and preserves mature text choices',()=>{assert.equal(R.allowed('heart','words'),false);assert.equal(R.allowed('focus','words'),true);assert.equal(R.allowed('followthrough','words'),true);assert.equal(R.allowed('made-up','playful'),false);});
+test('off suppresses all remote praise; subtle keeps choices without changing scoring',()=>{for(const kind of Object.keys(R.choices)){assert.equal(R.allowed(kind,'off'),false);assert.equal(R.allowed(kind,'subtle'),true);}assert.equal(R.history([{kind:'progress',elapsed:500}]).length,1);});
