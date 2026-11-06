@@ -14,7 +14,7 @@
     ['token-board/', 'Token board', '★'],
     ['yearly-planner/', 'Yearly planning', '▦'], ['quarterly-planner/', 'Quarterly planning', '▤'], ['monthly-planner/', 'Monthly planning', '▦'], ['committed-action-tracker/', 'Committed actions', '✓'],
     ['meal-planner/', 'Meal planning', '▦'], ['implementation-intentions/', 'Implementation intentions', '◎'],
-    ['whats-new/', 'What’s New', '✦']
+    ['values-blaster/', 'Values Blaster', '✧'], ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
   document.body.classList.add('visual-workspace', 'calm-ui');
@@ -32,8 +32,8 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Monthly planning':'Planning & values','Committed actions':'Planning & values','Meal planning':'Planning & values','Implementation intentions':'Goal setting','What’s New':'Resources'};
-  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Goal setting','Resources'];
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Monthly planning':'Planning & values','Committed actions':'Planning & values','Meal planning':'Planning & values','Implementation intentions':'Goal setting','Values Blaster':'Arcade','What’s New':'Resources'};
+  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Goal setting','Arcade','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
     const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;label.dataset.toolGroup=group;nav.append(label);lastGroup=group;}
@@ -90,6 +90,7 @@
   document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed)return;const controls=[...sidebar.querySelectorAll('a[href],button')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
   mobile.addEventListener('change',event=>{collapsed=event.matches;update();});
   update();
+  const valuesScript=document.createElement('script');valuesScript.type='module';valuesScript.src=new URL('cloud/values.js',root).href;document.head.append(valuesScript);
   const cloudScript=document.createElement('script');cloudScript.type='module';cloudScript.src=new URL('cloud/ui.js',root).href;document.head.append(cloudScript);
   const fileScript=document.createElement('script');fileScript.src=new URL('js/file-menu.js?v=planning-2',root);document.head.append(fileScript);
   const offlineScript=document.createElement('script');offlineScript.src=new URL('js/offline.js',root);if(document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn'))document.head.append(offlineScript);
