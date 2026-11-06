@@ -134,3 +134,9 @@
 @media(max-width:480px){.visual-workspace.routine-text-only .step-row{grid-template-columns:minmax(0,1fr) 48px 24px}}
 .workspace-open-file{margin:6px 12px;white-space:nowrap;padding:8px 12px;border:1px solid #b9c6d8;border-radius:8px;background:white;color:#17283b;font:inherit;cursor:pointer}.file-upload-dialog{max-width:min(520px,90vw);border:1px solid #bcc8d8;border-radius:16px;padding:24px;color:#17283b}.file-upload-dialog::backdrop{background:#14263d88}.file-drop-zone{display:grid;gap:16px;padding:28px;border:2px dashed #3185fc;border-radius:12px;margin:16px 0}.file-drop-overlay:not([hidden]){position:fixed;inset:16px;z-index:99999;display:grid;place-items:center;border:4px dashed #3185fc;border-radius:24px;background:#eef6fff2;color:#12325a;font-size:clamp(20px,4vw,38px);pointer-events:none;text-align:center;padding:24px}
 .sidebar-heading>button{border:0;background:transparent!important;color:inherit!important;display:flex;justify-content:space-between;gap:8px;width:100%;padding:4px 0;font:inherit;text-align:left;cursor:pointer}.sidebar-heading>button:after{content:'−';font-size:15px}.sidebar-heading>button[aria-expanded=false]:after{content:'+'}#visual-navigation a.category-collapsed{display:none!important}
+
+/* Theme-aware Routines wordmark; keep header controls usable on narrow screens. */
+.calm-ui .routines-brand{display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:0 1 220px;min-width:100px}
+.routines-brand .routines-brand-logo{display:block;width:220px;max-width:100%;height:auto;overflow:visible}
+.calm-ui .routines-brand .brand-app-title{margin:0;font-size:12px;line-height:1.3}
+@media(max-width:760px){.calm-ui .routines-brand{flex:1 1 140px;min-width:90px}.routines-brand .routines-brand-logo{width:170px}}
