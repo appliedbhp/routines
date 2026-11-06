@@ -3,7 +3,14 @@ const logo="<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 625 178\" ro
 export function applyBrandLogo(header){
  const brand=header?.querySelector(".workspace-brand,.brand-lockup");if(!brand)return;
  const title=brand.querySelector(".brand-app-title");
- brand.innerHTML=logo;brand.classList.add("routines-brand");brand.setAttribute("aria-label","Routines by ABHP · Visit getadhd.care");
+ brand.innerHTML=logo;brand.classList.add("routines-brand");brand.setAttribute("aria-label","About Routines and Applied Behavioral Health Practice");
  const svg=brand.querySelector("svg");svg.classList.add("routines-brand-logo");svg.setAttribute("aria-hidden","true");svg.removeAttribute("aria-labelledby");svg.setAttribute("focusable","false");
  if(title)brand.append(title);
+ brand.removeAttribute('href');brand.setAttribute('role','button');brand.tabIndex=0;brand.setAttribute('aria-haspopup','dialog');brand.setAttribute('aria-controls','abhp-about');
+ const dialog=document.createElement('dialog');dialog.id='abhp-about';dialog.className='brand-about no-print';dialog.setAttribute('aria-labelledby','abhp-about-title');
+ dialog.innerHTML='<div class="brand-about-heading"><h2 id="abhp-about-title">Applied Behavioral Health Practice</h2><button type="button" aria-label="Close about Applied Behavioral Health Practice">Close</button></div><p>Routines is a collection of practical tools from Applied Behavioral Health Practice (ABHP), helping children, teens, and adults plan their days, build routines, and take action on what matters.</p><p>Our work brings together ADHD and executive-function support, behavioral services, and professional education.</p><nav aria-label="Explore our websites"><a href="https://getadhd.care" target="_blank" rel="noopener noreferrer">getadhd.care <span aria-hidden="true">↗</span></a><a href="https://appliedbehavioral.health" target="_blank" rel="noopener noreferrer">appliedbehavioral.health <span aria-hidden="true">↗</span></a><a href="https://sandiegofba.com" target="_blank" rel="noopener noreferrer">sandiegofba.com <span aria-hidden="true">↗</span></a></nav><p class="brand-about-note">Websites open in a new tab.</p>';
+ document.body.append(dialog);
+ const show=()=>{if(!dialog.open)dialog.showModal();};brand.onclick=e=>{e.preventDefault();show();};brand.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}};
+ dialog.querySelector('button').onclick=()=>dialog.close();dialog.addEventListener('close',()=>brand.focus());
+ dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});
 }
