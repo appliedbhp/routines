@@ -12,7 +12,7 @@
     ['self-monitor/', 'Self-monitor', 'done_all'],
     ['homework-planner/', 'Homework planner', 'edit_document'],
     ['token-board/', 'Token board', '★'],
-    ['yearly-planner/', 'Yearly & quarterly planner', '▦'], ['committed-action-tracker/', 'Committed Action Tracker', '✓'],
+    ['yearly-planner/', 'Yearly planning', '▦'], ['quarterly-planner/', 'Quarterly planning', '▤'], ['committed-action-tracker/', 'Committed actions', '✓'],
     ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
@@ -31,7 +31,7 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly & quarterly planner':'Planning & values','Committed Action Tracker':'Planning & values','What’s New':'Resources'};
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Committed actions':'Planning & values','What’s New':'Resources'};
   const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
@@ -90,7 +90,7 @@
   mobile.addEventListener('change',event=>{collapsed=event.matches;update();});
   update();
   const cloudScript=document.createElement('script');cloudScript.type='module';cloudScript.src=new URL('cloud/ui.js',root).href;document.head.append(cloudScript);
-  const fileScript=document.createElement('script');fileScript.src=new URL('js/file-menu.js',root);document.head.append(fileScript);
+  const fileScript=document.createElement('script');fileScript.src=new URL('js/file-menu.js?v=planning-2',root);document.head.append(fileScript);
   const offlineScript=document.createElement('script');offlineScript.src=new URL('js/offline.js',root);if(document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn'))document.head.append(offlineScript);
   const main = document.querySelector('main');
   main.querySelectorAll(':scope > nav[aria-label="Visual supports"], :scope > nav.support-links').forEach(node => node.remove());

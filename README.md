@@ -269,6 +269,6 @@ Settings stores the selected age group and routine text-only preference in this 
 
 ## Planner tools and ABHP files
 
-Yearly & quarterly planner supports a 13-page year or a four-page selected quarter, with eight shared editable life areas. Committed Action Tracker offers weekly and monthly printable sheets. Both support US Letter/A5, four writing patterns, three spacings, local saving, and validated .abhp import/export. Planner entries stay local; account age preferences use the `routines_age_group` user metadata field solely for menu personalization.
+Yearly planning offers a life-area overview and yearly priorities. Quarterly planning has a three-month plan, life-balance chart, and three selected values. Committed actions offers weekly/monthly dated or undated sheets with a cumulative completion graph. All three edit directly on their printable pages and use the shared File/Edit menu and named device library. Both support US Letter/A5, four writing patterns, three spacings, local saving, and validated .abhp import/export. Planner entries stay local; account age preferences use the `routines_age_group` user metadata field solely for menu personalization.
 
 All reusable board exports use .abhp (versioned JSON); existing .json imports remain supported. `/open/` routes supported documents to the appropriate tool, whose validator checks the contents. Installed browsers supporting file handling may associate .abhp files and the Bootstrap wrench icon with Tools; OS support varies.

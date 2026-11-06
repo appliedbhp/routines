@@ -5,7 +5,8 @@
  const exportButton=document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn');if(!exportButton)return;
  async function load(path){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=new URL(path,root);s.onload=resolve;s.onerror=reject;document.head.append(s);});}
  await load('js/file-store.js');if(!globalThis.CloudBoardAdapter)await load('cloud/adapter.js');
- const F=BoardFiles,A=CloudBoardAdapter,main=document.querySelector('main'),initial=await A.current(),currentType=F.type(initial);
+ const printOnly=!!document.body.dataset.planner;
+ const F=BoardFiles,A=globalThis.PlanningAdapter||CloudBoardAdapter,main=document.querySelector('main'),initial=await A.current(),currentType=F.type(initial);
  let target=null,baseline=JSON.stringify(initial),dirty=false,lastError='',checking=false;
  const bar=document.createElement('section');bar.className='file-bar no-print';bar.setAttribute('aria-label','Board menu');
  const menuRow=document.createElement('div');menuRow.className='file-menu-row';bar.append(menuRow);
@@ -19,7 +20,7 @@
  pageTitle.textContent=document.querySelector('.workspace-sidebar a[aria-current="page"] .nav-label')?.textContent||pageTitle.textContent;
  pageTitle.classList.add('file-page-title');bar.prepend(pageTitle);main.prepend(bar);
  const descriptions={routine:'A little structure for everyday moments.','chore-chart':'Small steps. Shared responsibilities.','first-then':'Make the next step easy to see.','choice-board':'Make room for a choice.','task-strip':'One manageable step at a time.','now-next-later':'A clear picture of what comes next.','calm-down':'Find what feels helpful, together.','self-monitor':'A little focus. A moment to reflect.','homework-planner':'Make space for a calmer school week.','token-board':'Celebrate progress, one token at a time.'};
- const pageDescription=document.createElement('p');pageDescription.className='file-page-description';pageDescription.textContent=descriptions[currentType]||'Make a visual support that works for your family.';pageTitle.after(pageDescription);
+ const pageDescription=document.createElement('p');pageDescription.className='file-page-description';pageDescription.textContent=descriptions[currentType]||(printOnly?'Click on the page to write. Your entries stay on this device.':'Make a visual support that works for your family.');pageTitle.after(pageDescription);
  main.querySelectorAll(':scope > .intro, #routine-builder > .intro').forEach(el=>el.remove());
  function status(){saveState.textContent=lastError||(!target?'Not saved yet':dirty?(target.location==='cloud'&&!navigator.onLine?'Cloud unavailable · changes not synced':'Unsaved changes'):(target.location==='cloud'?`Saved to cloud · ${target.count} of 2 slots used`:'Saved on this device ✓'));}
  async function check(){if(checking)return;checking=true;try{dirty=JSON.stringify(await A.current())!==baseline;status();}catch{dirty=true;status();}finally{checking=false;}}
@@ -32,7 +33,7 @@
  menuRow.addEventListener('keydown',e=>{if(e.key==='Escape'){const d=e.target.closest('details');if(d){d.open=false;d.querySelector('summary').focus();}}if(['ArrowDown','ArrowUp'].includes(e.key)){const d=e.target.closest('details');if(!d)return;d.open=true;const buttons=[...d.querySelectorAll('button')];const i=buttons.indexOf(document.activeElement);buttons[(i+(e.key==='ArrowDown'?1:buttons.length-1)+buttons.length)%buttons.length]?.focus();e.preventDefault();}});
  function dialog(title){const d=document.createElement('dialog');d.className='file-dialog no-print';d.setAttribute('aria-label',title);const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.type='button';close.textContent='Close';close.className='file-close';close.onclick=()=>d.close();d.append(h,close);document.body.append(d);return d;}
  function button(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=run(fn);parent.append(b);return b;}
- const saveDialog=dialog('Save board'),saveForm=document.createElement('form');saveForm.innerHTML='<label>Board name<input name="title" maxlength="100" required></label><label>Save to<select name="location"><option value="device">This device</option><option value="cloud">Cloud · two free slots</option></select></label><p>Device copies may include progress. Cloud copies contain reusable settings only and require a privacy review.</p><button type="submit">Save</button>';saveDialog.append(saveForm);
+ const saveDialog=dialog('Save board'),saveForm=document.createElement('form');saveForm.innerHTML='<label>Board name<input name="title" maxlength="100" required></label><label>Save to<select name="location"><option value="device">This device</option><option value="cloud">Cloud · two free slots</option></select></label><p>Device copies may include progress. Cloud copies contain reusable settings only and require a privacy review.</p><button type="submit">Save</button>';saveDialog.append(saveForm);if(printOnly){saveForm.querySelector('option[value=cloud]').remove();saveForm.querySelector('p').textContent='Save a named copy on this device. Export an .abhp backup to use on another device.';}
  function saveAs(location='device'){saveForm.elements.title.value=nameInput?.value||F.title(initial);saveForm.elements.location.value=location;saveDialog.showModal();saveForm.elements.title.focus();}
  saveForm.onsubmit=e=>{e.preventDefault();run(async()=>{const name=saveForm.elements.title.value.trim();F.rename(await A.current(),name);if(nameInput){nameInput.value=name;nameInput.dispatchEvent(new Event('input',{bubbles:true}));nameInput.dispatchEvent(new Event('change',{bubbles:true}));}const payload=F.rename(await A.current(),name);if(saveForm.elements.location.value==='cloud'){if(!globalThis.CloudBoardUI)throw Error('Cloud tools are still loading. Try again.');saveDialog.close();await CloudBoardUI.save();}else{const row=F.save(localStorage,payload);await adopted({...row,location:'device'},await A.current());saveDialog.close();}})();};
  async function save(){if(!target)return saveAs();if(nameInput){nameInput.value=nameInput.value.trim();nameInput.dispatchEvent(new Event('input',{bubbles:true}));}F.rename(await A.current(),nameInput?.value||F.title(await A.current()));if(target.location==='cloud'){if(!navigator.onLine)throw Error('Cloud unavailable · changes not synced. Use File → Save as → This device to keep a local copy.');await CloudBoardUI.save(target);}else{const payload=await A.current();const row=F.save(localStorage,payload,target.id,target.revision);await adopted({...row,location:'device'},payload);}}
@@ -52,10 +53,11 @@
    button(more,'Delete…',async()=>{if(!confirm('Delete this saved copy? Export it first if you need a backup.'))return;if(tab==='Cloud')await CloudBoardUI.remove(row);else{F.remove(localStorage,row);if(target?.location==='device'&&target.id===row.id&&target.type===row.type){target=null;baseline=null;}}await renderLibrary(tab);});libraryBody.append(card);
   }
  }
- for(const tab of ['Examples','This device','Cloud'])button(tabs,tab,()=>renderLibrary(tab));
+ for(const tab of (printOnly?['This device']:['Examples','This device','Cloud']))button(tabs,tab,()=>renderLibrary(tab));
  const exampleSelect=document.querySelector('#boardExample,#example,#presetSelect'),exampleButton=document.querySelector('#useExample,#usePresetBtn,#load');
  async function openLibrary(){library.showModal();try{await renderLibrary();}catch(e){libraryBody.textContent=e.message;}}
  async function newBoard(){if(!confirmReplace())return;A.blank(await A.current());await adopted(null,null);}
+ if(printOnly)globalThis.PlanningNavigate=async url=>{const row=F.save(localStorage,await A.current(),target?.location==='device'?target.id:null,target?.location==='device'?target.revision:undefined);await adopted({...row,location:'device'},row.payload);dirty=false;location.assign(url);};
  async function saveToCloud(){
   if(!navigator.onLine)throw Error('Connect to the internet to save to the cloud.');
   if(target?.location==='cloud')return save();
@@ -66,7 +68,7 @@
  item(file,'Share…',()=>{const share=[...document.querySelectorAll('button')].find(b=>b.textContent==='Share by email');if(share){share.classList.add('file-legacy');share.click();}else throw Error('Sharing is still loading. Try again.');});
  item(file,'Make available offline…',()=>{const b=document.querySelector('.offline-tools [data-download]');if(!b||b.disabled)throw Error('Wait for offline tools to finish preparing.');b.click();});
  item(file,'Open offline copy',()=>{const b=document.querySelector('.offline-tools [data-open]');if(!b||b.hidden)throw Error('Download this board for offline use first.');b.click();target=null;baseline=null;});
- const printButtons=[...document.querySelectorAll('#printBoard,#printChart,#print,#printBtn,#printCard,#printExit,#printPortrait,#printLandscape')];
+ const printButtons=[...document.querySelectorAll('#printBlank,#printBoard,#printChart,#print,#printBtn,#printCard,#printExit,#printPortrait,#printLandscape')];
  const printDialog=dialog('Print options');const orientation=document.querySelector('#orientation,#printOrientation');if(orientation){const label=orientation.closest('label')||document.querySelector(`label[for="${orientation.id}"]`);if(label?.contains(orientation))printDialog.append(label);else{if(label)printDialog.append(label);printDialog.append(orientation);}}for(const b of printButtons)button(printDialog,b.textContent,()=>{if(b.disabled)throw Error('This print option is not available yet.');printDialog.close();if(b.id==='printBtn')document.querySelector('[data-view="print"].view-tab')?.click();b.click();});
  if(!printButtons.length)button(printDialog,'Print',()=>{printDialog.close();window.print();});item(file,'Print…',()=>printDialog.showModal());
  const edit=menu('Edit');item(edit,'Rename board',()=>{nameInput?.focus();nameInput?.select();});item(edit,'Duplicate board…',saveAs);
@@ -75,7 +77,7 @@
  const help=menu('Help'),offlineHelp=dialog('Offline & installation');item(help,'Offline & installation',()=>{const panel=document.querySelector('.offline-tools');if(panel){offlineHelp.append(panel);panel.querySelector('details').open=true;}offlineHelp.showModal();});item(help,'What’s New',()=>{location.href=new URL('whats-new/',root);});item(help,'Privacy',()=>{location.href=new URL('routine/#privacy-policy',root);});
  const more=menu('More');more.d.classList.add('file-more');
  for(const entry of [edit,view,help]){entry.d.classList.add('file-nested-menu');more.list.append(entry.d);}
- const examples=button(menuRow,'Examples',()=>{selectedTab='Examples';return openLibrary();});examples.className='file-examples';
+ const examples=button(menuRow,'Examples',()=>{selectedTab='Examples';return openLibrary();});examples.className='file-examples';if(printOnly)examples.hidden=true;
  const quickActions=document.createElement('div');quickActions.className='file-quick-actions';
  quickActions.setAttribute('role','group');quickActions.setAttribute('aria-label','Quick board actions');
  documentRow.insertBefore(quickActions,saveState);
@@ -85,7 +87,7 @@
   control.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg>';
  }
  quickAction('Save','<path d="M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M7 3v6h9V3M7 21v-8h10v8"/>',save);
- quickAction('Save to cloud','<path d="M7 18H6a4 4 0 0 1-.5-8 6.5 6.5 0 0 1 12.6-1A4.5 4.5 0 0 1 18 18h-1M12 20v-8m-3 3 3-3 3 3"/>',saveToCloud);
+ if(!printOnly)quickAction('Save to cloud','<path d="M7 18H6a4 4 0 0 1-.5-8 6.5 6.5 0 0 1 12.6-1A4.5 4.5 0 0 1 18 18h-1M12 20v-8m-3 3 3-3 3 3"/>',saveToCloud);
  quickAction('New board','<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8m-4-4h8"/>',newBoard);
  const addButton=document.querySelector('#addCard,#add,#addSubject');if(addButton){addButton.classList.add('file-legacy');const addQuick=button(menuRow,addButton.textContent,()=>addButton.click());addQuick.className='file-quick-add';const mirror=()=>{addQuick.disabled=addButton.disabled;addQuick.hidden=addButton.hidden;};new MutationObserver(mirror).observe(addButton,{attributes:true,attributeFilter:['disabled','hidden']});mirror();}
  const hints=[...main.querySelectorAll(':scope > .hint')];if(hints.length){const tips=document.createElement('details');tips.className='workspace-tips no-print';const summary=document.createElement('summary');summary.textContent='Using this tool';tips.append(summary,...hints);main.append(tips);}
@@ -130,7 +132,7 @@
   else if(currentType==='self-monitor')document.getElementById('project').click();
   else if(currentType==='token-board')document.getElementById('runMode').click();
   else {const existing=document.querySelector('.file-run');if(existing)existing.click();else if(currentType==='homework-planner')runPlanner();else throw Error('Session controls are still loading. Try again.');}
- });launch.dataset.mode='run';launch.classList.add('file-primary-action');launch.textContent='Start session';
+ });launch.dataset.mode='run';launch.classList.add('file-primary-action');launch.textContent='Start session';if(printOnly)launch.hidden=true;
 
  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)setMode(currentType==='routine'?'run':'build');});
  setMode('build');
