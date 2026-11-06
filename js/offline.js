@@ -13,7 +13,7 @@
  addEventListener('beforeinstallprompt',event=>{event.preventDefault();prompt=event;install.hidden=false;});
  install.onclick=async()=>{await prompt.prompt();install.hidden=true;};
  addEventListener('appinstalled',()=>{install.hidden=true;});
- async function adapter(){if(!globalThis.CloudBoardAdapter)await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=new URL('cloud/adapter.js',root);s.onload=resolve;s.onerror=reject;document.head.append(s);});return globalThis.CloudBoardAdapter;}
+ async function adapter(){if(globalThis.PlanningAdapter)return globalThis.PlanningAdapter;if(!globalThis.CloudBoardAdapter)await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=new URL('cloud/adapter.js',root);s.onload=resolve;s.onerror=reject;document.head.append(s);});return globalThis.CloudBoardAdapter;}
  function media(){
   const urls=new Set();const add=value=>{if(value&&/^https?:/.test(value))urls.add(value);};
   document.querySelectorAll('img').forEach(el=>add(el.currentSrc||el.src));

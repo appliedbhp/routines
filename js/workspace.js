@@ -14,7 +14,7 @@
     ['token-board/', 'Token board', '★'],
     ['yearly-planner/', 'Yearly planning', 'calendar_year'], ['quarterly-planner/', 'Quarterly planning', 'calendar_quarter'], ['monthly-planner/', 'Monthly planning', 'calendar_month'], ['committed-action-tracker/', 'Committed actions', '✓'],
     ['meal-planner/', 'Meal planning', 'restaurant'], ['implementation-intentions/', 'Implementation intentions', '◎'],
-    ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
+    ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
   document.body.classList.add('visual-workspace', 'calm-ui');
@@ -32,8 +32,8 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Monthly planning':'Planning & values','Committed actions':'Planning & values','Meal planning':'Planning & values','Implementation intentions':'Goal setting','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
-  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Goal setting','Arcade','Resources'];
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly planning':'Planning & values','Quarterly planning':'Planning & values','Monthly planning':'Planning & values','Committed actions':'Planning & values','Meal planning':'Planning & values','Implementation intentions':'Goal setting','Maintenance':'Memory','Touchpoints':'Memory','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
+  const order=['Daily routines','Choices & transitions','Learning & focus','Planning & values','Goal setting','Memory','Arcade','Resources'];
   const arranged=order.flatMap(group=>tools.filter(tool=>groupFor[tool[1]]===group));let lastGroup='';
   for (const [path, name, symbol] of arranged) {
     const group=groupFor[name];if(group!==lastGroup){const label=document.createElement('p');label.className='sidebar-heading';label.textContent=group;label.dataset.toolGroup=group;nav.append(label);lastGroup=group;}
@@ -110,4 +110,5 @@
   const portalScript=document.createElement('script');portalScript.type='module';portalScript.src=new URL('admin/portal.js',root);document.head.append(portalScript);
   const header=document.querySelector('.workspace-header,.app-header');
   if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
+  const opener=document.createElement('script');opener.src=new URL('js/file-open.js',root);document.head.append(opener);
 })();

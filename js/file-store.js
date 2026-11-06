@@ -1,7 +1,7 @@
 /* Shared device library; reads existing tool libraries without copying or deleting them. */
 (function(root){
  const keys={'routine':'routineVisualTimer.savedRoutines','chore-chart':'routineVisualTimer.savedChoreCharts.v1','token-board':'routineVisualTimer.tokenBoards.v2','homework-planner':'routineVisualTimer.homework.v1','self-monitor':'routineVisualTimer.selfMonitor.v1'};
- for(const type of ['yearly-planner','quarterly-planner','monthly-planner','meal-planner','implementation-intentions','committed-action-tracker'])keys[type]=`routines.planning.library.${type}.v1`;
+ for(const type of ['maintenance','touchpoints','yearly-planner','quarterly-planner','monthly-planner','meal-planner','implementation-intentions','committed-action-tracker'])keys[type]=`routines.planning.library.${type}.v1`;
  for(const type of ['first-then','choice-board','task-strip','now-next-later','calm-down'])keys[type]=`routineVisualTimer.visualSupports.${type}.v1`;
  const type=p=>p.format==='routine-visual-timer'?'routine':p.format==='weekly-chore-chart'?'chore-chart':p.board?.type||p.format;
  const title=p=>p.routine?.name??p.chart?.name??p.board?.title??'Untitled board';
