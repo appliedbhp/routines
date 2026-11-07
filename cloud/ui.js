@@ -127,12 +127,12 @@ async function start(){
   const email=q('[data-email]').value.trim(),mode=authMode.value;message(mode==='password'?'Signing you in…':mode==='signup'?'Creating your account…':'Requesting your email link…');const c=await sdk();
   if(mode==='reset'){await sendReset(c,email);return;}
   if(mode==='link'){
-   const {error}=await c.auth.signInWithOtp({email,options:{emailRedirectTo:authReturn}});
+   const {error}=await c.auth.signInWithOtp({email,options:{emailRedirectTo:authReturn,data:{routines_account:true}}});
    if(error)throw Error('Could not send a sign-in link. Please wait a minute and try again.');
    message('Sign-in link requested for '+email+'. Check your inbox and spam or junk folder. Open the newest link on the device you want to sign in on. If it does not arrive, check the address and try again after a minute.','success');return;
   }
   if(mode==='signup'){
-   const {error}=await c.auth.signUp({email,password:password.value,options:{emailRedirectTo:authReturn}});
+   const {error}=await c.auth.signUp({email,password:password.value,options:{emailRedirectTo:authReturn,data:{routines_account:true}}});
    if(error)throw Error(error.code==='weak_password'?'Choose a stronger password and try again.':'Could not create the account. Check your email and password or try again later.');
    password.value='';message('Check '+email+' for a verification link before signing in. Check spam or junk too. Already have an account? Choose Sign in or Forgot password.','success');return;
   }

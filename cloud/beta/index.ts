@@ -47,7 +47,7 @@ Deno.serve(async req=>{
    await limit('checkout:'+user.id,12);
    const order=await rpc(user.id,'checkout',{offer:body.offer});if(order.url)return reply(200,{url:order.url});
    const metadata={app:'routines_beta',orderId:order.id,userId:user.id};
-   const session=await stripe.checkout.sessions.create({mode:'payment',line_items:[{price:PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
+   const session=await stripe.checkout.sessions.create({mode:'payment',allow_promotion_codes:true,line_items:[{price:PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
    await rpc(user.id,'attach',{orderId:order.id,sessionId:session.id,url:session.url});return reply(200,{url:session.url});
   }
   return reply(400,{error:'Unknown request.'});

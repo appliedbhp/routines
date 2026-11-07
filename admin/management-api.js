@@ -1,0 +1,3 @@
+import {accountClient} from '../cloud/client.js';
+import {cloudConfig} from '../cloud/config.js';
+export async function management(action,args={}){const client=await accountClient(),{data}=await client.auth.getSession();if(!data.session)throw Error('Sign in to continue.');const r=await fetch(cloudConfig.url+'/functions/v1/routines-management',{method:'POST',headers:{'Content-Type':'application/json',apikey:cloudConfig.publishableKey,Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({...args,action})});const result=await r.json();if(!r.ok)throw Error(result.error||'Could not complete this action.');return result;}

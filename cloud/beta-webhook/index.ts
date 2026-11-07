@@ -14,6 +14,7 @@ Deno.serve(async req=>{
    const {data:order,error}=await admin.from('routine_beta_orders').select().eq('id',obj.metadata.orderId).single();if(error||!order)throw Error('Order unavailable');
    // Retrieve current state: never grant access from a success redirect or an unverified amount.
    const session=await stripe.checkout.sessions.retrieve(obj.id,{expand:['line_items','payment_intent.latest_charge']});
+   if(session.line_items?.data.length!==1||session.line_items.data[0].quantity!==1)throw Error('Order line mismatch');
    const result=payment(session,order,session.line_items?.data[0]?.price?.id);if(result){await rpc('paid',result);const charge:any=(session.payment_intent as any)?.latest_charge;if(charge&&(charge.refunded||charge.amount_refunded>0))await rpc('risk',{paymentIntent:result.paymentIntent,refunded:charge.amount_refunded>0,eventTime:event.created});}
   }else if(obj.metadata?.app==='routines_beta'&&event.type==='checkout.session.completed'&&obj.payment_status==='unpaid'){await rpc('processing',{sessionId:obj.id});
   }else if(obj.metadata?.app==='routines_beta'&&event.type==='checkout.session.async_payment_failed'){await rpc('failed',{sessionId:obj.id});

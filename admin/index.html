@@ -10,21 +10,30 @@
 <link rel="stylesheet" href="../css/workspace.css">
 <link rel="stylesheet" href="../css/visual-system.css">
 <script src="../js/workspace.js" defer></script>
-<link rel="stylesheet" href="visuals.css?v=object-mode"><script type="module" src="visuals.js?v=object-mode"></script></head>
+<link rel="stylesheet" href="visuals.css?v=object-mode"><script type="module" src="visuals.js?v=object-mode"></script><link rel="stylesheet" href="management.css"><script type="module" src="management.js"></script></head>
 <body>
 <main id="adminWorkspace">
-<h1>Administration</h1>
+<div class="admin-heading"><div><h1>Administration</h1><p>Manage Routines, support accounts, and grow your community.</p></div><a href="../">Back to tools</a></div>
 <p id="adminStatus" role="status">Checking administrator access…</p>
 <section id="adminTools" class="portal-admin-tools" hidden>
-<div class="portal-panel">
+<p id="managementStatus" role="status"></p>
+<section data-admin-panel="overview" class="admin-panel"><h2>Overview</h2><div id="adminMetrics"></div></section>
+<section data-admin-panel="accounts" class="admin-panel" hidden><h2>Accounts</h2><p class="admin-note">Routines accounts only. Private boards and student results are not shown.</p><form id="accountFilter" class="admin-toolbar"><input name="search" type="search" aria-label="Search account emails" placeholder="Search email"><button>Search</button></form><div id="accountsList"></div></section>
+<section data-admin-panel="purchases" class="admin-panel" hidden><h2>Purchases</h2><p class="admin-note">One-time lifetime orders. Open the payment in Stripe to review receipts or manage refunds.</p><form id="purchaseFilter" class="admin-toolbar"><input name="search" type="search" aria-label="Search purchase emails" placeholder="Search email"><button>Search</button></form><div id="purchasesList"></div></section>
+<section data-admin-panel="growth" class="admin-panel" hidden><h2>Growth &amp; metrics</h2><div id="growthMetrics"></div></section>
+<section data-admin-panel="discounts" class="admin-panel" hidden><h2>Discounts &amp; coupon codes</h2><p>Codes apply only to Routines lifetime products. Eligibility for the beta offers still applies.</p><div id="discountManager"></div></section>
+<section data-admin-panel="email" class="admin-panel" hidden><h2>Email sequences</h2><p>Create a welcome series, helpful reminders, or a coupon email. Only accounts that opt in through Settings → Account can be enrolled.</p><div id="emailManager"></div></section>
+<section data-admin-panel="deliveries" class="admin-panel" hidden><h2>Email queue &amp; history</h2><p class="admin-note">“Sent” means accepted by Resend, not confirmed inbox delivery. Open Resend for bounce and delivery details.</p><a href="https://resend.com/emails" target="_blank" rel="noopener noreferrer">Open Resend</a><div id="deliveryList"></div></section>
+<section data-admin-panel="audit" class="admin-panel" hidden><h2>Activity log</h2><div id="auditList"></div></section>
+<div class="portal-panel" hidden>
 <h2>Find a user</h2>
 <form id="adminSearch"><label>Email address<input id="adminEmail" type="email" maxlength="254" required autocomplete="off"></label><button class="primary">Search</button></form>
 <p id="searchStatus" role="status"></p>
 <div id="searchResult"></div>
 </div>
-<section id="bugLog" class="portal-panel"><h2>Bug-fixing log</h2><p>Reports are sorted by priority, then oldest first. “Can’t complete my task” starts as High.</p><label>Show <select id="bugFilter"><option value="open">Open reports</option><option value="closed">Fixed / closed</option><option value="all">All reports</option></select></label> <button id="bugRefresh" type="button">Refresh reports</button><p id="bugLogStatus" role="status"></p><div id="bugReports"></div><button id="bugMore" type="button" hidden>Load more reports</button></section><script type="module" src="bugs.js"></script>
-<section id="visualLibrary" class="portal-panel"></section>
-<div class="portal-panel"><h2>Billing</h2><p>Beta lifetime purchases are managed in Stripe. <a href="../beta/">View beta offers</a>.</p></div>
+<section id="bugLog" class="portal-panel" data-admin-panel="bugs" hidden><h2>Bug-fixing log</h2><p>Reports are sorted by priority, then oldest first. “Can’t complete my task” starts as High.</p><label>Show <select id="bugFilter"><option value="open">Open reports</option><option value="closed">Fixed / closed</option><option value="all">All reports</option></select></label> <button id="bugRefresh" type="button">Refresh reports</button><p id="bugLogStatus" role="status"></p><div id="bugReports"></div><button id="bugMore" type="button" hidden>Load more reports</button></section><script type="module" src="bugs.js"></script>
+<section id="visualLibrary" class="portal-panel" data-admin-panel="visuals" hidden></section>
+
 </section>
 </main>
 <script type="module" src="../bugs/widget.js"></script>
