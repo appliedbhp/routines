@@ -41,7 +41,9 @@ const MonitorLayout = (() => {
   text('startFullscreen',state.active?'Open full screen ↗':'Start in full screen ↗');
   text('checkinCount',`${state.completed} / ${state.active||fixed?state.count:'~'+state.count}`);
   const progress=$('checkinProgress');progress.max=Math.max(1,state.count);progress.value=state.completed;
-  text('nextCheckin',state.stage==='finished'?'All check-ins complete.':state.stage==='student'?'Take a moment to check in.':state.stage==='adult'?'Waiting for the adult’s rating.':`${state.active?'Next':'First'} check-in ${state.stage==='paused'?'after resuming:':'in'} ${timeText(state.next)}`);
+  const checkinMessage=({finished:'All check-ins complete.',student:'Take a moment to check in.',adult:'Waiting for the adult’s rating.'})[state.stage]||'';
+  text('nextCheckin',checkinMessage);
+  $('nextCheckin').hidden=!checkinMessage;
   $('sessionPrint').disabled=$('printExit').disabled;
   $('start').hidden=state.active;
   $('reset').hidden=!['paused','finished'].includes(state.stage);

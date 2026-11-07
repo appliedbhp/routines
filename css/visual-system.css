@@ -139,3 +139,16 @@
 
 /* Keep the help glyph centered independently of inherited button typography. */
 .calm-ui .file-quick-actions button[aria-label="Help & walkthrough"]{display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;box-sizing:border-box}.calm-ui .file-quick-actions button[aria-label="Help & walkthrough"] svg{display:block;width:22px;height:22px;margin:0;flex:none}
+
+/* Compact tool navigation, with comfortable touch targets on small screens. */
+@media screen{
+ .calm-ui .workspace-sidebar nav{gap:2px}
+ .calm-ui #visual-navigation>a[data-tool]{min-height:36px;padding:7px 10px}
+ .calm-ui #visual-navigation .sidebar-heading{margin:12px 10px 2px}
+ .calm-ui.sidebar-collapsed #visual-navigation>a[data-tool]{min-height:36px;padding:7px 0}
+ body[data-site-theme="eighties"]{--ui-border:#e5b9ee}
+ body[data-site-theme="eighties"] .workspace-sidebar{background:linear-gradient(160deg,#fff 50%,#ddfbff)}
+ body[data-site-theme="eighties"] #visual-navigation>a[aria-current="page"]{background:#bafaff;color:#702175;box-shadow:inset 3px 0 #e300ad}
+ body[data-site-theme="eighties"] .workspace-header,body[data-site-theme="eighties"] .app-header{border-bottom:3px solid #f4ec42}
+}
+@media screen and (max-width:760px){.calm-ui #visual-navigation>a[data-tool],.calm-ui.sidebar-collapsed #visual-navigation>a[data-tool]{min-height:44px}}
