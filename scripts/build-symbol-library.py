@@ -7,7 +7,7 @@ def add(provider,key,label,path,words,age='all'):
  ident=700000000+int(hashlib.sha256((provider+':'+key).encode()).hexdigest()[:12],16)%299000000
  if ident in seen:raise ValueError('Symbol ID collision')
  seen.add(ident)
- repo='mulberrysymbols/mulberry-symbols' if provider=='mulberry' else 'appliedbhp/visual-supports'
+ repo={'mulberry':'mulberrysymbols/mulberry-symbols','abhp':'appliedbhp/visual-supports','tawasol':'madainnovation/Tawasol-Symbols-by-Mada-Center'}[provider]
  from urllib.parse import quote
  url='https://raw.githubusercontent.com/'+repo+'/'+source[provider]['sha']+'/'+quote(path,safe='/')
  rows.append([ident,provider,label,url,' '.join(words),age])
@@ -18,7 +18,10 @@ for entry in source['abhp']['entries']:
  for path in entry['assets']:
   if path.lower().endswith(('.png','.svg','.webp')):
    add('abhp',path,entry['title'],path,[entry['title'],entry['category'],*entry.get('keywords',[])],entry.get('age_strand','all'))
-header='''/* Pinned Mulberry (Steve Lee) and reviewed ABHP artwork. See /symbol-credits/. */
+for path in source['tawasol']['paths']:
+ label=Path(path).parent.name.replace('-', ' ').replace('_', ' ')
+ add('tawasol',path,label,path,[label])
+header='''/* Pinned Mulberry (Steve Lee), reviewed ABHP artwork, and Tawasol (Mada Center). See /symbol-credits/. */
 (function(root){
 const rows=CATALOG;
 const byId=new Map(rows.map(row=>[row[0],row]));

@@ -14,7 +14,7 @@ const BoardSession=(()=>{
   controls.append(exit);
   const title=document.createElement('h1'),hint=document.createElement('p'),progress=document.createElement('p'),grid=document.createElement('div');
   title.id='sessionTitle';panel.setAttribute('aria-labelledby',title.id);hint.className='session-hint';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');grid.className='session-grid';
-  const credit=document.createElement('p');credit.className='session-hint';credit.innerHTML='Mulberry Symbols © Steve Lee · ABHP visuals © Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0. <a href="https://getadhd.care">getadhd.care</a> · <a href="https://appliedbehavioral.health">appliedbehavioral.health</a> · <a href="../symbol-credits/">Symbol credits &amp; license</a>';panel.append(controls,title,hint,progress,grid,credit);document.body.append(panel);
+  const credit=document.createElement('p');credit.className='session-hint';credit.innerHTML='Mulberry Symbols © Steve Lee · ABHP visuals © Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0. Tawasol Symbols by Mada Center (separate terms). <a href="https://getadhd.care">getadhd.care</a> · <a href="https://appliedbehavioral.health">appliedbehavioral.health</a> · <a href="../symbol-credits/">Symbol credits &amp; license</a>';panel.append(controls,title,hint,progress,grid,credit);document.body.append(panel);
   let active=false,entering=false;
   const dayIndex=()=>day?Number(day.value):undefined;
   function draw(focus){

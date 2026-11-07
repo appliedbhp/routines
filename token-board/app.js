@@ -95,7 +95,7 @@ function showChoices(icons){
 async function renderLibrary(){
  const revision=++searchRevision,source=$('pictureSource').value,search=$('pictureSearch').value.trim();
  const extended=!!globalThis.RoutinesPlan?.extendedLibrary;
- if(!search&&!['mulberry','abhp'].includes(source)&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose Mulberry or ABHP to browse free pictures, or see plans in Settings.';return;}
+ if(!search&&!['mulberry','abhp','tawasol'].includes(source)&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose Mulberry, ABHP, or Tawasol to browse free pictures, or see plans in Settings.';return;}
  let failed=0;
  $('characterStyle').hidden=$('characterStyleLabel').hidden=source!=='dicebear';
  $('searchForm').hidden=false;$('moreCharacters').hidden=!!search||!['dicebear','pixabots'].includes(source);
@@ -115,7 +115,7 @@ async function renderLibrary(){
   if(revision!==searchRevision)return;
   if(!search&&query==='star')icons=TokenSearch.favorites(icons);
   showChoices(icons.map(TokenData.icon));$('pickerStatus').textContent=(icons.length?`${icons.length} pictures${search?' across all searchable libraries':''}. Choose one below.`:'No pictures found. Try another word.')+(failed?' Some libraries could not be reached. Try searching again.':'');
-  if(search){$('pickerCredit').textContent=extended?'Results from Mulberry, ABHP, Google Material Symbols, and OpenMoji. Credits appear on your board.':'Mulberry and ABHP pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
+  if(search){$('pickerCredit').textContent=extended?'Results from Mulberry, ABHP, Tawasol, Google Material Symbols, and OpenMoji. Credits appear on your board.':'Mulberry, ABHP, and Tawasol pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
  }catch(error){if(revision===searchRevision)$('pickerStatus').textContent='Pictures could not load. Try again, or choose Characters for pictures available without a picture service.';}
 }
 async function openPicker(index){try{await (await import('../beta/api.js')).plan();}catch{globalThis.RoutinesPlan=null;}selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value=(index===-1?$('rewardText').value:tokenBoard.tokens[index]?.icon.label||'').trim();picker.showModal();renderLibrary();}

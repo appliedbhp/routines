@@ -14,10 +14,10 @@
  const color=v=>{if(typeof v!=='string'||!/^#[a-f0-9]{6}$/i.test(v))fail();return v;};
  const styles=['bottts','planets','adventurer','big-smile','critters','clay','croodles','marbles','micah','pixel-art','voxel-art','voxel-bot'];
  function icon(v){
-  const source=one(v?.source,['material','openmoji','arasaac','mulberry','abhp','dicebear','pixabots']);
+  const source=one(v?.source,['material','openmoji','arasaac','mulberry','abhp','tawasol','dicebear','pixabots']);
   if(typeof v.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,79}$/.test(v.id))fail();
-  if(['arasaac','mulberry','abhp'].includes(source)&&!/^[1-9][0-9]{0,8}$/.test(v.id))fail();
-  if(['mulberry','abhp'].includes(source)&&(!symbols?.has(Number(v.id))||symbols.source(Number(v.id))!==source))fail();
+  if(['arasaac','mulberry','abhp','tawasol'].includes(source)&&!/^[1-9][0-9]{0,8}$/.test(v.id))fail();
+  if(['mulberry','abhp','tawasol'].includes(source)&&(!symbols?.has(Number(v.id))||symbols.source(Number(v.id))!==source))fail();
   if(source==='pixabots'&&!/^[a-z0-9]{4}$/.test(v.id))fail();
   return {source,id:v.id,label:str(v.label,100),...(source==='dicebear'&&v.style?{style:one(v.style,styles)}:{})};
  }

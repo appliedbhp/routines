@@ -5,7 +5,7 @@ const ROOT=new URL('./',self.location.href);
 const shellURLs=new Set(OFFLINE_ASSETS.map(path=>new URL(path,ROOT).href));
 function mediaURL(url){
  return url.protocol==='https:'&&(
-  (url.hostname==='raw.githubusercontent.com'&&/^\/(mulberrysymbols\/mulberry-symbols|appliedbhp\/visual-supports)\/[a-f0-9]{40}\//.test(url.pathname)&&/\.(svg|png|webp)$/.test(url.pathname))||
+  (url.hostname==='raw.githubusercontent.com'&&/^\/(mulberrysymbols\/mulberry-symbols|appliedbhp\/visual-supports|madainnovation\/Tawasol-Symbols-by-Mada-Center)\/[a-f0-9]{40}\//.test(url.pathname)&&/\.(svg|png|webp|jpg|jpeg)$/.test(url.pathname))||
   (url.hostname==='static.arasaac.org'&&url.pathname.startsWith('/pictograms/'))||
   (url.hostname==='api.iconify.design'&&url.pathname.endsWith('.svg'))||
   (url.hostname==='pixabots.com'&&/^\/api\/pixabot\/[a-zA-Z0-9-]+$/.test(url.pathname))||
