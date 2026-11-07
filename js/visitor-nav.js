@@ -11,7 +11,7 @@ if(sidebar){
  const dialog=document.createElement('dialog');dialog.className='visitor-dialog no-print';const id='visitor-'+name.toLowerCase();dialog.id=id;dialog.setAttribute('aria-labelledby',id+'-title');button.setAttribute('aria-controls',id);dialog.innerHTML=`<header><h2 id="${id}-title">${name}</h2><button type="button" aria-label="Close ${name.toLowerCase()}">Close</button></header>${content}`;document.body.append(dialog);dialogs.push(dialog);
  button.onclick=()=>dialog.showModal();dialog.querySelector('button').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{if(!nav.hidden)button.focus();});
  }
- sidebar.querySelector('#visual-navigation').before(nav);
+ document.querySelector('.workspace-header,.app-header')?.append(nav);
  let revision=0;
  function display(session){nav.hidden=!!session?.user;if(nav.hidden)dialogs.forEach(d=>{if(d.open)d.close();});}
  Promise.resolve().then(accountClient).then(async client=>{client.auth.onAuthStateChange((_event,session)=>{revision++;display(session);});const version=revision;const {data,error}=await client.auth.getSession();if(version===revision&&!error)display(data.session);}).catch(()=>{});
