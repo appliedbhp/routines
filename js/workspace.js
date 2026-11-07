@@ -67,6 +67,7 @@
   }
   if(document.readyState==='complete')defaultToolTheme();else addEventListener('load',defaultToolTheme,{once:true});
   applyAudience();
+  dispatchEvent(new CustomEvent('routines-audience-change',{detail:audience.read()}));
   let lastDefaultTheme=audience.read().theme;
   addEventListener('routines-audience-change',event=>{applyAudience(event.detail);if(event.detail.theme!==lastDefaultTheme){lastDefaultTheme=event.detail.theme;defaultToolTheme();}});
   addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)applyAudience();});
@@ -81,6 +82,7 @@
   ageNames.forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.onclick=()=>chooseAge(i);strands.querySelector('.age-strand-stops').append(b);});
   addEventListener('routines-audience-change',showAge);showAge();
   sidebar.append(home,toggle,strands,nav);
+  const sidebarFooter=document.createElement('div');sidebarFooter.className='workspace-sidebar-footer';sidebar.append(sidebarFooter);
   const backdrop=document.createElement('button');backdrop.type='button';backdrop.className='workspace-backdrop no-print';backdrop.setAttribute('aria-label','Close tool navigation');backdrop.hidden=true;document.body.prepend(backdrop);
   const mobileToggle=document.createElement('button');mobileToggle.type='button';mobileToggle.className='workspace-mobile-toggle no-print';mobileToggle.textContent='☰';mobileToggle.setAttribute('aria-label','Browse visual tools');mobileToggle.setAttribute('aria-controls','visual-navigation');
   const mobile=window.matchMedia('(max-width: 760px)');
@@ -98,8 +100,8 @@
   toggle.addEventListener('click', () => { collapsed = !collapsed; try { localStorage.setItem('visualNavigationCollapsed', String(collapsed)); } catch {} update(); if(mobile.matches&&collapsed)mobileToggle.focus(); });
   mobileToggle.onclick=()=>{collapsed=!collapsed;update();if(!collapsed)toggle.focus();};
   backdrop.onclick=()=>{collapsed=true;update();mobileToggle.focus();};
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobile.matches&&!collapsed){event.preventDefault();collapsed=true;update();mobileToggle.focus();}});
-  document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed)return;const controls=[...sidebar.querySelectorAll('a[href],button,input')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobile.matches&&!collapsed&&!document.querySelector('dialog[open]')){event.preventDefault();collapsed=true;update();mobileToggle.focus();}});
+  document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed||document.querySelector('dialog[open]'))return;const controls=[...sidebar.querySelectorAll('a[href],button,input')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
   mobile.addEventListener('change',event=>{collapsed=event.matches;update();});
   update();
   if(document.body.dataset.planner){const mindfulScript=document.createElement('script');mindfulScript.src=new URL('planning/mindful.js',root);document.head.append(mindfulScript);}
@@ -127,5 +129,6 @@
   import(new URL('js/brand-logo.js',root).href).then(m=>m.applyBrandLogo(header));
   if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
   import(new URL('js/learning.js',root).href);
+  import(new URL('js/visitor-nav.js',root).href);
   const opener=document.createElement('script');opener.src=new URL('js/file-open.js',root);document.head.append(opener);
 })();
