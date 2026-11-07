@@ -2,7 +2,7 @@ import {createClient} from 'npm:@supabase/supabase-js@2.57.4';
 import Stripe from 'npm:stripe@23.0.0';
 import {payment,readBody} from './model.mjs';
 const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
-const stripe=new Stripe(Deno.env.get('STRIPE_SECRET_KEY')||'missing',{apiVersion:'2026-09-30.endive'});
+const stripe=new Stripe(Deno.env.get('ROUTINES_API_KEY')||Deno.env.get('STRIPE_SECRET_KEY')||'missing',{apiVersion:'2026-09-30.endive',stripeContext:'acct_1UIYQeIiI1uuEHpt'});
 async function rpc(action:string,args:any={}){const {data,error}=await admin.rpc('routine_beta_payment',{action,args});if(error)throw Error('Payment update failed');return data;}
 Deno.serve(async req=>{
  if(req.method!=='POST')return new Response('Use POST',{status:405});let event:any;

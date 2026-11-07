@@ -8,9 +8,9 @@ Project: `soartoaobktpscnnbclq`. Apply the schema with migration tooling. `schem
 
 Deploy `routines-beta` with `index.ts` and `model.mjs`. Deploy `routines-beta-webhook` with `../beta-webhook/index.ts` and the same `model.mjs`. Both disable platform legacy JWT checking: the beta function performs user verification itself, and the webhook validates Stripe's signature before reading any event. Cloud-board-save also needs the updated handler and entitlement lookup.
 
-Required Edge secrets: `RESEND_API_KEY`, `STRIPE_SECRET_KEY`. Prefer a restricted Stripe key with the minimum account/price/Checkout read-write and PaymentIntent/charge read permissions required by this implementation. Never add secret keys to this repository.
+Required Edge secrets: `RESEND_API_KEY`, `ROUTINES_API_KEY` (the Stripe server key; `STRIPE_SECRET_KEY` is also accepted as a fallback). Prefer a restricted Stripe key with the minimum Price read, Checkout read-write, and PaymentIntent/charge read permissions required by this implementation. Never add secret keys to this repository.
 
-Stripe account: `acct_1UIYQeIiI1uuEHpt` (appliedbehavioral.health, live).
+Stripe account: `acct_1UIYQeIiI1uuEHpt` (appliedbehavioral.health, live). All SDK calls pin `stripeContext` to this account, including when the supplied server key belongs to a Stripe Organization.
 
 - Early Tier 1, USD 15: `price_1UYx47IiI1uuEHpt7F6yglje`
 - After beta Tier 1, USD 27: `price_1UYx4BIiI1uuEHptZCmvyACH`
