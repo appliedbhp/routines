@@ -197,3 +197,10 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 }
 
 #sessionView #reset[hidden]{display:none!important}.monitor-appearance h3{margin:0 0 8px;font-size:16px}.monitor-appearance .appearance-fields{flex-wrap:wrap;gap:12px}.monitor-appearance #useSystemTheme{align-self:flex-end;min-height:40px}
+/* Let every point remain visible instead of trapping rewards in a scroll box. */
+#sessionView #tokens{display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:6px;width:100%;max-width:none;min-height:32px;max-height:none;height:auto;overflow:visible;padding:4px 0;box-sizing:border-box}
+#sessionView #tokens .token{flex:0 0 auto}
+#sessionView #tokens:has(.token:nth-child(25)){--point-icon-size:22px;gap:4px}
+#sessionView #tokens:has(.token:nth-child(61)){--point-icon-size:18px;gap:3px}
+#sessionView #tokens .token,#sessionView #tokens .token svg,#sessionView #tokens .token img{width:var(--point-icon-size,28px);height:var(--point-icon-size,28px)}
+@media(max-width:600px){#sessionView #tokens{--point-icon-size:24px}}
