@@ -16,6 +16,7 @@ const MonitorLayout = (() => {
  return {plan,view};
 })();
 (() => {
+ const layout=document.createElement('div');layout.className='monitor-workspace';$('setupPanel').before(layout);layout.append($('setupPanel'),$('sessionView'));
  const panel=$('devicePanel'),setupDock=$('setupDeviceDock'),sessionDock=$('sessionDeviceDock'),tools=$('sessionTools');
  let previousProjection=null;
  function text(id,value){const el=$(id);if(el.textContent!==value)el.textContent=value;}
