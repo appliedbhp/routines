@@ -131,5 +131,6 @@
   if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
   import(new URL('js/learning.js',root).href);
   import(new URL('js/visitor-nav.js',root).href);
+  import(new URL('notifications/app.js',root).href);
   const opener=document.createElement('script');opener.src=new URL('js/file-open.js',root);document.head.append(opener);
 })();
