@@ -1,4 +1,5 @@
-import {hairStyles,skinTones,clothingStyles,clothingColors,appearancePrompt} from './visual-appearance.js';
+import {styleSheets,toneChoices,genderChoices,gridPosition,selectionInstructions,sheetFor} from '../cloud/visual-library/styles.js';
+import {hairStyles,clothingStyles,clothingColors} from './visual-appearance.js';
 import {accountClient} from '../cloud/client.js';
 const host=document.getElementById('visualLibrary');
 if(host){
@@ -9,13 +10,18 @@ if(host){
  <label>Visual mode<select name="visual_mode"><option value="character">Character</option><option value="object">Object · no people</option></select></label><label>Title<input name="title" maxlength="100" required></label>
  <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset>
  <label>Category<select name="category" required></select></label>
- <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
+ <input type="hidden" name="style" value="illustration">
  </div>
- <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Character references · Adventurer for younger ages, Micah for 13+</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Generated characters use expressive faces. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><aside class="visual-character-reference"><img src="../assets/characters/micah-reference.png" alt="Micah illustration reference for teen visuals"><p>13+ uses <a href="https://www.dicebear.com/styles/micah/" target="_blank" rel="noopener noreferrer">Micah by Micah Lanier, via DiceBear</a> · CC BY 4.0. Appearance selections still apply. The library’s existing 12–18 strand uses this teen reference.</p></aside><div data-matches class="visual-matches" aria-live="polite"></div>
- <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><p>Versions: male and female, in all seven skin tones (including the original white reference).</p></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
+ <section data-character-options>
+ <fieldset><legend>1. Choose a stylesheet</legend><input type="hidden" name="reference_style" value="2000s"><div class="visual-style-choices" data-style-choices role="group" aria-label="Character stylesheet"></div></fieldset>
+ <div class="visual-character-layout"><div><h3>2. Choose your character</h3><div class="visual-fields"><label>Skin tone<select name="skin_tone"><option>light</option><option>medium</option><option>dark</option></select></label><label>Gender<select name="gender_variant"><option>male</option><option>female</option><option>nonbinary</option></select></label></div><p data-position aria-live="polite"></p><p data-reference-note></p><label class="visual-check"><input type="checkbox" name="all_characters"> Create all nine combinations of skin tone and gender</label><p>One preview per selected age by default. Each character keeps the selected reference’s face, hair, and outfit.</p><a data-reference-link target="_blank" rel="noopener noreferrer">Open full stylesheet ↗</a></div><div class="visual-sheet-wrap"><img data-reference-preview alt=""><div class="visual-sheet-grid" data-character-grid role="group" aria-label="Select character by grid position"></div></div></div>
+ <details data-appearance><summary>Optional hair and clothing overrides</summary><label>Hairstyle<select name="hair_style"></select></label><fieldset><legend>Clothing styles</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>Leave these unchanged to preserve the reference character.</p></details>
+ </section><div data-matches class="visual-matches" aria-live="polite"></div>
+ <h3>3. Describe the scene</h3><div data-scene-options><label>Background<select name="background_mode"><option value="transparent">Transparent background</option><option value="setting">A specific setting</option></select></label><label data-setting-label hidden>Setting<textarea name="setting" maxlength="1000" rows="2" placeholder="For example, a quiet classroom desk beside a window."></textarea></label></div>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
  <label>Creation prompt<textarea name="generation_prompt" maxlength="12000" rows="7" required></textarea></label>
+ <details><summary>Full prompt for the first selected character</summary><pre data-effective-prompt></pre></details>
  <div class="visual-actions"><button type="button" data-generate>Generate selected previews</button><button type="button" data-select-all>Select all three age strands</button></div>
  <p data-generation-note></p>
  <div data-previews class="visual-preview-grid"></div>
@@ -29,24 +35,26 @@ if(host){
  </form>`;
  const q=selector=>host.querySelector(selector),form=q('[data-form]'),field=name=>form.elements.namedItem(name);
  form.noValidate=true;
- for(const [name,choices] of [['hair_style',hairStyles]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
+ for(const [name,choices] of [['hair_style',['Keep reference hairstyle',...hairStyles]]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
  for(const [selector,name,choices] of [['[data-clothing-styles]','clothing_styles',clothingStyles],['[data-clothing-colors]','clothing_colors',clothingColors]])for(const value of choices){const label=document.createElement('label');label.className='visual-check';const input=document.createElement('input');input.type='checkbox';input.name=name;input.value=value;label.append(input,document.createTextNode(value));q(selector).append(label);}
  field('usage_rights').defaultValue='Original ABHP artwork: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/deed.en). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice; link https://getadhd.care and https://appliedbehavioral.health. Indicate changes and share adaptations under the same license. Third-party source materials retain their original licenses and attribution.';
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  const faces=()=>['default'];
+ const selectionFor=(age,skin=field('skin_tone').value,gender=field('gender_variant').value)=>({reference_style:field('reference_style').value,skin_tone:skin,gender_variant:gender,grid_position:gridPosition(field('reference_style').value,skin,gender,age),age_strand:age,background_mode:field('background_mode').value,setting:field('setting').value});
+ const setupKey=()=>JSON.stringify([field('reference_style').value,field('action').value,field('title').value,field('background_mode').value,field('setting').value,field('generation_prompt').value]);
  const objectMode=()=>field('visual_mode').value==='object';
  const selected=()=>{
   if(objectMode()){
    if(!variants.has('object'))variants.set('object',{key:'object',age:'shared',face:null,mode:'object',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
    return [variants.get('object')];
   }
-  return ages().flatMap(age=>faces().flatMap(face=>['male','female'].flatMap(gender=>skinTones.map(skin=>{
-  const key=[age,face,gender,skin].join(':');
-  if(!variants.has(key))variants.set(key,{key,age,face,gender,skin,mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
+  return ages().flatMap(age=>faces().flatMap(face=>(field('all_characters').checked?genderChoices:[field('gender_variant').value]).flatMap(gender=>(field('all_characters').checked?toneChoices:[field('skin_tone').value]).map(skin=>{
+  const key=[age,face,gender,skin,setupKey()].join(':');
+  if(!variants.has(key))variants.set(key,{key,age,face,gender,skin,selection:selectionFor(age,skin,gender),mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
   return variants.get(key);
  }))));};
- const label=row=>row.mode==='object'?'Object · All ages':'Ages '+row.age+' · '+(row.face==='blank'?'Blank face':'Default face')+' · '+row.gender+' · '+row.skin;
+ const label=row=>row.mode==='object'?'Object · All ages':sheetFor(row.selection.reference_style).name+' · Ages '+row.age+' · '+row.gender+' · '+row.skin;
  const el=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
  function say(text,error=false){
   q('[data-status]').textContent=text;q('[data-feedback]').dataset.error=String(error);
@@ -126,6 +134,7 @@ if(host){
    return card;
   }));
   q('[data-save]').textContent='Save all '+rows.length+' selected preview'+(rows.length===1?'':'s')+' to GitHub';
+  try{q('[data-effective-prompt]').textContent=rows.length?promptFor(rows[0]):'Select an age and character.';}catch(error){q('[data-effective-prompt]').textContent=error.message;}
   elapsed();controls();
  }
  async function call(body){
@@ -152,16 +161,42 @@ if(host){
    target.append(line);
   }
  }
+ function updateReference(){
+  const sheet=sheetFor(field('reference_style').value),age=ages()[0]||'12-18',position=gridPosition(sheet.id,field('skin_tone').value,field('gender_variant').value,age);
+  q('[data-reference-preview]').src=sheet.url;q('[data-reference-preview]').alt=sheet.name+' character stylesheet';q('[data-reference-link]').href=sheet.url;
+  q('[data-position]').textContent='Grid position: '+position.replaceAll('-',' ')+(ages().length>1&&sheet.classic?' (Classic column follows each selected age)':'');
+  q('[data-reference-note]').textContent=sheet.classic?'Classic uses age columns and boy/girl rows. Skin tone is adapted; nonbinary uses the style without claiming a matching portrait.':'Rows: light, medium, dark. Columns: male, female, nonbinary. Click a figure or use the selectors.';
+  q('[data-character-grid]').hidden=!!sheet.classic;
+  for(const button of q('[data-character-grid]').children)button.setAttribute('aria-pressed',String(button.dataset.position===position));
+  for(const button of q('[data-style-choices]').children)button.setAttribute('aria-pressed',String(button.dataset.style===sheet.id));
+ }
+ function optionsChanged(){
+  if(!objectMode()&&(field('action').value.trim()||field('title').value.trim()))buildPrompt();
+  invalidate();sync();
+ }
+ for(const sheet of styleSheets){
+  const button=el('button');button.type='button';button.dataset.style=sheet.id;button.setAttribute('aria-label',sheet.name+' stylesheet');
+  const image=el('img');image.src=sheet.url;image.alt='';image.loading='lazy';button.append(image,el('strong',sheet.name),el('small',sheet.description));
+  button.onclick=()=>{field('reference_style').value=sheet.id;optionsChanged();};q('[data-style-choices]').append(button);
+ }
+ for(const tone of toneChoices)for(const gender of genderChoices){
+  const position=gridPosition('2000s',tone,gender),button=el('button');button.type='button';button.dataset.position=position;button.setAttribute('aria-label',position.replace('-',' ')+': '+tone+' skin, '+gender);button.title=button.getAttribute('aria-label');
+  button.onclick=()=>{field('skin_tone').value=tone;field('gender_variant').value=gender;optionsChanged();};q('[data-character-grid]').append(button);
+ }
+ for(const name of ['skin_tone','gender_variant','background_mode','setting','all_characters','hair_style','action','title'])field(name).addEventListener('change',optionsChanged);
+ for(const input of form.querySelectorAll('[name=clothing_styles],[name=clothing_colors]'))input.addEventListener('change',optionsChanged);
+ field('generation_prompt').addEventListener('change',()=>{invalidate();render();});
  function sync(){
   const isObject=objectMode();
   field('action').closest('label').firstChild.textContent=isObject?'Object and essential props':'Action and essential props';
   field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
-  for(const selector of ['[data-appearance]','[data-ages]','.visual-character-reference','[data-select-all]'])for(const node of form.querySelectorAll(selector))node.hidden=isObject;
-  field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
-  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each age selection creates male and female versions in all seven skin tones, with expressive faces: '+selected().length+' images. Generation uses your OpenAI account. Previews appear as they finish.';
+  for(const selector of ['[data-character-options]','[data-scene-options]','[data-ages]','[data-select-all]'])for(const node of form.querySelectorAll(selector))node.hidden=isObject;
+  if(!isObject)updateReference();
+  q('[data-setting-label]').hidden=field('background_mode').value!=='setting';
+  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':selected().length+' preview(s) selected. Generation uses your OpenAI account. Each preview has its own selected character and scene.';
   q('[data-review-all]').checked=false;render();matches();
  }
- field('visual_mode').onchange=()=>{field('generation_prompt').value='';sync();say(objectMode()?'Object mode selected. Describe the object to create one shared preview.':'Character mode selected. Choose age strands and face versions.');};
+ field('visual_mode').onchange=()=>{field('generation_prompt').value='';sync();say(objectMode()?'Object mode selected. Describe the object to create one shared preview.':'Character mode selected. Choose a stylesheet, character, and action.');};
  q('[data-connect]').onclick=run(async revision=>{
   say('Checking administrator access and GitHub connection…');
   const result=await call({action:'status'});
@@ -169,7 +204,7 @@ if(host){
   catalog=result.catalog;canWrite=result.write_available;canGenerate=result.generation_available;
   field('category').replaceChildren(...result.categories.map(row=>new Option(row.name,row.id)));
   q('[data-age-options]').replaceChildren(...result.ages.map((row,index)=>{
-   const input=el('input');input.type='checkbox';input.name='age_strands';input.value=row.id;input.defaultChecked=index===0;input.onchange=sync;
+   const input=el('input');input.type='checkbox';input.name='age_strands';input.value=row.id;input.defaultChecked=row.id==='12-18';input.onchange=optionsChanged;
    const label=labeled('Ages '+row.id,input);return label;
   }));
   q('[data-guide]').textContent=result.guide;
@@ -178,7 +213,7 @@ if(host){
   say(!canWrite?'GitHub is connected for reading. The token needs Contents write access to save.':!canGenerate?'GitHub is connected. Add ROUTINES_OPENAI_KEY in Supabase to generate images.':'GitHub and image generation are connected. Choose strands, describe the action, and generate previews.');
  });
  for(const node of form.querySelectorAll('[name=face_versions]'))node.onchange=sync;
- q('[data-select-all]').onclick=()=>{for(const input of q('[data-age-options]').querySelectorAll('input'))input.checked=true;sync();};
+ q('[data-select-all]').onclick=()=>{for(const input of q('[data-age-options]').querySelectorAll('input'))input.checked=true;optionsChanged();};
  for(const name of ['title','category'])field(name).addEventListener('input',matches);
  function buildPrompt(){
   const action=field('action').value.trim()||field('title').value.trim();
@@ -187,24 +222,22 @@ if(host){
    field('generation_prompt').value='Create one square standalone transparent PNG object visual. Subject: '+action+'. Shared all-age library. Use clean flat shapes, medium rounded dark contours, and ink #24243B, white, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. Only the object and essential props; no people, faces or anthropomorphism. No text, labels, numbers, logos, backgrounds, gradients or shadows. Center the object with generous margins. Keep white surfaces opaque and the surrounding canvas transparent.';
    return;
   }
-  const appearance=appearancePrompt({hair:field('hair_style').value,skin:'{{skin_tone}}',styles:[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors:[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value)});
-  field('generation_prompt').value=appearance+' Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached {{character_style}} character and the requested face version. Use clean flat shapes, dark contours, and no glasses.  Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
+  const hair=field('hair_style').value,styles=[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors=[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value);
+  field('generation_prompt').value='Create one original illustration. Action and essential props: '+action+'. '+(hair!=='Keep reference hairstyle'?'Hairstyle override: '+hair+'. ':'')+(styles.length?'Clothing override: '+styles.join(', ')+'. ':'')+(colors.length?'Clothing colors: '+colors.join(', ')+'. ':'')+'Follow the selected stylesheet and character. Keep the action readable at small sizes. No text or logos.';
+
  }
  q('[data-prompt]').onclick=()=>{try{buildPrompt();invalidate();render();say('Prompt ready. You can edit it before generating.');}catch(error){say(error.message,true);}};
  function promptFor(row){
   const template=field('generation_prompt').value.trim();
   if(!template)throw Error('Enter or build a creation prompt.');
   if(row.mode==='object')return template+' Shared all-age object visual; no human character or face.';
-  const style=['13+','13-18','12-18'].includes(row.age)?'Micah':'Adventurer';
-  const styled=template.replaceAll('{{character_style}}',style).replaceAll('Adventurer',style);
-  const base=styled.includes('{{age_strand}}')?styled.replaceAll('{{age_strand}}',row.age):styled+' Age strand: '+row.age+'.';
-  return base.replaceAll('{{skin_tone}}',row.skin)+' Character version: '+row.gender+'. Depict an age-appropriate '+row.gender+' character, without sexualization or stereotyped activities. Skin tone: '+row.skin+'. Preserve this skin tone across all visible skin. Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':(style==='Micah'?'Use simple Micah-style facial features.':'Use mouth variant02, eyes variant24, and eyebrows variant10.'))+' Adapt proportions and context respectfully for ages '+row.age+'.';
+  return selectionInstructions(row.selection)+template;
  }
  async function generateOne(row,revision){
   q('[data-review-all]').checked=false;
   row.state='Generating';row.error='';row.started=Date.now();render();
   try{
-   const result=await call({action:'generate',prompt:promptFor(row),age_strand:row.age,visual_mode:row.mode,...(row.face?{face_variant:row.face}:{})});
+   const result=await call({action:'generate',prompt:promptFor(row),age_strand:row.age,visual_mode:row.mode,...(row.selection||{}),...(row.face?{face_variant:row.face}:{})});
    if(revision!==sessionRevision)return;
    Object.assign(row,{image:result.image,prompt:result.prompt,source:result.source,referenceId:result.reference_id,state:'Ready to review',error:'',reviewed:false,ready:false});
    row.alt||=(field('action').value.trim()||field('title').value.trim())+(row.mode==='character'?' · '+row.gender+' · '+row.skin:'');
@@ -213,7 +246,7 @@ if(host){
  }
  q('[data-generate]').onclick=run(async revision=>{
   const rows=selected();if(!rows.length)throw Error('Select at least one age strand.');
-  if(!field('generation_prompt').value.trim())buildPrompt();
+  if(!field('generation_prompt').value.trim())throw Error('Describe the action and build the creation prompt first.');
   const missing=rows.filter(row=>!row.image&&!row.published);
   if(missing.length&&!confirm('Generate '+missing.length+' images using your OpenAI account? This larger set may take several minutes and incurs image-generation charges.'))return;
   if(!missing.length)throw Error('All selected previews already have artwork. Use a card’s Regenerate button to replace one.');
@@ -243,13 +276,13 @@ if(host){
   event.preventDefault();
   run(async revision=>{
    const rows=selected(),pending=rows.filter(row=>!row.published);
-   if(!rows.length)throw Error('Select the age strands and face versions to save.');
+   if(!rows.length)throw Error('Select the ages and character to save.');
    if(!canWrite)throw Error('GitHub Contents write access is required.');
    for(const name of ['title','keywords','usage_rights'])if(!field(name).value.trim()){field(name).focus();throw Error('Enter '+name.replace('_',' ')+' before saving.');}
    for(const row of pending)if(!row.image||!row.alt.trim()||!row.source.trim()||!row.reviewed)throw Error('Finish the image, description, source and review for '+label(row)+'.');
    if(!q('[data-review-all]').checked)throw Error('Confirm the usage rights before saving.');
    if(!pending.length){say('All selected previews are already saved.');return;}
-   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.mode==='character'?{gender_variant:row.gender,skin_tone:row.skin}:{}),...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
+   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.mode==='character'?row.selection:{}),...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
    for(const row of pending)row.state='Saving';render();
    say('Saving all '+pending.length+' previews together in small batches…');
    try{

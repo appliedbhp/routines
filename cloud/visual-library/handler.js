@@ -1,3 +1,4 @@
+import {styleSheets,cleanSelection,selectionInstructions,referenceFor,sheetFor} from './styles.js';
 import {characterReference,blankCharacterReference,micahReference,getMicah,getCharacter} from './character.js';
 const REPOSITORY='appliedbhp/visual-supports';
 const API='https://api.github.com/repos/'+REPOSITORY;
@@ -29,7 +30,7 @@ export function validateRecord(input,categories,ages){
   generation_prompt:required(input.generation_prompt,'the creation prompt',12000),
   source:required(input.source,'creation or source information',500),
   usage_rights:required(input.usage_rights,'usage-rights information',1500)};
- if(input.gender_variant!==undefined){if(objectMode||!['male','female'].includes(input.gender_variant))throw new VisualError('Choose male or female character version.');record.gender_variant=input.gender_variant;}
+ if(input.gender_variant!==undefined){if(objectMode||!['male','female','nonbinary'].includes(input.gender_variant))throw new VisualError('Choose male, female, or nonbinary character version.');record.gender_variant=input.gender_variant;}
  if(input.skin_tone!==undefined){if(objectMode)throw new VisualError('Objects have no skin tone.');record.skin_tone=required(input.skin_tone,'a skin tone',100);}
  if(input.visual_mode)record.visual_mode=input.visual_mode;
  if(objectMode)record.asset_type='object';
@@ -37,10 +38,18 @@ export function validateRecord(input,categories,ages){
   if(!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
   record.face_variant=input.face_variant;
  }
+ if(input.reference_style){
+  if(objectMode)throw new VisualError('Objects use no character stylesheet.');
+  let selection;try{selection=cleanSelection(input);}catch(error){throw new VisualError(error.message);}
+  Object.assign(record,selection);
+  if(input.face_variant==='blank')throw new VisualError('Stylesheet characters use expressive faces.');
+  if(input.reference_id&&input.reference_id!==referenceFor(input.reference_style).id)throw new VisualError('The stylesheet and reference do not match.');
+ }
  if(input.reference_id){
-  const reference=[characterReference,blankCharacterReference,micahReference].find(row=>row.id===input.reference_id);
+  const reference=[characterReference,blankCharacterReference,micahReference,...styleSheets.map(s=>referenceFor(s.id))].find(row=>row.id===input.reference_id);
   if(!reference)throw new VisualError('Unknown character reference.');
-  if(input.face_variant&&reference.id!==getCharacter(input.face_variant,reference.id===micahReference.id?input.age_strand:"").reference.id)throw new VisualError('The face and reference do not match.');
+  if(reference.repository_commit&&!input.reference_style)throw new VisualError('Include the stylesheet selection.');
+  if(!reference.repository_commit&&input.face_variant&&reference.id!==getCharacter(input.face_variant,reference.id===micahReference.id?input.age_strand:"").reference.id)throw new VisualError('The face and reference do not match.');
   record.character_reference=reference;
   if(!record.usage_rights.includes(reference.attribution))record.usage_rights+=' '+reference.attribution;
  }
@@ -67,6 +76,11 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
  }
  async function file(path,ref){
   const result=await github('/contents/'+path+'?ref='+encodeURIComponent(ref));
+  if(result.encoding==='none'||!result.content){
+   const response=await request('https://raw.githubusercontent.com/'+REPOSITORY+'/'+encodeURIComponent(ref)+'/'+path.split('/').map(encodeURIComponent).join('/'),{signal:AbortSignal.timeout(20000)});
+   if(!response.ok)throw new VisualError('Could not load the library catalog.',502);
+   return response.text();
+  }
   return new TextDecoder().decode(Uint8Array.from(atob(result.content.replace(/\s/g,'')),char=>char.charCodeAt(0)));
  }
  async function snapshot(){
@@ -104,13 +118,17 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    const references=new Map(pending.filter(row=>row.record.character_reference).map(row=>[row.record.character_reference.id,row.record.character_reference]));
    for(const reference of references.values()){
+    if(reference.repository_commit){
+     files.push({path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
+     continue;
+    }
     const character=reference.id===micahReference.id?getMicah():getCharacter(reference.id===blankCharacterReference.id?'blank':'default');
     const referenceBlob=await github('/git/blobs','POST',{content:character.image,encoding:'base64'});
     files.push({path:reference.asset,mode:'100644',type:'blob',sha:referenceBlob.sha},
      {path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
    }
    if(references.has(micahReference.id))files.push({path:'references/MICAH-ATTRIBUTION.md',mode:'100644',type:'blob',content:micahReference.attribution+'\nSource: '+micahReference.source+'\n'});
-   if(references.size)files.push({path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character references\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
+   if(references.has(characterReference.id)||references.has(blankCharacterReference.id))files.push({path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character references\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
    files.push({path:'catalog/visuals.json',mode:'100644',type:'blob',content:JSON.stringify([...state.catalog,...pending.map(row=>row.record)],null,2)+'\n'});
    const base=await github('/git/commits/'+state.sha);
    const tree=await github('/git/trees','POST',{base_tree:base.tree.sha,tree:files});
@@ -143,17 +161,30 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     if(input.visual_mode!==undefined&&!['character','object'].includes(input.visual_mode))throw new VisualError('Choose character or object mode.');
     const objectMode=input.visual_mode==='object';
     if(input.face_variant!==undefined&&!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
-    const character=objectMode?null:getCharacter(input.face_variant||'default',input.age_strand);
+    let selection=null;
+    if(input.reference_style){
+     if(objectMode||input.face_variant==='blank')throw new VisualError('Stylesheets require a character with an expressive face.');
+     try{selection=cleanSelection(input);}catch(error){throw new VisualError(error.message);}
+    }
+    const character=objectMode||selection?null:getCharacter(input.face_variant||'default',input.age_strand);
+    const sheet=selection?sheetFor(selection.reference_style):null;
     const objectInstructions='Create one nonhuman object visual for the shared all-age library. Show only the requested object and essential props. No people, body parts, faces, eyes, mouths, or anthropomorphism. Use clean flat closed shapes, medium rounded dark contours, and a palette of ink #24243B, white #FFFFFF, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. No gradients, shading, shadows, texture, 3D, scenery, borders, logos, letters or numbers. Center the complete object with ten percent safe margins. Keep white objects opaque and the surrounding canvas genuinely transparent. ';
-    const prompt=(objectMode?objectInstructions:character.instructions)+'Requested visual: '+required(input.prompt,'an image prompt',12000);
-    const options={model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:1,quality:'medium'};
+    const prompt=(objectMode?objectInstructions:selection?selectionInstructions(selection):character.instructions)+'Requested visual: '+required(input.prompt,'an image prompt',12000);
+    const options={model:imageModel,prompt,size:'1024x1024',background:selection?.background_mode==='setting'?'opaque':'transparent',output_format:'png',n:1,quality:'medium'};
     let body,headers={Authorization:'Bearer '+openaiKey};
     if(objectMode){
      headers['Content-Type']='application/json';body=JSON.stringify(options);
     }else{
      body=new FormData();
      for(const [key,value] of Object.entries({...options,input_fidelity:'high'}))body.set(key,String(value));
-     body.append('image[]',new Blob([Uint8Array.from(atob(character.image),char=>char.charCodeAt(0))],{type:'image/png'}),'adventurer-reference.png');
+     let bytes;
+     if(sheet){
+      const referenceResponse=await request(sheet.url,{signal:AbortSignal.timeout(20000)});
+      if(!referenceResponse.ok)throw new VisualError('Could not load the selected stylesheet. Try again.',502);
+      bytes=new Uint8Array(await referenceResponse.arrayBuffer());
+      if(bytes.length>8*1024*1024||![137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v))throw new VisualError('The stylesheet is not a valid PNG.',502);
+     }else bytes=Uint8Array.from(atob(character.image),char=>char.charCodeAt(0));
+     body.append('image[]',new Blob([bytes],{type:'image/png'}),'character-reference.png');
     }
     const response=await request('https://api.openai.com/v1/images/'+(objectMode?'generations':'edits'),{method:'POST',headers,body,signal:AbortSignal.timeout(140000)});
     if(!response.ok){
@@ -171,7 +202,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     }
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':' using the DiceBear '+character.reference.style+' reference'),reference_id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':sheet?' using the ABHP '+sheet.name+' stylesheet':' using the DiceBear '+character.reference.style+' reference'),reference_id:sheet?referenceFor(sheet.id).id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
    }
    if(input.action==='publish'){
     const result=await publishMany([input]);return respond({...result,...result.visuals[0]});

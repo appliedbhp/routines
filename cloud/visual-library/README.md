@@ -45,3 +45,19 @@ The publish_batch action validates up to six previews, archives both versioned c
 ## Shared objects
 
 Object mode produces one nonhuman visual with the same outline palette, using the image-generation endpoint without a character reference. Records follow the existing shared library convention: age_strand shared, min_age 0, max_age 18, and artwork under visuals/shared/<category>/. Face fields and character references are rejected on published objects. The creator hides age and face controls in this mode.
+
+## Stylesheet scene builder
+
+The current builder uses styles.js for six pinned ABHP sheets: 90s, 2000s,
+Grunge, Anime style 1, Anime style 2, and Classic. Teen sheets select from
+three skin-tone rows and three gender columns. Classic uses age columns
+and boy/girl rows; nonbinary uses style-only adaptation. The selected
+character defaults to a single image; all nine combinations are optional.
+
+The backend fetches only the allowlisted pinned PNG and attaches it to the
+image-edit request. A specific setting uses opaque output; transparent
+uses transparent output. Style, tone, gender, derived grid position,
+background, setting, and exact reference revision are recorded on publish.
+Legacy DiceBear records remain supported. New stylesheet references do not
+receive unrelated DiceBear attribution. Deploy styles.js with the other
+function files. Changes to these sheets require a reviewed revision update.

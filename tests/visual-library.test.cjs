@@ -14,7 +14,7 @@ function githubMock(conflict=false){
   if(path==='/git/ref/heads/main')return json({object:{sha:head}});
   if(path.startsWith('/contents/')){
    const file=path.slice('/contents/'.length),value={'catalog/categories.json':categories,'catalog/age-strands.json':ages,'catalog/visuals.json':catalog}[file];
-   return json({content:btoa(JSON.stringify(value))});
+   return json({content:Buffer.from(JSON.stringify(value),'utf8').toString('base64')});
   }
   if(path==='/git/blobs')return json({sha:'image'});
   if(path.startsWith('/git/commits/'))return json({tree:{sha:'base-tree'}});
@@ -146,4 +146,66 @@ test('teen variants use Micah while younger variants retain Adventurer',async()=
  const {validateRecord}=await modulePromise;
  assert.equal(validateRecord({...input,age_strand:'12-18',reference_id:micahReference.id,face_variant:'blank'},categories,ages).character_reference.style,'micah');
  assert.throws(()=>validateRecord({...input,reference_id:micahReference.id,face_variant:'default'},categories,ages),/face and reference/);
+});
+
+test('stylesheet selection matches grid, accepts nonbinary, and records scene metadata',async()=>{
+ const {cleanSelection,gridPosition,referenceFor}=await import('../cloud/visual-library/styles.js');
+ const {validateRecord}=await modulePromise;
+ const selection={reference_style:'2000s',skin_tone:'dark',gender_variant:'nonbinary',age_strand:'12-18',background_mode:'setting',setting:'A quiet classroom'};
+ assert.equal(cleanSelection(selection).grid_position,'bottom-right');
+ assert.equal(gridPosition('classic','medium','female','6-11'),'bottom-center');
+ assert.equal(gridPosition('classic','dark','nonbinary','12-18'),'style-only');
+ assert.throws(()=>cleanSelection({...selection,grid_position:'top-left'}));
+ assert.throws(()=>cleanSelection({...selection,setting:''}));
+ assert.throws(()=>cleanSelection({...selection,reference_style:'https://evil.test/ref.png'}));
+ const record=validateRecord({...input,...selection,reference_id:referenceFor('2000s').id},categories,ages);
+ assert.equal(record.grid_position,'bottom-right');assert.equal(record.setting,'A quiet classroom');
+ assert.equal(record.character_reference.repository_commit.length,40);
+ assert.throws(()=>validateRecord({...input,...selection,reference_id:referenceFor('90s').id},categories,ages));
+});
+test('generation attaches selected stylesheet and sends correct background option',async()=>{
+ const {createVisualHandler}=await modulePromise;
+ const {sheetFor}=await import('../cloud/visual-library/styles.js');
+ for(const background_mode of ['transparent','setting']){
+  const calls=[];
+  const handle=createVisualHandler({authenticate:async()=>true,openaiKey:'test',fetch:async(url,options={})=>{
+   calls.push(url);
+   if(url===sheetFor('grunge').url){assert.equal(options.headers,undefined);return new Response(Buffer.from(png,'base64'));}
+   assert.equal(url,'https://api.openai.com/v1/images/edits');
+   assert.equal(options.body.get('background'),background_mode==='setting'?'opaque':'transparent');
+   assert.match(options.body.get('prompt'),/middle right/);assert.match(options.body.get('prompt'),/scruffy comic ink/);
+   assert.doesNotMatch(options.body.get('prompt'),/mouth variant02|Micah/);
+   assert.equal(Buffer.from(await options.body.get('image[]').arrayBuffer()).toString('base64'),png);
+   return new Response(JSON.stringify({data:[{b64_json:png}]}));
+  }});
+  const response=await handle(request({action:'generate',prompt:'Raise one hand.',reference_style:'grunge',skin_tone:'medium',gender_variant:'nonbinary',age_strand:'12-18',background_mode,setting:'A classroom'}));
+  assert.equal(response.status,200);assert.equal(calls.length,2);assert.match((await response.json()).reference_id,/abhp-grunge/);
+ }
+});
+test('published stylesheet visual retains exact reference without archiving unrelated DiceBear art',async()=>{
+ const {createVisualHandler}=await modulePromise,{referenceFor}=await import('../cloud/visual-library/styles.js'),mock=githubMock();
+ const handle=createVisualHandler({authenticate:async()=>true,fetch:mock.fetch,githubToken:'test'});
+ const visual={...input,reference_style:'anime-2',reference_id:referenceFor('anime-2').id,skin_tone:'light',gender_variant:'nonbinary',age_strand:'12-18',background_mode:'transparent'};
+ const response=await handle(request(visual));assert.equal(response.status,200);
+ assert.equal(mock.catalog()[0].reference_style,'anime-2');assert.equal(mock.catalog()[0].grid_position,'top-right');
+ assert.ok(mock.tree().some(f=>f.path==='references/'+referenceFor('anime-2').id+'.json'));
+ assert.ok(!mock.tree().some(f=>f.path.includes('ADVENTURER')));
+ assert.equal((await handle(request(visual))).status,200);
+});
+
+test('large GitHub catalogs load through the pinned raw URL without forwarding credentials',async()=>{
+ const {createVisualHandler}=await modulePromise;let raw=false;
+ const handle=createVisualHandler({authenticate:async()=>true,githubToken:'test',fetch:async(url,options={})=>{
+  const path=new URL(url).pathname;
+  if(url.includes('raw.githubusercontent.com')){raw=true;assert.equal(options.headers,undefined);assert.match(url,/\/base\/catalog\/visuals.json$/);return new Response('[]');}
+  let value;
+  if(path.endsWith('/git/ref/heads/main'))value={object:{sha:'base'}};
+  else if(path.endsWith('/catalog/visuals.json'))value={encoding:'none',content:''};
+  else if(path.endsWith('/catalog/categories.json'))value={content:Buffer.from(JSON.stringify(categories)).toString('base64')};
+  else if(path.endsWith('/catalog/age-strands.json'))value={content:Buffer.from(JSON.stringify(ages)).toString('base64')};
+  else if(path.endsWith('/CREATING-VISUALS.md'))value={content:Buffer.from('Guide').toString('base64')};
+  else value={permissions:{push:true}};
+  return new Response(JSON.stringify(value));
+ }});
+ const response=await handle(request({action:'status'}));assert.equal(response.status,200);assert.equal(raw,true);
 });

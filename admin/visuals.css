@@ -41,3 +41,20 @@
 @media(prefers-reduced-motion:reduce){#visualLibrary .visual-variant-status[data-state=Generating]::before{animation:none}}
 
 #visualLibrary .visual-appearance-options{display:flex;flex-wrap:wrap;gap:8px 16px}#visualLibrary .visual-appearance-options .visual-check{margin:4px 0;padding:8px;border:1px solid var(--ui-border,#d7e0ec);border-radius:8px}#visualLibrary [data-appearance][hidden]{display:none!important}
+#visualLibrary .visual-style-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+#visualLibrary .visual-style-choices button{display:grid;gap:8px;text-align:left;padding:12px;border:2px solid #d7e0ec;border-radius:12px;background:#fff;color:#17283f}
+#visualLibrary .visual-style-choices img{width:100%;height:140px;object-fit:contain;background:#f2f4f8;border-radius:6px}
+#visualLibrary .visual-style-choices small{font-size:12px;line-height:1.4}
+#visualLibrary .visual-style-choices [aria-pressed=true]{border-color:var(--ui-accent,#3185fc);box-shadow:0 0 0 2px #3185fc25}
+#visualLibrary .visual-character-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0;align-items:start}
+#visualLibrary .visual-sheet-wrap{position:relative;background:repeating-conic-gradient(#edf0f5 0% 25%,#fff 0% 50%) 0/20px 20px;border-radius:10px;overflow:hidden}
+#visualLibrary .visual-sheet-wrap>img{display:block;width:100%;height:auto}
+#visualLibrary .visual-sheet-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
+#visualLibrary .visual-sheet-grid button{background:transparent;border:2px solid transparent;border-radius:6px;margin:2px;min-width:0;padding:0}
+#visualLibrary .visual-sheet-grid button:hover{background:#3185fc12;border-color:#3185fc88}
+#visualLibrary .visual-sheet-grid [aria-pressed=true]{border:3px solid #1769aa;background:#3185fc15;box-shadow:inset 0 0 0 2px #fff}
+#visualLibrary button:focus-visible{outline:3px solid #1769aa;outline-offset:3px}
+#visualLibrary [data-position]{font-weight:700;color:#1769aa}
+#visualLibrary [data-appearance]{margin:16px 0;padding:12px;border:1px solid #d7e0ec;border-radius:10px}
+#visualLibrary [data-appearance] summary{cursor:pointer;font-weight:600}
+@media(max-width:650px){#visualLibrary .visual-style-choices{grid-template-columns:repeat(2,minmax(0,1fr))}#visualLibrary .visual-character-layout{grid-template-columns:1fr}}
