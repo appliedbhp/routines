@@ -7,4 +7,4 @@ export async function betaRequest(action,args={}){
  let response;try{response=await fetch(cloudConfig.url+'/functions/v1/routines-beta',{method:'POST',headers,body:JSON.stringify({...args,action})});}catch{throw Error('Unable to connect. Please check your internet connection and try again.');}const result=await response.json();if(!response.ok)throw Error(result.error||'Please try again.');return result;
 }
 export async function plan(){const result=await betaRequest('state');globalThis.RoutinesPlan=result;dispatchEvent(new CustomEvent('routines-plan-change',{detail:result}));return result;}
-export function planName(p){return p.betaActive?'Beta · full-feature access':p.lifetimeTier?'Lifetime · Tier '+p.lifetimeTier:'Free plan';}
+export function planName(p){const name=p.plan==='classroom'?'Classroom':p.plan==='family'?'Family':'Free';return name+(p.lifetimeTier?' · Lifetime':p.betaActive?' · Beta':' plan');}

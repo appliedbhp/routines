@@ -134,3 +134,5 @@
 }
 @media(forced-colors:active){.calm-ui .workspace-sidebar{scrollbar-color:auto}.sidebar-resize-handle::after{background:CanvasText;opacity:1}}
 @media print{.sidebar-resize-handle{display:none!important}}
+
+.coming-soon{display:inline-flex;padding:.25rem .65rem;border-radius:999px;background:#e8edf4;color:#334155;font-size:.78rem;font-weight:750;line-height:1.4}.linked-resource{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.6rem;align-items:center;margin:.8rem 0}.linked-resource small{grid-column:1/-1}.linked-settings label,.linked-settings form{display:grid;gap:.5rem;margin:1rem 0}.linked-settings summary{cursor:pointer;font-weight:700;overflow-wrap:anywhere}.linked-settings button{margin:.35rem .4rem .35rem 0}.linked-settings textarea{min-height:5rem;width:100%}.linked-settings input{max-width:100%}.visitor-prices,.beta-price-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}.cloud-dialog pre{max-height:40vh;overflow:auto;white-space:pre-wrap}@media(max-width:500px){.linked-resource{grid-template-columns:1fr auto}.linked-resource>span{grid-column:1/-1}}

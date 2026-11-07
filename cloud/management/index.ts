@@ -3,7 +3,7 @@ import Stripe from 'npm:stripe@23.0.0';
 import {uuid,sequence,discount,emailText,SITE} from './model.mjs';
 const db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const stripe=new Stripe(Deno.env.get('ROUTINES_API_KEY')||Deno.env.get('STRIPE_SECRET_KEY')||'missing',{apiVersion:'2026-09-30.endive',stripeContext:'acct_1UIYQeIiI1uuEHpt'});
-const prices=['price_1UYx47IiI1uuEHpt7F6yglje','price_1UYx4BIiI1uuEHptZCmvyACH','price_1UYx4EIiI1uuEHptq5jRSgfY'];
+const prices=['price_1UZ0uaIiI1uuEHptwAaCOmr0','price_1UZ0ucIiI1uuEHptKqXXBbjp'];
 function checked(r:any){if(r.error)throw Error('Could not save or load this record. Refresh and try again.');return r.data;}
 async function audit(actor:string,action:string,detail:any){checked(await db.from('routine_admin_audit').insert({actor,action,detail}));}
 async function health(){let discounts=false;try{await stripe.coupons.list({limit:1});await stripe.promotionCodes.list({limit:1});discounts=true;}catch{}return {email:!!Deno.env.get('RESEND_API_KEY'),discounts};}

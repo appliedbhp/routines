@@ -10,7 +10,7 @@ const adminStatus=document.getElementById('adminStatus');
 const byId=id=>document.getElementById(id);
 const paths={
  settings:'<circle cx="12" cy="12" r="3"/><path d="m10 3-.6 2.5-2 .9-2.4-.8-2 3.4 1.9 1.7v2.6L3 15l2 3.4 2.4-.8 2 .9L10 21h4l.6-2.5 2-.9 2.4.8 2-3.4-1.9-1.7v-2.6L21 9l-2-3.4-2.4.8-2-.9L14 3z"/>',
- admin:'<path d="M12 22s7-3 7-9V5l-7-3-7 3v8c0 6 7 9 7 9z"/><path d="m9 12 2 2 4-4"/>',
+ admin:'<path fill="currentColor" stroke="none" d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708"/>',
  view:'<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>'
 };
 function make(tag,text){
@@ -22,7 +22,7 @@ function icon(tag,kind,label){
  const control=make(tag);
  if(tag==='button')control.type='button';
  control.title=label;control.setAttribute('aria-label',label);
- control.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">'+paths[kind]+'</svg>';
+ control.innerHTML='<svg aria-hidden="true" viewBox="'+(kind==='admin'?'0 0 16 16':'0 0 24 24')+'" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">'+paths[kind]+'</svg>';
  return control;
 }
 function modal(title){
@@ -62,12 +62,12 @@ const logout=make('button','Log out on this device');logout.type='button';logout
 const accountStatus=make('p');accountStatus.setAttribute('role','status');
 logout.onclick=async()=>{logout.disabled=true;try{const client=await accountClient();const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;await loadAccount();accountStatus.textContent='Logged out on this device.';}catch{accountStatus.textContent='Could not log out. Check your connection and try again.';}finally{logout.disabled=false;}};
 const planCard=make('section');planCard.className='settings-account-plan';planCard.setAttribute('aria-label','Account plan');
-const planName=make('strong','Sign in to view your plan'),planDetails=make('p','Free accounts include 2 cloud boards, 5 saved dates, and saved values.');
+const planName=make('strong','Sign in to view your plan'),planDetails=make('p','Free accounts include 2 links and 2 each: cloud boards, goals, dates, and values.');
 const upgrade=make('a','View beta & lifetime offers');upgrade.href=new URL('beta/',root);upgrade.setAttribute('aria-describedby','accountUpgradeNote');
-const upgradeNote=make('p','Optional one-time lifetime offers are available to eligible beta members. No recurring charges.');upgradeNote.id='accountUpgradeNote';upgradeNote.className='portal-note';
+const upgradeNote=make('p','Family and Classroom are $15 lifetime each. Classroom requires educator approval. No recurring charges.');upgradeNote.id='accountUpgradeNote';upgradeNote.className='portal-note';
 planCard.append(make('h4','Your plan'),planName,planDetails,upgrade,upgradeNote);
 accountPanel.append(identity,planCard,make('h4','Password'),make('p','Passwords are never displayed. Use the secure email link to set or reset yours.'),password,make('h4','Privacy'),privacy,make('hr'),login,logout,accountStatus);
-async function loadAccount(){try{const client=await accountClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;let user=null;if(sessionData.session){const {data,error}=await client.auth.getUser();if(error)throw error;user=data.user;}username.textContent=user?(user.user_metadata?.username||user.user_metadata?.display_name||'Not set (sign in with email)'):'Not signed in';email.textContent=user?.email||'Not signed in';login.hidden=!!user;logout.hidden=!user;const access=user?await plan():null;planName.textContent=access?betaPlanName(access):'Sign in to view your plan';planDetails.textContent=access?access.boardLimit+' cloud boards, 5 saved dates, and saved values. '+(access.betaActive?'Free beta access through '+new Date(access.expiresAt).toLocaleDateString()+'.':''):'Free accounts include 2 cloud boards, 5 saved dates, and saved values.';}catch{planName.textContent='Reconnect to view your plan';username.textContent='Unavailable';email.textContent='Sign in or reconnect to view your account';login.hidden=false;logout.hidden=true;}}
+async function loadAccount(){try{const client=await accountClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;let user=null;if(sessionData.session){const {data,error}=await client.auth.getUser();if(error)throw error;user=data.user;}username.textContent=user?(user.user_metadata?.username||user.user_metadata?.display_name||'Not set (sign in with email)'):'Not signed in';email.textContent=user?.email||'Not signed in';login.hidden=!!user;logout.hidden=!user;const access=user?await plan():null;planName.textContent=access?betaPlanName(access):'Sign in to view your plan';planDetails.textContent=access?access.linkLimit+' links; '+access.boardLimit+' each: cloud boards, goals, dates, and values. '+(access.betaActive?'Free beta access through '+new Date(access.expiresAt).toLocaleDateString()+'.':''):'Free accounts include 2 links and 2 each: cloud boards, goals, dates, and values.';}catch{planName.textContent='Reconnect to view your plan';username.textContent='Unavailable';email.textContent='Sign in or reconnect to view your account';login.hidden=false;logout.hidden=true;}}
 import('./linked-settings.js').then(m=>m.mount(accountPanel));
 import('./email-preferences.js').then(m=>m.mount(accountPanel));
 import('./praise-settings.js').then(m=>m.mount(userPanel));
@@ -111,7 +111,7 @@ function showPreview(value,email){
  if(!authorized)return;
  tier.value=value;label.hidden=!!email;
  context.textContent=email
-  ?'Account: '+email+'. Showing the free-account layout. Billing is not connected. Private boards and actions are excluded.'
+  ?'Account: '+email+'. Showing the free-account layout. See Purchases for billing records. Private boards and actions are excluded.'
   :'Read-only preview of the planned tier. Your account access and billing stay the same.';
  renderPreview();
  if(!preview.open)preview.showModal();

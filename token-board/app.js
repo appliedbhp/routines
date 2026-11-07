@@ -84,6 +84,7 @@ function renderCredit(element,icons){
  for(const key of new Set(icons.map(icon=>icon.source==='dicebear'?`dicebear:${icon.style||'bottts'}`:icon.source))){const style=key.startsWith('dicebear:')?TokenCharacters.styles[key.split(':')[1]]:null;const [label,href]=style?[`${style.name} by ${style.creator} / DiceBear · ${style.license}`,style.licenseUrl]:TokenData.credits[key];const link=document.createElement('a');link.href=href;link.textContent=label;link.target='_blank';link.rel='noopener';if(element.childNodes.length)element.append(' · ');element.append(link);}
 }
 Object.entries(TokenData.sources).forEach(([key,name])=>$('pictureSource').append(new Option(name,key)));
+$('pictureSource').value='arasaac';
 Object.entries(TokenCharacters.styles).forEach(([key,s])=>$('characterStyle').append(new Option(s.name+(s.animated?' · animated':''),key)));
 $('characterStyle').onchange=()=>{characterPage=0;renderLibrary();};
 let searchRevision=0,characterPage=0;
@@ -93,6 +94,8 @@ function showChoices(icons){
 }
 async function renderLibrary(){
  const revision=++searchRevision,source=$('pictureSource').value,search=$('pictureSearch').value.trim();
+ const extended=!!globalThis.RoutinesPlan?.extendedLibrary;
+ if(source!=='arasaac'&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose ARASAAC to browse free pictures, or see plans in Settings.';return;}
  let failed=0;
  $('characterStyle').hidden=$('characterStyleLabel').hidden=source!=='dicebear';
  $('searchForm').hidden=false;$('moreCharacters').hidden=!!search||!['dicebear','pixabots'].includes(source);
@@ -102,7 +105,7 @@ async function renderLibrary(){
  try{
   let icons;
   const query=$('pictureSearch').value.trim()||$('iconCategory').value;
-  if(search){const result=await TokenSearch.all(search);icons=result.icons;failed=result.failed;}
+  if(search){const result=await TokenSearch.all(search,extended);icons=result.icons;failed=result.failed;}
   else if(source==='pixabots')icons=await TokenSearch.pixabots();
   else if(source==='dicebear')icons=Array.from({length:24},(_,i)=>({source,id:`robot-${characterPage*24+i+1}`,style:$('characterStyle').value,label:`${TokenCharacters.styles[$('characterStyle').value].name} ${characterPage*24+i+1}`}));
   else if(source==='material'&&!$('pictureSearch').value.trim()&&query==='star')icons=['star','favorite','redeem','emoji-events','pets','rocket-launch','menu-book','sports-soccer','brush','music-note','sunny','sentiment-satisfied'].map(id=>({source,id,label:id.replace(/-/g,' ')}));
@@ -112,10 +115,10 @@ async function renderLibrary(){
   if(revision!==searchRevision)return;
   if(!search&&query==='star')icons=TokenSearch.favorites(icons);
   showChoices(icons.map(TokenData.icon));$('pickerStatus').textContent=(icons.length?`${icons.length} pictures${search?' across all searchable libraries':''}. Choose one below.`:'No pictures found. Try another word.')+(failed?' Some libraries could not be reached. Try searching again.':'');
-  if(search){$('pickerCredit').textContent='Results from ARASAAC, Google Material Symbols, and OpenMoji. Credits appear on your board.';$('pickerCredit').removeAttribute('href');}
+  if(search){$('pickerCredit').textContent=extended?'Results from ARASAAC, Google Material Symbols, and OpenMoji. Credits appear on your board.':'ARASAAC pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
  }catch(error){if(revision===searchRevision)$('pickerStatus').textContent='Pictures could not load. Try again, or choose Characters for pictures available without a picture service.';}
 }
-function openPicker(index){selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value='';renderLibrary();picker.showModal();}
+async function openPicker(index){try{await (await import('../beta/api.js')).plan();}catch{globalThis.RoutinesPlan=null;}selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value='';renderLibrary();picker.showModal();}
 function assign(value){const icon=TokenData.icon(value);if(selectedToken===-1)tokenBoard.rewardIcon=icon;else if($('applyAll').checked)tokenBoard.tokens.forEach(t=>t.icon={...icon});else tokenBoard.tokens[selectedToken].icon=icon;searchRevision++;picker.close();renderTokens(selectedToken);}
 $('pictureSource').onchange=()=>{$('pictureSearch').value='';renderLibrary();};$('iconCategory').onchange=()=>{$('pictureSearch').value='';renderLibrary();};
 $('searchForm').onsubmit=event=>{event.preventDefault();renderLibrary();};$('moreCharacters').onclick=()=>{characterPage++;renderLibrary();};$('closePicker').onclick=()=>{searchRevision++;picker.close();};

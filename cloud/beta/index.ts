@@ -24,20 +24,20 @@ Deno.serve(async req=>{
    if(paymentKey.startsWith('pk_'))return reply(503,{ready:false,reason:'This is a publishable key. Checkout needs a restricted or secret server key.'});
    if(/^(rk|sk)_test_/.test(paymentKey))return reply(503,{ready:false,reason:'This is a test-mode key. The configured offers belong to the live Stripe account.'});
    try{const prices=await Promise.all(Object.values(PRICES).map(id=>stripe.prices.retrieve(id)));
-   const ready=prices.every((p,i)=>p.active&&p.livemode&&p.currency==='usd'&&p.unit_amount===[1500,2700,4700][i])&&!!Deno.env.get('RESEND_API_KEY');
+   const ready=prices.every((p,i)=>p.active&&p.livemode&&p.currency==='usd'&&p.unit_amount===1500)&&!!Deno.env.get('RESEND_API_KEY');
    return reply(ready?200:503,{ready,reason:ready?undefined:'Check the configured prices and email connection.'});
    }catch(e){return reply(503,{ready:false,reason:e?.type==='StripeAuthenticationError'?'Stripe did not accept this key.':String(e?.message||'Stripe connection could not be verified.').replaceAll(paymentKey,'[redacted]').replace(/(['"]).*?\1/g,'[redacted]').replace(/\b(?:sk|rk|pk|whsec)_[^\s]+/g,'[redacted]').slice(0,400),code:typeof e?.code==='string'&&/^[a-z_]+$/.test(e.code)?e.code:undefined,param:typeof e?.param==='string'&&/^[a-z_]+$/.test(e.param)?e.param:undefined,category:['StripeAuthenticationError','StripePermissionError','StripeConnectionError','StripeInvalidRequestError'].includes(e?.type)?e.type:'other'});}
   }
   if(action==='signup'){
    const data=signup(body);await limit('signup-ip:'+ip,6);await limit('signup-email:'+await digest(data.email),3);await limit('signup-global',300);
    const secret=token();const result=await rpc(null,'request',{...data,hash:await digest(secret)});
-   await mail(data.email,'Confirm your Routines beta signup',`Confirm your email to start two free months of Routines beta access:\n\n${SITE}/beta/#confirm=${secret}\n\nThis link expires in 24 hours. Confirm before December 1, 2026 (Pacific Time). No payment is required. If you did not request this, ignore this email.`, 'beta-confirm-'+result.id);
-   return reply(200,{message:'Check your email to confirm your beta signup. Your free access starts when you confirm.'});
+   await mail(data.email,'Confirm your Routines beta signup',`Confirm your email for two free months of your selected Routines plan (Classroom starts after educator approval):\n\n${SITE}/beta/#confirm=${secret}\n\nThis link expires in 24 hours. Confirm before December 1, 2026 (Pacific Time). No payment is required. If you did not request this, ignore this email.`, 'beta-confirm-'+result.id);
+   return reply(200,{message:'Check your email to confirm your beta signup. Family access starts when you confirm; Classroom starts after educator approval.'});
   }
   if(action==='verify'){
    await limit('verify:'+ip,30);if(!/^[a-f0-9]{64}$/.test(body.token||''))throw Error('Invalid confirmation link.');
    const result=await rpc(null,'verify',{hash:await digest(body.token),referralCode:token().slice(0,24)});let failed=0;
-   for(const friend of result.friends||[]){try{await limit('invite-email:'+await digest(friend),3,86400);await mail(friend,'You’re invited to try Routines',`A friend invited you to Routines by Applied Behavioral Health Practice: practical tools for planning, learning, and everyday routines.\n\nJoin the beta before December 1, 2026 (Pacific Time) for two months of free full-feature access. No payment required.\n\n${SITE}/beta/?ref=${result.referralCode}\n\nIf you join through this link, your friend earns an extra free month. If this invitation isn’t for you, simply ignore it; you have not been subscribed to a mailing list.`, 'beta-friend-'+result.referralCode+'-'+await digest(friend));}catch{failed++;}}
+   for(const friend of result.friends||[]){try{await limit('invite-email:'+await digest(friend),3,86400);await mail(friend,'You’re invited to try Routines',`A friend invited you to Routines by Applied Behavioral Health Practice: practical tools for planning, learning, and everyday routines.\n\nJoin the beta before December 1, 2026 (Pacific Time) for two free months of Family or Classroom access (educator approval required for Classroom). No payment required.\n\n${SITE}/beta/?ref=${result.referralCode}\n\nIf you join through this link, your friend earns an extra free month. If this invitation isn’t for you, simply ignore it; you have not been subscribed to a mailing list.`, 'beta-friend-'+result.referralCode+'-'+await digest(friend));}catch{failed++;}}
    return reply(200,{alreadyMember:!!result.alreadyMember,referralCode:result.referralCode,failedInvites:failed});
   }
   if(action==='bug'){await limit('bug:'+ip,8);return reply(200,await rpc(user?.id||null,'bug',bug(body)));}
@@ -47,9 +47,9 @@ Deno.serve(async req=>{
    await limit('checkout:'+user.id,12);
    const order=await rpc(user.id,'checkout',{offer:body.offer});if(order.url)return reply(200,{url:order.url});
    const metadata={app:'routines_beta',orderId:order.id,userId:user.id};
-   const session=await stripe.checkout.sessions.create({mode:'payment',allow_promotion_codes:true,line_items:[{price:PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
+   const session=await stripe.checkout.sessions.create({mode:'payment',allow_promotion_codes:true,line_items:[{price:order.price_id||PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
    await rpc(user.id,'attach',{orderId:order.id,sessionId:session.id,url:session.url});return reply(200,{url:session.url});
   }
   return reply(400,{error:'Unknown request.'});
- }catch(error){const message=error instanceof Error?error.message:'';const safe=!(error&&typeof error==='object'&&'type' in error)&&/^(Enter |Invite |Please |Confirm |Describe |Invalid confirmation link\.|Invalid page\.|This |These |Choose |Use your |The \$15|You already|Sign in|Beta enrollment|Checkout is|Email |Administrator|Your )/.test(message);return reply(400,{error:safe?message:'Unable to complete this request. Please try again.'});}
+ }catch(error){const message=error instanceof Error?error.message:'';const safe=!(error&&typeof error==='object'&&'type' in error)&&/^(Enter |Invite |Please |Confirm |Describe |Invalid confirmation link\.|Invalid page\.|This |These |Choose |Use your |The \$15|You already|Sign in|Beta enrollment|Checkout is|Classroom requires|Email |Administrator|Your )/.test(message);return reply(400,{error:safe?message:'Unable to complete this request. Please try again.'});}
 });
