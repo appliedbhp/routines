@@ -100,10 +100,10 @@ async function addStepFromKeyword(name) {
   syncAutoTotal();
   renderBuilder();
   renderWheelForCurrentView();
-  const results = await ARASAAC.search(name);
+  const results = await SymbolLibrary.search(name);
   if (results[0]) {
     step.pictogramId = results[0]._id;
-    step.imageUrl = ARASAAC.imageUrl(results[0]._id);
+    step.imageUrl = SymbolLibrary.imageUrl(results[0]._id);
     syncAutoTotal();
     renderBuilder();
     renderWheelForCurrentView();
@@ -305,18 +305,18 @@ async function runIconSearch(term) {
     return;
   }
   resultsEl.innerHTML = `<p class="icon-search-status">Searching…</p>`;
-  const results = await ARASAAC.search(term);
+  const results = await SymbolLibrary.search(term);
   resultsEl.innerHTML = "";
   if (!results.length) {
-    resultsEl.innerHTML = `<p class="icon-search-status">No symbols found for "${term}".</p>`;
+    resultsEl.innerHTML = `<p class="icon-search-status">No symbols found for "${escapeHTML(term)}".</p>`;
     return;
   }
   results.slice(0, 24).forEach((r) => {
     const btn = document.createElement("button");
     btn.className = "icon-result";
-    btn.innerHTML = `<img src="${ARASAAC.imageUrl(r._id, 300)}" alt="">`;
+    btn.innerHTML = `<img src="${SymbolLibrary.imageUrl(r._id, 300)}" alt="">`;
     btn.onclick = () => {
-      updateStep(state.iconPickerTargetId, { imageUrl: ARASAAC.imageUrl(r._id), pictogramId: r._id });
+      updateStep(state.iconPickerTargetId, { imageUrl: SymbolLibrary.imageUrl(r._id), pictogramId: r._id });
       closeIconPicker();
     };
     resultsEl.appendChild(btn);
@@ -950,6 +950,7 @@ function normalizeRoutine(record) {
         positions[mode][kind] = { x: offset.x, y: offset.y };
       }
     }
+    if (Number.isInteger(step.pictogramId)) imageUrl = SymbolLibrary.imageUrl(step.pictogramId);
     return { name: step.name.trim(), minutes: step.minutes, imageUrl, pictogramId: Number.isInteger(step.pictogramId) ? step.pictogramId : null, positions };
   });
   if (steps.reduce((sum, step) => sum + step.minutes, 0) > 10080) fail();
@@ -998,10 +999,10 @@ async function usePreset(key, announce = true) {
   // Create all steps immediately. Late icon responses cannot repopulate a replaced routine.
   const steps = [...state.steps];
   await Promise.all(steps.map(async (step) => {
-    const results = await ARASAAC.search(step.name);
+    const results = await SymbolLibrary.search(step.name);
     if (!state.steps.includes(step) || !results[0]) return;
     step.pictogramId = results[0]._id;
-    step.imageUrl = ARASAAC.imageUrl(results[0]._id);
+    step.imageUrl = SymbolLibrary.imageUrl(results[0]._id);
     const rowIndex = state.steps.indexOf(step);
     const thumb = document.querySelectorAll(".step-thumb")[rowIndex];
     if (thumb) thumb.innerHTML = `<img src="${escapeHTML(step.imageUrl)}" alt="">`;

@@ -92,7 +92,9 @@ const HomeworkPDF=(()=>{
    }
   }
   if(footer||qr){
-   if(y+(qr?90:28)>bottom){finish();start();}
+   font(9);
+   const footerLines=wrap(ctx,footer,tableWidth-(qr?84:0));
+   if(y+Math.max(qr?90:0,20+footerLines.length*lineHeight)>bottom){finish();start();}
    y+=10;
    if(qr){
     const modules=qr.getModuleCount(),size=Math.max(1,Math.floor(76/(modules+8))),offset=4*size;
@@ -101,7 +103,7 @@ const HomeworkPDF=(()=>{
    }
    font(9);ctx.fillStyle='#17283f';
    const indent=qr?84:0;
-   wrap(ctx,footer,tableWidth-indent).forEach((line,i)=>ctx.fillText(line,margin+indent,y+i*lineHeight));
+   footerLines.forEach((line,i)=>ctx.fillText(line,margin+indent,y+i*lineHeight));
   }
   finish();
   return encode(pages,width,height);

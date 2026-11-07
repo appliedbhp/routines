@@ -1,3 +1,4 @@
+import './symbol-library.js';
 import './board-settings.js';
 import {readBody} from './model.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.57.4';

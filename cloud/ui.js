@@ -1,6 +1,7 @@
 import {plan,planName} from '../beta/api.js';
 import {accountClient} from './client.js';
 import {cloudConfig} from './config.js';
+import '../js/symbol-library.js';
 import './board-settings.js';
 const S=globalThis.CloudBoardSettings,root=new URL('../',import.meta.url);
 // Fail closed until authentication delivery and authorization tests are complete.

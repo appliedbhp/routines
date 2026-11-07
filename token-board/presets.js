@@ -11,8 +11,8 @@ const TokenPresets = [
         "title": "Space — Animated",
         "reward": "Dance Party!",
         "rewardIcon": {
-          "source": "arasaac",
-          "id": "35747",
+          "source": "mulberry",
+          "id": "894935167",
           "label": "dance"
         },
         "font": "Patrick Hand",
@@ -81,8 +81,8 @@ const TokenPresets = [
         "title": "Critters — Animated",
         "reward": "Crafts!",
         "rewardIcon": {
-          "source": "arasaac",
-          "id": "7794",
+          "source": "mulberry",
+          "id": "749402589",
           "label": "handicrafts"
         },
         "font": "Silkscreen",
@@ -151,8 +151,8 @@ const TokenPresets = [
         "title": "Clay — Games",
         "reward": "Choose a favorite activity",
         "rewardIcon": {
-          "source": "arasaac",
-          "id": "10162",
+          "source": "mulberry",
+          "id": "972143384",
           "label": "play computer games"
         },
         "font": "Nunito",
@@ -221,8 +221,8 @@ const TokenPresets = [
         "title": "Clay — Relax",
         "reward": "Choose a favorite activity",
         "rewardIcon": {
-          "source": "arasaac",
-          "id": "37858",
+          "source": "mulberry",
+          "id": "790425573",
           "label": "relax"
         },
         "font": "Nunito",

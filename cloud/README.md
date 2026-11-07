@@ -7,7 +7,7 @@ exports, and session persistence remain independent. No paid plans or billing ar
 
 - Supabase project: `soartoaobktpscnnbclq` (existing ABHP project, shared with other applications).
 - `schema.sql` is the initial schema snapshot applied through the Supabase connector on 2026-10-08.
-- `cloud-board-save` bundles `edge-function.ts`, `board-settings.js`, and `save-handler.js`.
+- `cloud-board-save` bundles `edge-function.ts`, `board-settings.js`, `save-handler.js`, and `js/symbol-library.js` (as `symbol-library.js`).
 - Gateway JWT verification is off for compatibility with publishable keys. The handler itself
   **requires** a bearer token and calls Supabase Auth `getUser` for every write. Never remove this check.
 - Only a publishable client key belongs in `config.js`. The Edge Function obtains its
@@ -55,3 +55,5 @@ A separate local browser fixture verified the two-slot UI, review snapshot, disa
 attestation, successful save, and attestation reset on replacement. It was not deployed.
 
 Current rollout status: public cloud controls enabled on 2026-10-08. Resend SMTP is configured; the user confirmed Gmail delivery and a successful email-link sign-in. Outlook delivery remains unconfirmed. A second-device save/open walkthrough remains a manual follow-up.
+
+Symbol catalogs use stable numeric identifiers in the 700000000–998999999 range. Both cloud functions bundle the pinned symbol library to reconstruct trusted image URLs. Older ARASAAC IDs remain supported; new searches use Mulberry and reviewed ABHP assets. Update scripts/symbol-sources.json from the source repositories and run scripts/build-symbol-library.py to refresh the snapshot, then deploy both cloud-board-save and routine-account-links with the generated library.

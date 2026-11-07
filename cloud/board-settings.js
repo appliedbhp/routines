@@ -1,5 +1,6 @@
 /* Shared browser/server boundary: rebuild settings from an allowlist, never upload app state. */
 (function(root){
+ const symbols=root.SymbolLibrary||(typeof require==='function'?require('../js/symbol-library.js'):null);
  const VERSION='no-personal-info-v1';
  const ATTESTATION='I confirm this board contains no personal information, including names, classroom or school identifiers, contact details, diagnoses, or information that could identify a child or another person.';
  const fail=()=>{throw Error('This board contains unsupported settings. Please review it before saving.');};
@@ -13,9 +14,10 @@
  const color=v=>{if(typeof v!=='string'||!/^#[a-f0-9]{6}$/i.test(v))fail();return v;};
  const styles=['bottts','planets','adventurer','big-smile','critters','clay','croodles','marbles','micah','pixel-art','voxel-art','voxel-bot'];
  function icon(v){
-  const source=one(v?.source,['material','openmoji','arasaac','dicebear','pixabots']);
+  const source=one(v?.source,['material','openmoji','arasaac','mulberry','abhp','dicebear','pixabots']);
   if(typeof v.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,79}$/.test(v.id))fail();
-  if(source==='arasaac'&&!/^[1-9][0-9]{0,8}$/.test(v.id))fail();
+  if(['arasaac','mulberry','abhp'].includes(source)&&!/^[1-9][0-9]{0,8}$/.test(v.id))fail();
+  if(['mulberry','abhp'].includes(source)&&(!symbols?.has(Number(v.id))||symbols.source(Number(v.id))!==source))fail();
   if(source==='pixabots'&&!/^[a-z0-9]{4}$/.test(v.id))fail();
   return {source,id:v.id,label:str(v.label,100),...(source==='dicebear'&&v.style?{style:one(v.style,styles)}:{})};
  }
@@ -40,7 +42,7 @@
    out={format:p.format,version:1,routine:{name:str(r.name),category:one(r.category,['morning','evening','chores','tasks']),autoTotal:bool(r.autoTotal),totalMinutes:num(r.totalMinutes,.01,10080),settings,steps:list(r.steps,1,100,s=>{
     const id=picture(s.pictogramId),positions={};
     for(const mode of ['print','projection'])if(s.positions?.[mode]){positions[mode]={};for(const kind of ['icon','label'])if(s.positions[mode][kind])positions[mode][kind]={x:num(s.positions[mode][kind].x,-8,8),y:num(s.positions[mode][kind].y,-8,8)};}
-    return {name:str(s.name),minutes:num(s.minutes,.01,1440),pictogramId:id,imageUrl:id?`https://static.arasaac.org/pictograms/${id}/${id}_300.png`:null,positions};
+    return {name:str(s.name),minutes:num(s.minutes,.01,1440),pictogramId:id,imageUrl:id?(symbols?.imageUrl(id)||`https://static.arasaac.org/pictograms/${id}/${id}_300.png`):null,positions};
    })}};
   }else fail();
   if(JSON.stringify(out).length>65536)throw Error('This board is too large for cloud saving.');

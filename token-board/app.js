@@ -81,10 +81,10 @@ $('resetTokens').onclick=resetTokens;$('resetSession').onclick=resetTokens;
 $('rewardPicture').onclick=()=>openPicker(-1);
 function renderCredit(element,icons){
  element.replaceChildren();
- for(const key of new Set(icons.map(icon=>icon.source==='dicebear'?`dicebear:${icon.style||'bottts'}`:icon.source))){const style=key.startsWith('dicebear:')?TokenCharacters.styles[key.split(':')[1]]:null;const [label,href]=style?[`${style.name} by ${style.creator} / DiceBear · ${style.license}`,style.licenseUrl]:TokenData.credits[key];const link=document.createElement('a');link.href=href;link.textContent=label;link.target='_blank';link.rel='noopener';if(element.childNodes.length)element.append(' · ');element.append(link);}
+ for(const key of new Set(icons.map(icon=>icon.source==='dicebear'?`dicebear:${icon.style||'bottts'}`:icon.source))){const style=key.startsWith('dicebear:')?TokenCharacters.styles[key.split(':')[1]]:null;const [label,href]=style?[`${style.name} by ${style.creator} / DiceBear · ${style.license}`,style.licenseUrl]:TokenData.credits[key];const link=document.createElement('a');link.href=href;link.textContent=label;link.target='_blank';link.rel='noopener';if(element.childNodes.length)element.append(' · ');element.append(link);if(key==='abhp'){for(const domain of ['getadhd.care','appliedbehavioral.health']){const site=document.createElement('a');site.href='https://'+domain;site.textContent=domain;element.append(' · ',site);}}}
 }
-Object.entries(TokenData.sources).forEach(([key,name])=>$('pictureSource').append(new Option(name,key)));
-$('pictureSource').value='arasaac';
+Object.entries(TokenData.sources).filter(([key])=>key!=='arasaac').forEach(([key,name])=>$('pictureSource').append(new Option(name,key)));
+$('pictureSource').value='mulberry';
 Object.entries(TokenCharacters.styles).forEach(([key,s])=>$('characterStyle').append(new Option(s.name+(s.animated?' · animated':''),key)));
 $('characterStyle').onchange=()=>{characterPage=0;renderLibrary();};
 let searchRevision=0,characterPage=0;
@@ -95,7 +95,7 @@ function showChoices(icons){
 async function renderLibrary(){
  const revision=++searchRevision,source=$('pictureSource').value,search=$('pictureSearch').value.trim();
  const extended=!!globalThis.RoutinesPlan?.extendedLibrary;
- if(source!=='arasaac'&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose ARASAAC to browse free pictures, or see plans in Settings.';return;}
+ if(!['mulberry','abhp'].includes(source)&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose Mulberry or ABHP to browse free pictures, or see plans in Settings.';return;}
  let failed=0;
  $('characterStyle').hidden=$('characterStyleLabel').hidden=source!=='dicebear';
  $('searchForm').hidden=false;$('moreCharacters').hidden=!!search||!['dicebear','pixabots'].includes(source);
@@ -115,7 +115,7 @@ async function renderLibrary(){
   if(revision!==searchRevision)return;
   if(!search&&query==='star')icons=TokenSearch.favorites(icons);
   showChoices(icons.map(TokenData.icon));$('pickerStatus').textContent=(icons.length?`${icons.length} pictures${search?' across all searchable libraries':''}. Choose one below.`:'No pictures found. Try another word.')+(failed?' Some libraries could not be reached. Try searching again.':'');
-  if(search){$('pickerCredit').textContent=extended?'Results from ARASAAC, Google Material Symbols, and OpenMoji. Credits appear on your board.':'ARASAAC pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
+  if(search){$('pickerCredit').textContent=extended?'Results from Mulberry, ABHP, Google Material Symbols, and OpenMoji. Credits appear on your board.':'Mulberry and ABHP pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
  }catch(error){if(revision===searchRevision)$('pickerStatus').textContent='Pictures could not load. Try again, or choose Characters for pictures available without a picture service.';}
 }
 async function openPicker(index){try{await (await import('../beta/api.js')).plan();}catch{globalThis.RoutinesPlan=null;}selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value='';renderLibrary();picker.showModal();}

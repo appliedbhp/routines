@@ -9,9 +9,9 @@ test('layouts survive sharing while old files default to automatic layout',()=>{
   board.layout={rows:3,columns:3};assert.equal(data.validate(data.serialize(board)).layout.columns,3);
   for(const value of [-1,13,1.5,'3']){board.layout.rows=value;assert.throws(()=>data.serialize(board));}
 });
-test('Get Ready with Me default preserves all nine labels and exact symbols',()=>{
+test('Get Ready with Me default preserves all nine labels with current library symbols',()=>{
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../supports/config.js'),'utf8')+'\nthis.examples=SUPPORT_CONFIG;',context);
   const example=context.examples['task-strip'].examples['Get Ready with Me'];
   assert.equal(example.length,9);assert.equal(example[0][0],'Feed the dogs');assert.equal(example[8][0],'Packed up for school');
-  assert.deepEqual(Array.from(example,row=>row[2]),[11176,7012,30967,6617,2298,3233,5400,38604,38265]);
+  assert.ok(Array.from(example,row=>row[2]).every(id=>require('../js/symbol-library.js').has(id)));
 });

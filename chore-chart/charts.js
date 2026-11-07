@@ -39,7 +39,7 @@ async function searchPictures() {
   results.replaceChildren();
   if (!term) { status.textContent = 'Enter a word to find a picture.'; return; }
   status.textContent = 'Searching pictures…';
-  const matches = await ARASAAC.search(term);
+  const matches = await SymbolLibrary.search(term);
   if (current !== searchRevision || !picker.open) return;
   status.textContent = matches.length ? 'Select a picture below.' : 'No pictures found. Try another word or check your internet connection.';
   matches.slice(0, 30).forEach(match => {
@@ -49,7 +49,7 @@ async function searchPictures() {
     const label = match.keywords?.[0]?.keyword || `Symbol ${match._id}`;
     button.setAttribute('aria-label', `Use ${label} picture`);
     const image = document.createElement('img');
-    image.src = ARASAAC.imageUrl(match._id);
+    image.src = SymbolLibrary.imageUrl(match._id);
     image.alt = '';
     const caption = document.createElement('span');
     caption.textContent = label;
@@ -104,7 +104,7 @@ function addRow(name = '', saved = null) {
       return;
     }
     const image = document.createElement('img');
-    image.src = ARASAAC.imageUrl(id);
+    image.src = SymbolLibrary.imageUrl(id);
     image.alt = '';
     image.onerror = () => {
       // Keep the selected ID for export/retry even when its image is offline.
@@ -119,7 +119,7 @@ function addRow(name = '', saved = null) {
     const current = ++revision;
     const term = symbolKeyword(input.value);
     if (!term || manualIcon) return;
-    const task = ARASAAC.search(term).then(results => {
+    const task = SymbolLibrary.search(term).then(results => {
       if (current === revision && !manualIcon && row.isConnected) setPicture(bestSymbol(results, term)?._id);
     });
     pendingIcons.add(task);

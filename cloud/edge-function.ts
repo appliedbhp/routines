@@ -1,3 +1,4 @@
+import './symbol-library.js';
 // Deployment bundles these three local files together, retaining their names.
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import './board-settings.js';

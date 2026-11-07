@@ -9,7 +9,7 @@ const tours={
  'homework-planner':[
  ['#mode','Choose your planner','Simple uses Yes and No buttons to track whether there is homework. Detailed gives you space to write the assignments.'],
  ['#layout','Choose the days','Use a single day or a week. Select a starting date when you want printed weekday headings to include dates.'],
- ['#planner','Add subjects and homework','Edit subjects directly in the planner and add ARASAAC pictures. In the simple version, choose the check for Yes or the cancel symbol for No; choose it again to clear it.'],
+ ['#planner','Add subjects and homework','Edit subjects directly in the planner and add Mulberry and ABHP pictures. In the simple version, choose the check for Yes or the cancel symbol for No; choose it again to clear it.'],
  ['.file-quick-actions','Save and print','Use File to save on this device or in the cloud, export an .abhp file, or open a saved planner. Print offers portrait and landscape PDFs.'],
  ['#shareHomework','Work with families','Share with families creates a teacher reference and a family link. The separate Teacher tour explains publishing a class week and preparing student and family copies.']
  ],

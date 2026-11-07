@@ -14,7 +14,7 @@ const BoardSession=(()=>{
   controls.append(exit);
   const title=document.createElement('h1'),hint=document.createElement('p'),progress=document.createElement('p'),grid=document.createElement('div');
   title.id='sessionTitle';panel.setAttribute('aria-labelledby',title.id);hint.className='session-hint';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');grid.className='session-grid';
-  const credit=document.createElement('p');credit.className='session-hint';credit.append('Picture symbols © Government of Aragón · Sergio Palao / ');const link=document.createElement('a');link.href='https://arasaac.org';link.textContent='ARASAAC · CC BY-NC-SA';link.target='_blank';link.rel='noopener';credit.append(link);panel.append(controls,title,hint,progress,grid,credit);document.body.append(panel);
+  const credit=document.createElement('p');credit.className='session-hint';credit.innerHTML='Mulberry Symbols © Steve Lee · ABHP visuals © Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0. <a href="https://getadhd.care">getadhd.care</a> · <a href="https://appliedbehavioral.health">appliedbehavioral.health</a> · <a href="../symbol-credits/">Symbol credits &amp; license</a>';panel.append(controls,title,hint,progress,grid,credit);document.body.append(panel);
   let active=false,entering=false;
   const dayIndex=()=>day?Number(day.value):undefined;
   function draw(focus){
@@ -29,7 +29,7 @@ const BoardSession=(()=>{
     const next=adapter.ordered&&!item.marked&&canToggle(items,index,true);if(next)button.classList.add('current');
     button.setAttribute('aria-label',`${adapter.choice?(item.marked?'Clear selection':'Choose'):(item.marked?'Undo':'Complete')}: ${item.label||`Step ${index+1}`}`);
     if(adapter.ordered){const step=document.createElement('span');step.className='session-step';step.textContent=`${adapter.slots?.[index]||`Step ${index+1}`}${next?' · Next':''}`;button.append(step);}
-    if(item.pictogramId){const img=document.createElement('img');img.src=ARASAAC.imageUrl(item.pictogramId);img.alt='';img.onerror=()=>{img.hidden=true;};button.append(img);}
+    if(item.pictogramId){const img=document.createElement('img');img.src=SymbolLibrary.imageUrl(item.pictogramId);img.alt='';img.onerror=()=>{img.hidden=true;};button.append(img);}
     const label=document.createElement('span');label.className='session-label';label.textContent=item.label||`Step ${index+1}`;
     const mark=document.createElement('span');mark.textContent=item.marked?(adapter.choice?'Selected ✓':'Done ✓'):(next?'Do this next':adapter.choice?'Choose':'');button.append(label,mark);
     button.onclick=()=>{const fresh=adapter.read(dayIndex()).items;if(!canToggle(fresh,index,adapter.ordered))return;adapter.toggle(index,dayIndex());draw(index);};grid.append(button);

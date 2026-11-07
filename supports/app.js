@@ -26,7 +26,7 @@ function bestSymbol(matches, term) {
 async function suggest(card, term = card.label) {
   if (!term.trim() || card.manual) return;
   const revision = ++card.revision;
-  const task = ARASAAC.search(term).then(matches => {
+  const task = SymbolLibrary.search(term).then(matches => {
     if (cards.includes(card) && card.revision === revision && !card.manual) {
       card.pictogramId = bestSymbol(matches, term)?._id || null;
       updatePicture(card);
@@ -42,7 +42,7 @@ function updatePicture(card) {
   button.replaceChildren();
   if (!card.pictogramId) { button.textContent = 'Choose picture'; return; }
   const image = document.createElement('img');
-  image.src = ARASAAC.imageUrl(card.pictogramId);
+  image.src = SymbolLibrary.imageUrl(card.pictogramId);
   image.alt = '';
   image.onerror = () => { image.hidden = true; const message=document.createElement('span');message.textContent='Picture unavailable';button.append(message); };
   button.append(image);
@@ -109,12 +109,12 @@ async function searchPictures() {
   const revision=++searchRevision;
   const results=document.getElementById('iconResults');const message=document.getElementById('iconStatus');const term=document.getElementById('iconSearch').value.trim();results.replaceChildren();
   if(!term){message.textContent='Enter a word to find a picture.';return;}
-  message.textContent='Searching pictures…';const matches=await ARASAAC.search(term);
+  message.textContent='Searching pictures…';const matches=await SymbolLibrary.search(term);
   if(revision!==searchRevision || !picker.open)return;
   message.textContent=matches.length?'Select a picture below.':'No pictures found. Try another word or check your connection.';
   matches.slice(0,30).forEach(match=>{
     const button=document.createElement('button');button.type='button';button.className='icon-choice';const label=match.keywords?.[0]?.keyword || `Symbol ${match._id}`;button.setAttribute('aria-label',`Use ${label} picture`);
-    const image=document.createElement('img');image.src=ARASAAC.imageUrl(match._id);image.alt='';const caption=document.createElement('span');caption.textContent=label;button.append(image,caption);
+    const image=document.createElement('img');image.src=SymbolLibrary.imageUrl(match._id);image.alt='';const caption=document.createElement('span');caption.textContent=label;button.append(image,caption);
     button.onclick=()=>{if(pickerCard&&cards.includes(pickerCard)){pickerCard.manual=true;pickerCard.revision++;pickerCard.pictogramId=match._id;updatePicture(pickerCard);}picker.close();};results.append(button);
   });
 }

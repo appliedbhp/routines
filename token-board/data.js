@@ -9,15 +9,15 @@ const TokenData = (() => {
  arcade:{confetti:["#77efba", "#ff5cac", "#ffe56d", "#61d9ff"],name:'Arcade',font:'Silkscreen',color:'#eafff3',background:'#172e2b',accent:'#77efba',soft:'#27453d'},
  boho:{confetti:["#d9745b", "#e5a93b", "#8a9a86", "#b89272"],name:'Boho',font:'Lora',color:'#4a3525',background:'#fbf1e7',accent:'#b8543c',soft:'#eee3cd'}
  };
- const sources={material:'Simple icons',openmoji:'Colorful emoji',arasaac:'Activity pictures',dicebear:'Characters',pixabots:'PixaBots'};
- const credits={pixabots:['PixaBots by Pablo Stanley','https://pixabots.com'],material:['Google Material Symbols · Apache 2.0','https://github.com/google/material-design-icons/blob/master/LICENSE'],openmoji:['OpenMoji · CC BY-SA 4.0','https://openmoji.org/about/'],arasaac:['Sergio Palao / ARASAAC · Government of Aragón · CC BY-NC-SA 4.0','https://arasaac.org/terms-of-use'],dicebear:['Bottts by Pablo Stanley · DiceBear · Free for personal and commercial use','https://www.dicebear.com/styles/bottts/']};
+ const sources={material:'Simple icons',openmoji:'Colorful emoji',mulberry:'Mulberry symbols',abhp:'ABHP visual supports',arasaac:'Older ARASAAC pictures',dicebear:'Characters',pixabots:'PixaBots'};
+ const credits={mulberry:['Mulberry Symbols · Steve Lee · CC BY-SA 4.0','https://mulberrysymbols.org'],abhp:['Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0','../symbol-credits/'],pixabots:['PixaBots by Pablo Stanley','https://pixabots.com'],material:['Google Material Symbols · Apache 2.0','https://github.com/google/material-design-icons/blob/master/LICENSE'],openmoji:['OpenMoji · CC BY-SA 4.0','https://openmoji.org/about/'],arasaac:['Sergio Palao / ARASAAC · Government of Aragón · CC BY-NC-SA 4.0','https://arasaac.org/terms-of-use'],dicebear:['Bottts by Pablo Stanley · DiceBear · Free for personal and commercial use','https://www.dicebear.com/styles/bottts/']};
  function text(v){if(typeof v!=='string'||v.length>100)throw Error('Keep names and labels under 100 characters.');return v;}
  function icon(v){
   if(!v||!Object.hasOwn(sources,v.source))throw Error('Unknown picture source.');
   const id=v.id;
   if(typeof id!=='string'||!(/^[a-z0-9][a-z0-9-]{0,79}$/).test(id))throw Error('Invalid picture identifier.');
   if(v.source==='pixabots'&&!/^[a-z0-9]{4}$/.test(id))throw Error('Invalid PixaBot identifier.');
-  if(v.source==='arasaac'&&!/^[1-9][0-9]{0,8}$/.test(id))throw Error('Invalid activity picture.');
+  if(['arasaac','mulberry','abhp'].includes(v.source)&&!/^[1-9][0-9]{0,8}$/.test(id))throw Error('Invalid activity picture.');
   if(v.source==='dicebear'&&v.style!==undefined&&!characterStyles.includes(v.style))throw Error('Unknown character style.');
   return {source:v.source,id,label:text(v.label),...(v.source==='dicebear'&&v.style?{style:v.style}:{})};
  }
@@ -33,6 +33,6 @@ const TokenData = (() => {
  }
  const serialize=board=>({format:'token-board',version:2,board:validate({format:'token-board',version:2,board})});
  const defaults=()=>({theme:'classic',motion:true,type:'token-board',title:'My token board',reward:'Choose a favorite activity',rewardIcon:{source:'material',id:'redeem',label:'Gift'},font:'Nunito',color:'#17283f',extraSets:1,sound:false,tokens:Array.from({length:5},()=>({icon:{source:'material',id:'star',label:'Star'},earned:false}))});
- function url(value,animated=false){const v=icon(value);if(v.source==='pixabots')return `https://pixabots.com/api/pixabot/${v.id}?size=256${animated?'&animated=true&webp=true':''}`;if(v.source==='dicebear')return TokenCharacters.url(v.id,v.style||'bottts',animated);if(v.source==='arasaac')return `https://static.arasaac.org/pictograms/${v.id}/${v.id}_300.png`;return `https://api.iconify.design/${v.source==='material'?'material-symbols':'openmoji'}/${v.id}.svg`;}
+ function url(value,animated=false){const v=icon(value);if(v.source==='pixabots')return `https://pixabots.com/api/pixabot/${v.id}?size=256${animated?'&animated=true&webp=true':''}`;if(v.source==='dicebear')return TokenCharacters.url(v.id,v.style||'bottts',animated);if(['mulberry','abhp'].includes(v.source))return SymbolLibrary.imageUrl(Number(v.id));if(v.source==='arasaac')return `https://static.arasaac.org/pictograms/${v.id}/${v.id}_300.png`;return `https://api.iconify.design/${v.source==='material'?'material-symbols':'openmoji'}/${v.id}.svg`;}
  return {fonts,themes,characterStyles,sources,credits,icon,validate,serialize,defaults,url};
 })();

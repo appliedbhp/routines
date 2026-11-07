@@ -31,7 +31,7 @@ if(host){
  form.noValidate=true;
  for(const [name,choices] of [['hair_style',hairStyles]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
  for(const [selector,name,choices] of [['[data-clothing-styles]','clothing_styles',clothingStyles],['[data-clothing-colors]','clothing_colors',clothingColors]])for(const value of choices){const label=document.createElement('label');label.className='visual-check';const input=document.createElement('input');input.type='checkbox';input.name=name;input.value=value;label.append(input,document.createTextNode(value));q(selector).append(label);}
- field('usage_rights').defaultValue='Original ABHP artwork is for use on Applied Behavioral Health Practice websites only. Other use requires written permission from Applied Behavioral Health Practice. Third-party source materials retain their original licenses and required attribution.';
+ field('usage_rights').defaultValue='Original ABHP artwork: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/deed.en). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice; link https://getadhd.care and https://appliedbehavioral.health. Indicate changes and share adaptations under the same license. Third-party source materials retain their original licenses and attribution.';
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  const faces=()=>['default'];
