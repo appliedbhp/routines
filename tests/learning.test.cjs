@@ -1,0 +1,4 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const learning=require('../js/learning-data.js');
+test('every tool card has learning guidance and valid skill mappings',()=>{const html=fs.readFileSync('index.html','utf8');for(const match of html.matchAll(/class="tool-card" href="([^/]+)\//g)){const id=match[1];assert.ok(learning.tools[id],id);for(const skill of learning.tools[id][1])assert.ok(learning.skills[skill],skill);}});
+test('guidance adapts across all age strands without changing tool meaning',()=>{for(const id of Object.keys(learning.tools)){const versions=['young','child','teen','adult','all'].map(age=>learning.explain(id,age));assert.equal(new Set(versions.map(x=>x.why)).size,5,id);assert.equal(new Set(versions.map(x=>x.what)).size,1,id);assert.ok(versions.every(x=>x.try&&x.skills.length));}assert.equal(learning.explain('missing','child'),null);});

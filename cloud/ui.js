@@ -19,9 +19,9 @@ async function start(){
  dialog.innerHTML=`<header><h2 id="cloudTitle">My cloud boards</h2><button type="button" data-close aria-label="Close cloud boards">Close</button></header>
  <p data-plan>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>
  <form data-login>
- <div class="auth-options" aria-label="Sign-in options"><button type="button" data-auth-choice="password" aria-pressed="true">Email &amp; password</button><button type="button" data-auth-choice="link" aria-pressed="false">Email me a magic link</button></div><label>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label>
- <label>Your adult account email<input data-email type="email" autocomplete="username" required maxlength="254"></label>
- <label data-password-field>Password<input data-password type="password" autocomplete="current-password" required maxlength="72"></label>
+ <div class="auth-options" aria-label="Sign-in options"><button type="button" data-auth-choice="password" aria-pressed="true">Email &amp; password</button><button type="button" data-auth-choice="signup" aria-pressed="false">Create account</button><button type="button" data-auth-choice="link" aria-pressed="false">Email me a magic link</button></div><label hidden>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label><button type="button" data-auth-choice="reset" class="auth-reset">Forgot password?</button>
+ <label>Your adult account email<input data-email type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="254"></label>
+ <label data-password-field>Password<input data-password type="password" autocomplete="current-password" required maxlength="72"><button type="button" data-show-password aria-pressed="false">Show password</button></label>
  <label data-adult class="cloud-check" hidden><input type="checkbox"> I am an adult creating or accessing my own account. <a href="${new URL('routine/#privacy-policy',root)}">Privacy details</a></label>
  <p data-auth-help>Enter your email and password to sign in.</p><button type="submit" data-auth-submit>Sign in</button></form>
  <form data-recovery hidden><label>New password<input data-new-password type="password" autocomplete="new-password" required minlength="12" maxlength="72"></label><p>Use at least 12 characters.</p><button type="submit">Save password</button></form>
@@ -31,7 +31,7 @@ async function start(){
  const q=s=>dialog.querySelector(s),status=q('[data-status]');q('[data-statement]').textContent=S.ATTESTATION;
  let limit=2;
  let client,user,rows=[],pending=null,busy=false,authRevision=0,recovery=false;
- const message=t=>{status.textContent=t;};
+ const message=(t,kind='info')=>{status.textContent=t;status.dataset.kind=kind;};
  const accountNav=document.createElement('nav');accountNav.className='workspace-account';accountNav.setAttribute('aria-label','Account');
  const signIn=document.createElement('a');signIn.href=new URL('account/',root);signIn.title='Sign in';signIn.setAttribute('aria-label','Sign in');
  const signOut=document.createElement('button');signOut.type='button';signOut.title='Sign out on this device';signOut.setAttribute('aria-label','Sign out on this device');signOut.hidden=true;
@@ -87,7 +87,7 @@ async function start(){
  };
  dispatchEvent(new Event('routines-cloud-ready'));
  function action(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>run(fn);parent.append(b);}
- async function run(fn){if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');try{await fn();}catch(e){message(e.message||'That action could not be completed. Try again.');}finally{busy=false;dialog.removeAttribute('aria-busy');}}
+ async function run(fn){if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');const submit=q('[data-auth-submit]'),label=submit.textContent;submit.disabled=true;submit.textContent='Please wait…';try{await fn();}catch(e){message(e.message||'That action could not be completed. Try again.','error');}finally{busy=false;submit.disabled=false;submit.textContent=label;dialog.removeAttribute('aria-busy');}}
  async function open(row){
   const path=new URL(S.path(row.payload),root),here=location.pathname.replace(/index\.html$/,'');
   if(path.pathname!==here){path.searchParams.set('cloudSlot',String(row.slot));location.assign(path);return;}
@@ -100,8 +100,10 @@ async function start(){
  q('[data-attest]').onchange=()=>{q('[data-save]').disabled=!q('[data-attest]').checked;};
  const authReturn=new URL('account/',root).href;
  const authMode=q('[data-auth-mode]'),password=q('[data-password]'),adult=q('[data-adult] input');
+ q('[data-show-password]').onclick=()=>{const show=password.type==='password';password.type=show?'text':'password';q('[data-show-password]').textContent=show?'Hide password':'Show password';q('[data-show-password]').setAttribute('aria-pressed',String(show));};
  const authLabels={password:'Sign in',signup:'Create account',link:'Send sign-in link',reset:'Send password setup link'};
  authMode.onchange=()=>{
+  password.type='password';q('[data-show-password]').textContent='Show password';q('[data-show-password]').setAttribute('aria-pressed','false');
   const mode=authMode.value,usesPassword=mode==='password'||mode==='signup';
   q('[data-password-field]').hidden=!usesPassword;password.disabled=!usesPassword;password.required=usesPassword;
   password.autocomplete=mode==='signup'?'new-password':'current-password';password.minLength=mode==='signup'?12:0;password.value='';
@@ -119,24 +121,24 @@ async function start(){
  async function sendReset(c,email){
   const {error}=await c.auth.resetPasswordForEmail(email,{redirectTo:authReturn});
   if(error)throw Error('Could not send the password setup link. Please wait and try again.');
-  message('If this address has an account, check your email for a password setup link.');
+  message('If this address has an account, a password setup link was requested for '+email+'. Check spam or junk too. Use the newest email link.','success');
  }
  q('[data-login]').onsubmit=e=>{e.preventDefault();run(async()=>{
-  const c=await sdk(),email=q('[data-email]').value.trim(),mode=authMode.value;
+  const email=q('[data-email]').value.trim(),mode=authMode.value;message(mode==='password'?'Signing you in…':mode==='signup'?'Creating your account…':'Requesting your email link…');const c=await sdk();
   if(mode==='reset'){await sendReset(c,email);return;}
   if(mode==='link'){
    const {error}=await c.auth.signInWithOtp({email,options:{emailRedirectTo:authReturn}});
    if(error)throw Error('Could not send a sign-in link. Please wait a minute and try again.');
-   message('Check your email for a sign-in link. You can close this window; your current visual stays here.');return;
+   message('Sign-in link requested for '+email+'. Check your inbox and spam or junk folder. Open the newest link on the device you want to sign in on. If it does not arrive, check the address and try again after a minute.','success');return;
   }
   if(mode==='signup'){
    const {error}=await c.auth.signUp({email,password:password.value,options:{emailRedirectTo:authReturn}});
    if(error)throw Error(error.code==='weak_password'?'Choose a stronger password and try again.':'Could not create the account. Check your email and password or try again later.');
-   password.value='';message('Check your email for a verification link. Already have an account? Use Set or reset my password.');return;
+   password.value='';message('Check '+email+' for a verification link before signing in. Check spam or junk too. Already have an account? Choose Sign in or Forgot password.','success');return;
   }
   const {error}=await c.auth.signInWithPassword({email,password:password.value});
   if(error)throw Error('Sign-in failed. Check your email and password, or choose Set or reset my password.');
-  password.value='';await refresh();message('Signed in.');
+  password.value='';await refresh();message('You’re signed in. Open a saved board below or choose a tool from the menu.','success');
  });};
  q('[data-set-password]').onclick=()=>run(async()=>{if(user?.email)await sendReset(await sdk(),user.email);});
  q('[data-recovery]').onsubmit=e=>{e.preventDefault();run(async()=>{
@@ -148,6 +150,7 @@ async function start(){
  });};
  dialog.querySelectorAll('[data-auth-choice]').forEach(button=>button.onclick=()=>{authMode.value=button.dataset.authChoice;authMode.onchange();});
  try{const requested=sessionStorage.getItem('routines.account.mode');if(accountHost&&requested==='reset'){authMode.value='reset';sessionStorage.removeItem('routines.account.mode');}}catch{}
+ const returnError=new URLSearchParams(location.hash.slice(1)).has('error')||new URLSearchParams(location.search).has('error');
  authMode.onchange();
  q('[data-signout]').onclick=()=>run(async()=>{const {error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Sign-out failed. Try again.');await refresh();message('Signed out on this device.');});
  q('[data-save]').onclick=()=>run(async()=>{
@@ -162,6 +165,6 @@ async function start(){
  // Sign-in return and cross-tool opening never auto-upload any local data.
  if(!accountHost){try{const c=await sdk();const {data}=await c.auth.getSession();accountState(!!data.session?.user);}catch{accountState(false);}}
  if(accountHost||new URLSearchParams(location.search).has('cloudSlot')){
-  await run(async()=>{dialog.showModal();await refresh();if(recovery)return;const slot=Number(new URLSearchParams(location.search).get('cloudSlot'));history.replaceState(null,'',location.pathname);const row=rows.find(r=>r.slot===slot);if(row)await open(row);else if(!user)message('Sign in to open your cloud boards.');});
+  await run(async()=>{dialog.showModal();await refresh();if(recovery)return;const slot=Number(new URLSearchParams(location.search).get('cloudSlot'));history.replaceState(null,'',location.pathname);const row=rows.find(r=>r.slot===slot);if(row)await open(row);else if(!user)message(returnError?'This email link could not sign you in. It may have expired or already been used. Request a new magic link or use your password.':'Choose how you’d like to sign in. New here? Choose Create account.',returnError?'error':'info');else message('You’re signed in. Your saved boards are below.','success');});
  }
 }

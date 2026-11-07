@@ -70,7 +70,17 @@
   let lastDefaultTheme=audience.read().theme;
   addEventListener('routines-audience-change',event=>{applyAudience(event.detail);if(event.detail.theme!==lastDefaultTheme){lastDefaultTheme=event.detail.theme;defaultToolTheme();}});
   addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)applyAudience();});
-  sidebar.append(home,toggle,nav);
+  const strands=document.createElement('section');strands.className='age-strands';
+  strands.innerHTML='<label for="ageStrand">Tools for <output id="ageStrandLabel"></output></label><input id="ageStrand" type="range" min="0" max="4" step="1" aria-label="Age strand"><div class="age-strand-stops"></div><small>Switch tools without changing your open work.</small>';
+  const ages=['young','child','teen','adult','all'],ageNames=['0–5','6–12','13+','Adult','All ages'],slider=strands.querySelector('input'),ageOutput=strands.querySelector('output');
+  function showAge(){const i=ages.indexOf(audience.read().age);slider.value=i;ageOutput.textContent=ageNames[i];slider.setAttribute('aria-valuetext',ageNames[i]);strands.querySelectorAll('button').forEach((b,n)=>b.setAttribute('aria-pressed',String(i===n)));}
+  let ageSave=Promise.resolve();
+  function persistAge(){const age=audience.read().age;ageSave=ageSave.catch(()=>{}).then(()=>globalThis.RoutineAccountPreferences?.saveAge(age)).catch(()=>{strands.querySelector('small').textContent='Updated here. Account sync unavailable; try again online.';});}
+  function chooseAge(i,persist=true){const next={...audience.read(),age:ages[i]};delete next.tools;audience.save(next);if(persist)persistAge();}
+  slider.oninput=()=>chooseAge(Number(slider.value),false);slider.onchange=persistAge;
+  ageNames.forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.onclick=()=>chooseAge(i);strands.querySelector('.age-strand-stops').append(b);});
+  addEventListener('routines-audience-change',showAge);showAge();
+  sidebar.append(home,toggle,strands,nav);
   const backdrop=document.createElement('button');backdrop.type='button';backdrop.className='workspace-backdrop no-print';backdrop.setAttribute('aria-label','Close tool navigation');backdrop.hidden=true;document.body.prepend(backdrop);
   const mobileToggle=document.createElement('button');mobileToggle.type='button';mobileToggle.className='workspace-mobile-toggle no-print';mobileToggle.textContent='☰';mobileToggle.setAttribute('aria-label','Browse visual tools');mobileToggle.setAttribute('aria-controls','visual-navigation');
   const mobile=window.matchMedia('(max-width: 760px)');
@@ -89,7 +99,7 @@
   mobileToggle.onclick=()=>{collapsed=!collapsed;update();if(!collapsed)toggle.focus();};
   backdrop.onclick=()=>{collapsed=true;update();mobileToggle.focus();};
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobile.matches&&!collapsed){event.preventDefault();collapsed=true;update();mobileToggle.focus();}});
-  document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed)return;const controls=[...sidebar.querySelectorAll('a[href],button')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
+  document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed)return;const controls=[...sidebar.querySelectorAll('a[href],button,input')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
   mobile.addEventListener('change',event=>{collapsed=event.matches;update();});
   update();
   if(document.body.dataset.planner){const mindfulScript=document.createElement('script');mindfulScript.src=new URL('planning/mindful.js',root);document.head.append(mindfulScript);}
@@ -116,5 +126,6 @@
   const header=document.querySelector('.workspace-header,.app-header');
   import(new URL('js/brand-logo.js',root).href).then(m=>m.applyBrandLogo(header));
   if(header){header.prepend(mobileToggle);const allTools=document.createElement('a');allTools.className='workspace-all-tools';allTools.href=root.href;allTools.textContent='All tools';header.append(allTools);}
+  import(new URL('js/learning.js',root).href);
   const opener=document.createElement('script');opener.src=new URL('js/file-open.js',root);document.head.append(opener);
 })();
