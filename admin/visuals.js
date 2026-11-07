@@ -7,11 +7,11 @@ if(host){
  <form data-form hidden>
  <div class="visual-fields">
  <label>Visual mode<select name="visual_mode"><option value="character">Character</option><option value="object">Object · no people</option></select></label><label>Title<input name="title" maxlength="100" required></label>
- <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset><fieldset data-faces><legend>Face versions</legend><label class="visual-check"><input type="checkbox" name="face_versions" value="default" checked> Default face</label><label class="visual-check"><input type="checkbox" name="face_versions" value="blank" checked> Blank face</label></fieldset>
+ <fieldset data-ages><legend>Age strands to create</legend><div data-age-options></div></fieldset>
  <label>Category<select name="category" required></select></label>
  <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
- <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Character references · Adventurer for younger ages, Micah for 13+</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face removes all facial features. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><aside class="visual-character-reference"><img src="../assets/characters/micah-reference.png" alt="Micah illustration reference for teen visuals"><p>13+ uses <a href="https://www.dicebear.com/styles/micah/" target="_blank" rel="noopener noreferrer">Micah by Micah Lanier, via DiceBear</a> · CC BY 4.0. Appearance selections still apply. The library’s existing 12–18 strand uses this teen reference.</p></aside><div data-matches class="visual-matches" aria-live="polite"></div>
+ <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Character references · Adventurer for younger ages, Micah for 13+</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Generated characters use expressive faces. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><aside class="visual-character-reference"><img src="../assets/characters/micah-reference.png" alt="Micah illustration reference for teen visuals"><p>13+ uses <a href="https://www.dicebear.com/styles/micah/" target="_blank" rel="noopener noreferrer">Micah by Micah Lanier, via DiceBear</a> · CC BY 4.0. Appearance selections still apply. The library’s existing 12–18 strand uses this teen reference.</p></aside><div data-matches class="visual-matches" aria-live="polite"></div>
  <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><p>Versions: male and female, in all seven skin tones (including the original white reference).</p></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
@@ -34,7 +34,7 @@ if(host){
  field('usage_rights').defaultValue='Original ABHP artwork is for use on Applied Behavioral Health Practice websites only. Other use requires written permission from Applied Behavioral Health Practice. Third-party source materials retain their original licenses and required attribution.';
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
- const faces=()=>[...form.querySelectorAll('[name=face_versions]:checked')].map(input=>input.value);
+ const faces=()=>['default'];
  const objectMode=()=>field('visual_mode').value==='object';
  const selected=()=>{
   if(objectMode()){
@@ -156,9 +156,9 @@ if(host){
   const isObject=objectMode();
   field('action').closest('label').firstChild.textContent=isObject?'Object and essential props':'Action and essential props';
   field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
-  for(const selector of ['[data-appearance]','[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])for(const node of form.querySelectorAll(selector))node.hidden=isObject;
+  for(const selector of ['[data-appearance]','[data-ages]','.visual-character-reference','[data-select-all]'])for(const node of form.querySelectorAll(selector))node.hidden=isObject;
   field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
-  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each age and face selection creates male and female versions in all seven skin tones: '+selected().length+' images. Generation uses your OpenAI account. Previews appear as they finish.';
+  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each age selection creates male and female versions in all seven skin tones, with expressive faces: '+selected().length+' images. Generation uses your OpenAI account. Previews appear as they finish.';
   q('[data-review-all]').checked=false;render();matches();
  }
  field('visual_mode').onchange=()=>{field('generation_prompt').value='';sync();say(objectMode()?'Object mode selected. Describe the object to create one shared preview.':'Character mode selected. Choose age strands and face versions.');};
@@ -173,7 +173,7 @@ if(host){
    const label=labeled('Ages '+row.id,input);return label;
   }));
   q('[data-guide]').textContent=result.guide;
-  q('[data-generation-note]').textContent='Each selected age strand gets both selected face versions. Images appear below as they finish. Generating uses your OpenAI API account.';
+  q('[data-generation-note]').textContent='Each selected age strand gets male and female versions in all seven skin tones. Images appear below as they finish. Generating uses your OpenAI API account.';
   form.hidden=false;sync();
   say(!canWrite?'GitHub is connected for reading. The token needs Contents write access to save.':!canGenerate?'GitHub is connected. Add ROUTINES_OPENAI_KEY in Supabase to generate images.':'GitHub and image generation are connected. Choose strands, describe the action, and generate previews.');
  });
@@ -212,7 +212,7 @@ if(host){
   finally{row.started=0;if(revision===sessionRevision)render();}
  }
  q('[data-generate]').onclick=run(async revision=>{
-  const rows=selected();if(!rows.length)throw Error('Select at least one age strand and one face version.');
+  const rows=selected();if(!rows.length)throw Error('Select at least one age strand.');
   if(!field('generation_prompt').value.trim())buildPrompt();
   const missing=rows.filter(row=>!row.image&&!row.published);
   if(missing.length&&!confirm('Generate '+missing.length+' images using your OpenAI account? This larger set may take several minutes and incurs image-generation charges.'))return;

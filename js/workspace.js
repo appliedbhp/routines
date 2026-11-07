@@ -73,7 +73,7 @@
   addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)applyAudience();});
   const strands=document.createElement('section');strands.className='age-strands';
   strands.innerHTML='<label for="ageStrand">Tools for <output id="ageStrandLabel"></output></label><input id="ageStrand" type="range" min="0" max="4" step="1" aria-label="Age strand"><div class="age-strand-stops"></div><small>Switch tools without changing your open work.</small>';
-  const ages=['young','child','teen','adult','all'],ageNames=['0–5','6–12','13+','Adult','All ages'],slider=strands.querySelector('input'),ageOutput=strands.querySelector('output');
+  const ages=['young','child','teen','adult','all'],ageNames=['<5','<12','13+','Adult','All'],slider=strands.querySelector('input'),ageOutput=strands.querySelector('output');
   function showAge(){const i=ages.indexOf(audience.read().age);slider.value=i;ageOutput.textContent=ageNames[i];slider.setAttribute('aria-valuetext',ageNames[i]);strands.querySelectorAll('button').forEach((b,n)=>b.setAttribute('aria-pressed',String(i===n)));}
   let ageSave=Promise.resolve();
   function persistAge(){const age=audience.read().age;ageSave=ageSave.catch(()=>{}).then(()=>globalThis.RoutineAccountPreferences?.saveAge(age)).catch(()=>{strands.querySelector('small').textContent='Updated here. Account sync unavailable; try again online.';});}
