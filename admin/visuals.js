@@ -1,3 +1,4 @@
+import {hairStyles,skinTones,clothingStyles,clothingColors,appearancePrompt} from './visual-appearance.js';
 import {accountClient} from '../cloud/client.js';
 const host=document.getElementById('visualLibrary');
 if(host){
@@ -10,7 +11,8 @@ if(host){
  <label>Category<select name="category" required></select></label>
  <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
- <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Standard character reference</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face uses the same character with all facial features removed.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><div data-matches class="visual-matches" aria-live="polite"></div>
+ <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Standard character reference</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face removes all facial features. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><div data-matches class="visual-matches" aria-live="polite"></div>
+ <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><label>Skin tone<select name="skin_tone"></select></label></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
  <label>Creation prompt<textarea name="generation_prompt" maxlength="12000" rows="7" required></textarea></label>
@@ -27,6 +29,8 @@ if(host){
  </form>`;
  const q=selector=>host.querySelector(selector),form=q('[data-form]'),field=name=>form.elements.namedItem(name);
  form.noValidate=true;
+ for(const [name,choices] of [['hair_style',hairStyles],['skin_tone',skinTones]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
+ for(const [selector,name,choices] of [['[data-clothing-styles]','clothing_styles',clothingStyles],['[data-clothing-colors]','clothing_colors',clothingColors]])for(const value of choices){const label=document.createElement('label');label.className='visual-check';const input=document.createElement('input');input.type='checkbox';input.name=name;input.value=value;label.append(input,document.createTextNode(value));q(selector).append(label);}
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  const faces=()=>[...form.querySelectorAll('[name=face_versions]:checked')].map(input=>input.value);
@@ -156,7 +160,7 @@ if(host){
   const isObject=objectMode();
   field('action').closest('label').firstChild.textContent=isObject?'Object and essential props':'Action and essential props';
   field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
-  for(const selector of ['[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])q(selector).hidden=isObject;
+  for(const selector of ['[data-appearance]','[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])q(selector).hidden=isObject;
   field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
   q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each selected age strand gets the selected face versions. Previews appear as they finish.';
   q('[data-review-all]').checked=false;render();matches();
@@ -187,7 +191,8 @@ if(host){
    field('generation_prompt').value='Create one square standalone transparent PNG object visual. Subject: '+action+'. Shared all-age library. Use clean flat shapes, medium rounded dark contours, and ink #24243B, white, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. Only the object and essential props; no people, faces or anthropomorphism. No text, labels, numbers, logos, backgrounds, gradients or shadows. Center the object with generous margins. Keep white surfaces opaque and the surrounding canvas transparent.';
    return;
   }
-  field('generation_prompt').value='Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached Adventurer character and the requested face version. Use clean flat shapes, dark contours, opaque white skin, a bald head, and no glasses. Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
+  const appearance=appearancePrompt({hair:field('hair_style').value,skin:field('skin_tone').value,styles:[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors:[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value)});
+  field('generation_prompt').value=appearance+' Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached Adventurer character and the requested face version. Use clean flat shapes, dark contours, and no glasses.  Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
  }
  q('[data-prompt]').onclick=()=>{try{buildPrompt();invalidate();render();say('Prompt ready. You can edit it before generating.');}catch(error){say(error.message,true);}};
  function promptFor(row){
@@ -227,7 +232,7 @@ if(host){
   say(failed.length?failed.length+' preview(s) failed. Read the message on each card and retry. Completed previews are kept.':'All previews are ready. Review the set below, confirm usage rights, then save together.',!!failed.length);
  });
  form.addEventListener('input',event=>{
-  if(['visual_mode','title','category','style','action','generation_prompt','keywords','usage_rights'].includes(event.target.name)){invalidate();for(const input of host.querySelectorAll('[data-reviewed]'))input.checked=false;}
+  if(['hair_style','skin_tone','clothing_styles','clothing_colors','visual_mode','title','category','style','action','generation_prompt','keywords','usage_rights'].includes(event.target.name)){invalidate();for(const input of host.querySelectorAll('[data-reviewed]'))input.checked=false;}
  });
  q('[data-review-all]').onchange=()=>{
   const checked=q('[data-review-all]').checked;
