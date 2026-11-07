@@ -29,6 +29,8 @@ export function validateRecord(input,categories,ages){
   generation_prompt:required(input.generation_prompt,'the creation prompt',12000),
   source:required(input.source,'creation or source information',500),
   usage_rights:required(input.usage_rights,'usage-rights information',1500)};
+ if(input.gender_variant!==undefined){if(objectMode||!['male','female'].includes(input.gender_variant))throw new VisualError('Choose male or female character version.');record.gender_variant=input.gender_variant;}
+ if(input.skin_tone!==undefined){if(objectMode)throw new VisualError('Objects have no skin tone.');record.skin_tone=required(input.skin_tone,'a skin tone',100);}
  if(input.visual_mode)record.visual_mode=input.visual_mode;
  if(objectMode)record.asset_type='object';
  if(input.face_variant!==undefined){
@@ -82,7 +84,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
   for(let attempt=0;attempt<3;attempt++){
    const state=await snapshot();
    const records=images.map(({input,digest})=>({input,digest,record:validateRecord(input,state.categories,state.ages)}));
-   if(new Set(records.map(row=>row.record.id)).size!==records.length||new Set(records.map(row=>row.record.age_strand+':'+(row.record.face_variant||'default'))).size!==records.length)throw new VisualError('Each selected strand needs its own visual ID.');
+   if(new Set(records.map(row=>row.record.id)).size!==records.length||new Set(records.map(row=>[row.record.age_strand,row.record.face_variant||'default',row.record.gender_variant||'',row.record.skin_tone||''].join(':'))).size!==records.length)throw new VisualError('Each selected strand needs its own visual ID.');
    const pending=[];
    for(const row of records){
     const existing=state.catalog.find(saved=>saved.id===row.record.id);

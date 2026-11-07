@@ -127,3 +127,13 @@ test('object mode creates an age-independent shared record and uses no face refe
  assert.equal(data.reference_id,null);
  assert.equal(data.face_variant,null);
 });
+
+test('same age and face can publish distinct gender and skin variants without collisions',async()=>{
+ const {createVisualHandler}=await modulePromise,mock=githubMock();
+ const handle=createVisualHandler({authenticate:async()=>true,fetch:mock.fetch,githubToken:'test'});
+ const variants=[['male','Light'],['female','Light'],['male','Brown'],['female','Brown']].map(([gender_variant,skin_tone])=>({...input,id:crypto.randomUUID(),face_variant:'default',gender_variant,skin_tone}));
+ const response=await handle(request({action:'publish_batch',visuals:variants}));
+ assert.equal(response.status,200);const result=await response.json();assert.equal(new Set(result.visuals.map(x=>x.id)).size,4);
+ assert.deepEqual(mock.catalog().map(x=>[x.gender_variant,x.skin_tone]),[['male','Light'],['female','Light'],['male','Brown'],['female','Brown']]);
+ const retry=await handle(request({action:'publish_batch',visuals:variants}));assert.equal(retry.status,200);assert.equal(mock.catalog().length,4);
+});

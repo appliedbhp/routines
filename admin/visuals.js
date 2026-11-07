@@ -12,7 +12,7 @@ if(host){
  <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
  <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Standard character reference</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face removes all facial features. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><div data-matches class="visual-matches" aria-live="polite"></div>
- <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><label>Skin tone<select name="skin_tone"></select></label></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
+ <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><p>Versions: male and female, in all seven skin tones (including the original white reference).</p></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
  <label>Creation prompt<textarea name="generation_prompt" maxlength="12000" rows="7" required></textarea></label>
@@ -21,16 +21,17 @@ if(host){
  <div data-previews class="visual-preview-grid"></div>
  <label>Keywords (separated by commas)<input name="keywords" maxlength="500" required></label>
  <label>Usage rights<textarea name="usage_rights" maxlength="1500" rows="2" required placeholder="Describe the rights you hold and any applicable terms or attribution."></textarea></label>
- <label class="visual-check"><input data-review-all type="checkbox"> I reviewed all selected previews for clear meaning, respectful representation, and print quality.</label>
- <label class="visual-check"><input name="rights_confirmed" type="checkbox"> I checked the source and rights and confirm all selected artwork can be used in this commercial library.</label>
+ <label class="visual-check"><input data-review-all type="checkbox"> I reviewed the complete set for clear meaning, respectful representation and print quality, and confirmed the usage rights. All selected images are ready for library use.</label>
+
  <div class="visual-actions"><button type="submit" class="primary" data-save>Save all selected previews to GitHub</button><button type="button" data-new>Start another set</button></div>
  <div data-result></div>
  <details><summary>Library creation guide</summary><pre data-guide></pre><a href="https://github.com/appliedbhp/visual-supports/blob/main/CREATING-VISUALS.md" target="_blank" rel="noopener noreferrer">Read the guide on GitHub ↗</a></details>
  </form>`;
  const q=selector=>host.querySelector(selector),form=q('[data-form]'),field=name=>form.elements.namedItem(name);
  form.noValidate=true;
- for(const [name,choices] of [['hair_style',hairStyles],['skin_tone',skinTones]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
+ for(const [name,choices] of [['hair_style',hairStyles]])field(name).replaceChildren(...choices.map(value=>new Option(value,value)));
  for(const [selector,name,choices] of [['[data-clothing-styles]','clothing_styles',clothingStyles],['[data-clothing-colors]','clothing_colors',clothingColors]])for(const value of choices){const label=document.createElement('label');label.className='visual-check';const input=document.createElement('input');input.type='checkbox';input.name=name;input.value=value;label.append(input,document.createTextNode(value));q(selector).append(label);}
+ field('usage_rights').defaultValue='Original ABHP artwork is for use on Applied Behavioral Health Practice websites only. Other use requires written permission from Applied Behavioral Health Practice. Third-party source materials retain their original licenses and required attribution.';
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
  const faces=()=>[...form.querySelectorAll('[name=face_versions]:checked')].map(input=>input.value);
@@ -40,12 +41,12 @@ if(host){
    if(!variants.has('object'))variants.set('object',{key:'object',age:'shared',face:null,mode:'object',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
    return [variants.get('object')];
   }
-  return ages().flatMap(age=>faces().map(face=>{
-  const key=age+':'+face;
-  if(!variants.has(key))variants.set(key,{key,age,face,mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
+  return ages().flatMap(age=>faces().flatMap(face=>['male','female'].flatMap(gender=>skinTones.map(skin=>{
+  const key=[age,face,gender,skin].join(':');
+  if(!variants.has(key))variants.set(key,{key,age,face,gender,skin,mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
   return variants.get(key);
- }));};
- const label=row=>row.mode==='object'?'Object · All ages':'Ages '+row.age+' · '+(row.face==='blank'?'Blank face':'Default face');
+ }))));};
+ const label=row=>row.mode==='object'?'Object · All ages':'Ages '+row.age+' · '+(row.face==='blank'?'Blank face':'Default face')+' · '+row.gender+' · '+row.skin;
  const el=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
  function say(text,error=false){
   q('[data-status]').textContent=text;q('[data-feedback]').dataset.error=String(error);
@@ -53,7 +54,7 @@ if(host){
  }
  function invalidate(){
   for(const row of variants.values())if(!row.published)row.reviewed=false;
-  q('[data-review-all]').checked=false;field('rights_confirmed').checked=false;
+  q('[data-review-all]').checked=false;
  }
  function elapsed(){
   for(const node of host.querySelectorAll('[data-clock]')){
@@ -98,17 +99,12 @@ if(host){
     placeholder.className='visual-placeholder';card.append(placeholder);
    }
    const description=el('textarea');description.value=row.alt;description.maxLength=1000;description.rows=2;
-   description.oninput=()=>{row.alt=description.value;row.reviewed=false;q('[data-review-all]').checked=false;card.querySelector('[data-reviewed]').checked=false;};
+   description.oninput=()=>{row.alt=description.value;row.reviewed=false;q('[data-review-all]').checked=false;};
    card.append(labeled('Image description',description));
    const details=el('details'),summary=el('summary','Source and prompt');details.append(summary);
-   const source=el('input');source.value=row.source;source.maxLength=500;source.oninput=()=>{row.source=source.value;row.reviewed=false;q('[data-review-all]').checked=false;card.querySelector('[data-reviewed]').checked=false;};
+   const source=el('input');source.value=row.source;source.maxLength=500;source.oninput=()=>{row.source=source.value;row.reviewed=false;q('[data-review-all]').checked=false;};
    const prompt=el('pre',row.prompt||'The prompt used for this image will appear here.');
    details.append(labeled('Source',source),prompt);card.append(details);
-   const reviewed=el('input');reviewed.type='checkbox';reviewed.checked=row.reviewed;reviewed.dataset.reviewed='';
-   reviewed.onchange=()=>{row.reviewed=reviewed.checked;q('[data-review-all]').checked=selected().every(item=>item.image&&item.reviewed);};
-   const reviewLabel=labeled('Reviewed this preview',reviewed);reviewLabel.className='visual-check';card.append(reviewLabel);
-   const ready=el('input');ready.type='checkbox';ready.checked=row.ready;ready.onchange=()=>{row.ready=ready.checked;};
-   const readyLabel=labeled('Mark ready for library use',ready);readyLabel.className='visual-check';card.append(readyLabel);
    const regenerate=el('button',row.image?'Regenerate':'Generate this preview');regenerate.type='button';regenerate.dataset.generateVariant='';
    regenerate.onclick=run(async revision=>{
     if(row.image&&!confirm('Replace the preview for '+label(row)+'? This generates a new image using your OpenAI account.'))return;
@@ -162,7 +158,7 @@ if(host){
   field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
   for(const selector of ['[data-appearance]','[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])q(selector).hidden=isObject;
   field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
-  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each selected age strand gets the selected face versions. Previews appear as they finish.';
+  q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each age and face selection creates male and female versions in all seven skin tones: '+selected().length+' images. Generation uses your OpenAI account. Previews appear as they finish.';
   q('[data-review-all]').checked=false;render();matches();
  }
  field('visual_mode').onchange=()=>{field('generation_prompt').value='';sync();say(objectMode()?'Object mode selected. Describe the object to create one shared preview.':'Character mode selected. Choose age strands and face versions.');};
@@ -191,7 +187,7 @@ if(host){
    field('generation_prompt').value='Create one square standalone transparent PNG object visual. Subject: '+action+'. Shared all-age library. Use clean flat shapes, medium rounded dark contours, and ink #24243B, white, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. Only the object and essential props; no people, faces or anthropomorphism. No text, labels, numbers, logos, backgrounds, gradients or shadows. Center the object with generous margins. Keep white surfaces opaque and the surrounding canvas transparent.';
    return;
   }
-  const appearance=appearancePrompt({hair:field('hair_style').value,skin:field('skin_tone').value,styles:[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors:[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value)});
+  const appearance=appearancePrompt({hair:field('hair_style').value,skin:'{{skin_tone}}',styles:[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors:[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value)});
   field('generation_prompt').value=appearance+' Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached Adventurer character and the requested face version. Use clean flat shapes, dark contours, and no glasses.  Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
  }
  q('[data-prompt]').onclick=()=>{try{buildPrompt();invalidate();render();say('Prompt ready. You can edit it before generating.');}catch(error){say(error.message,true);}};
@@ -200,15 +196,16 @@ if(host){
   if(!template)throw Error('Enter or build a creation prompt.');
   if(row.mode==='object')return template+' Shared all-age object visual; no human character or face.';
   const base=template.includes('{{age_strand}}')?template.replaceAll('{{age_strand}}',row.age):template+' Age strand: '+row.age+'.';
-  return base+' Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':'Use mouth variant02, eyes variant24, and eyebrows variant10.')+' Adapt proportions and context respectfully for ages '+row.age+'.';
+  return base.replaceAll('{{skin_tone}}',row.skin)+' Character version: '+row.gender+'. Depict an age-appropriate '+row.gender+' character, without sexualization or stereotyped activities. Skin tone: '+row.skin+'. Preserve this skin tone across all visible skin. Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':'Use mouth variant02, eyes variant24, and eyebrows variant10.')+' Adapt proportions and context respectfully for ages '+row.age+'.';
  }
  async function generateOne(row,revision){
+  q('[data-review-all]').checked=false;
   row.state='Generating';row.error='';row.started=Date.now();render();
   try{
    const result=await call({action:'generate',prompt:promptFor(row),visual_mode:row.mode,...(row.face?{face_variant:row.face}:{})});
    if(revision!==sessionRevision)return;
    Object.assign(row,{image:result.image,prompt:result.prompt,source:result.source,referenceId:result.reference_id,state:'Ready to review',error:'',reviewed:false,ready:false});
-   row.alt||=field('action').value.trim()||field('title').value.trim();
+   row.alt||=(field('action').value.trim()||field('title').value.trim())+(row.mode==='character'?' · '+row.gender+' · '+row.skin:'');
   }catch(error){if(revision===sessionRevision){row.state='Failed';row.error=error.message;}}
   finally{row.started=0;if(revision===sessionRevision)render();}
  }
@@ -216,6 +213,7 @@ if(host){
   const rows=selected();if(!rows.length)throw Error('Select at least one age strand and one face version.');
   if(!field('generation_prompt').value.trim())buildPrompt();
   const missing=rows.filter(row=>!row.image&&!row.published);
+  if(missing.length&&!confirm('Generate '+missing.length+' images using your OpenAI account? This larger set may take several minutes and incurs image-generation charges.'))return;
   if(!missing.length)throw Error('All selected previews already have artwork. Use a card’s Regenerate button to replace one.');
   for(const row of missing)row.state='Queued';render();
   const queue=[...missing];let finished=0;
@@ -236,7 +234,7 @@ if(host){
  });
  q('[data-review-all]').onchange=()=>{
   const checked=q('[data-review-all]').checked;
-  for(const row of selected())if(row.image&&!row.published)row.reviewed=checked;
+  for(const row of selected())if(row.image&&!row.published){row.reviewed=checked;row.ready=checked;}
   render();q('[data-review-all]').checked=checked;
  };
  form.onsubmit=event=>{
@@ -247,18 +245,22 @@ if(host){
    if(!canWrite)throw Error('GitHub Contents write access is required.');
    for(const name of ['title','keywords','usage_rights'])if(!field(name).value.trim()){field(name).focus();throw Error('Enter '+name.replace('_',' ')+' before saving.');}
    for(const row of pending)if(!row.image||!row.alt.trim()||!row.source.trim()||!row.reviewed)throw Error('Finish the image, description, source and review for '+label(row)+'.');
-   if(!field('rights_confirmed').checked)throw Error('Confirm the usage rights before saving.');
+   if(!q('[data-review-all]').checked)throw Error('Confirm the usage rights before saving.');
    if(!pending.length){say('All selected previews are already saved.');return;}
-   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
+   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.mode==='character'?{gender_variant:row.gender,skin_tone:row.skin}:{}),...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
    for(const row of pending)row.state='Saving';render();
-   say('Saving all '+pending.length+' previews together in one GitHub commit…');
+   say('Saving all '+pending.length+' previews together in small batches…');
    try{
-    const result=await call({action:'publish_batch',visuals});
+    for(let offset=0;offset<visuals.length;offset+=6){
+    say('Saving previews '+(offset+1)+'–'+Math.min(offset+6,visuals.length)+' of '+visuals.length+'…');
+    const batch=visuals.slice(offset,offset+6);
+    const result=await call({action:'publish_batch',visuals:batch});
     if(revision!==sessionRevision)return;
-    for(const row of pending){
-     const saved=result.visuals.find(item=>item.age_strand===row.age&&(row.mode==='object'?item.visual_mode==='object':item.face_variant===row.face));
+    for(const row of pending.filter(row=>batch.some(item=>item.id===row.id))){
+     const saved=result.visuals.find(item=>item.id==='admin-'+row.id);
      if(!saved)throw Error('The save response was incomplete. Retry to confirm the saved set.');
      Object.assign(row,{published:true,url:saved.url,state:'Saved',error:''});
+    }
     }
     say('All '+rows.length+' selected previews are saved to GitHub.');
    }catch(error){
