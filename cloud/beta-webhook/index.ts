@@ -1,6 +1,7 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.4';
 import Stripe from 'npm:stripe@23.0.0';
 import {payment,readBody} from './model.mjs';
+import {tipRecord} from './tip-model.mjs';
 const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const stripe=new Stripe(Deno.env.get('ROUTINES_API_KEY')||Deno.env.get('STRIPE_SECRET_KEY')||'missing',{apiVersion:'2026-09-30.endive',stripeContext:'acct_1UIYQeIiI1uuEHpt'});
 async function rpc(action:string,args:any={}){const {data,error}=await admin.rpc('routine_beta_payment',{action,args});if(error)throw Error('Payment update failed');return data;}
@@ -10,6 +11,12 @@ Deno.serve(async req=>{
  if(!event.livemode)return new Response('Ignored');
  try{
   const obj=event.data.object;
+  if(obj.metadata?.app==='routines_tips'&&['checkout.session.completed','checkout.session.async_payment_succeeded','checkout.session.async_payment_failed','checkout.session.expired'].includes(event.type)){
+   const session=await stripe.checkout.sessions.retrieve(obj.id,{expand:['line_items','payment_intent.latest_charge']});
+   const record=tipRecord(session);if(record){if(event.type==='checkout.session.async_payment_failed'&&record.status!=='paid')record.status='failed';const {error}=await admin.from('routine_tips').upsert(record,{onConflict:'session_id'});if(error)throw error;}
+   return new Response('OK');
+  }
+
   if(['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)&&obj.metadata?.app==='routines_beta'&&obj.payment_status==='paid'){
    const {data:order,error}=await admin.from('routine_beta_orders').select().eq('id',obj.metadata.orderId).single();if(error||!order)throw Error('Order unavailable');
    // Retrieve current state: never grant access from a success redirect or an unverified amount.
@@ -20,6 +27,10 @@ Deno.serve(async req=>{
   }else if(obj.metadata?.app==='routines_beta'&&event.type==='checkout.session.async_payment_failed'){await rpc('failed',{sessionId:obj.id});
   }else if(['charge.refunded','charge.dispute.created','charge.dispute.closed'].includes(event.type)){
    const charge:any=event.type==='charge.refunded'?await stripe.charges.retrieve(obj.id):await stripe.charges.retrieve(typeof obj.charge==='string'?obj.charge:obj.charge.id);
+   if(charge.metadata?.app==='routines_tips'){
+    const paymentIntent=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id;
+    const {error}=await admin.from('routine_tips').update({refunded_amount:charge.amount_refunded||0,disputed:event.type==='charge.dispute.closed'?obj.status!=='won':!!charge.disputed}).eq('payment_intent',paymentIntent);if(error)throw error;
+   }
    if(charge.metadata?.app==='routines_beta')await rpc('risk',{orderId:charge.metadata.orderId,paymentIntent:typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id,refunded:charge.amount_refunded>0,disputed:event.type==='charge.dispute.closed'?obj.status!=='won':!!charge.disputed,eventTime:event.created});
   }
   return new Response('OK');

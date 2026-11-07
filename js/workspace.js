@@ -133,6 +133,7 @@
   import(new URL('js/visitor-nav.js',root).href);
   import(new URL('notifications/app.js',root).href);
   import(new URL('js/consultation.js',root).href);
+  import(new URL('js/tips.js',root).href);
   import(new URL('js/symbol-credits.js',root).href);
   const opener=document.createElement('script');opener.src=new URL('js/file-open.js',root);document.head.append(opener);
 })();

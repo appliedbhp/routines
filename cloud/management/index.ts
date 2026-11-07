@@ -71,7 +71,7 @@ Deno.serve(async req=>{
    return reply(200,result);
   }
   if(body.action==='list'){
-   const tables:Record<string,string>={invitations:'routine_admin_invitations',sequences:'routine_admin_sequences',deliveries:'routine_admin_deliveries',discounts:'routine_admin_discounts',audit:'routine_admin_audit'};
+   const tables:Record<string,string>={tips:'routine_tips',invitations:'routine_admin_invitations',sequences:'routine_admin_sequences',deliveries:'routine_admin_deliveries',discounts:'routine_admin_discounts',audit:'routine_admin_audit'};
    const table=tables[body.section];if(!table)throw Error('Choose a valid section.');
    const order=body.section==='deliveries'?'due_at':'created_at';let query=db.from(table).select('*',{count:'exact'}).order(order,{ascending:false}).range(Math.max(0,Number(body.skip)||0),Math.max(0,Number(body.skip)||0)+49);
    const result=await query;checked(result);return reply(200,{rows:result.data,total:result.count});
