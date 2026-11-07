@@ -4,7 +4,7 @@ test('age profiles contain exactly the requested tool sets',()=>{
  assert.deepEqual(audience.profiles.young.tools,['routine','chore-chart','task-strip','now-next-later','first-then','choice-board','token-board']);
  assert.deepEqual(audience.profiles.child.tools,['routine','chore-chart','task-strip','now-next-later','choice-board','token-board','self-monitor','homework-planner']);
  assert.deepEqual(audience.profiles.teen.tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','weekly-planner','daily-planner','meal-planner','committed-action-tracker','values-blaster','my-character','maintenance','touchpoints']);
- assert.deepEqual(audience.profiles.adult.tools,['implementation-intentions',...audience.profiles.teen.tools]);
+ assert.deepEqual(audience.profiles.adult.tools,['implementation-intentions',...audience.profiles.teen.tools.filter(tool=>tool!=='routine')]);
  assert.equal(audience.allows('child','first-then'),false);assert.equal(audience.allows('all','future-tool'),true);
 });
 test('missing or invalid local preferences keep all tools visible',()=>{
