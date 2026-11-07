@@ -137,3 +137,13 @@ test('same age and face can publish distinct gender and skin variants without co
  assert.deepEqual(mock.catalog().map(x=>[x.gender_variant,x.skin_tone]),[['male','Light'],['female','Light'],['male','Brown'],['female','Brown']]);
  const retry=await handle(request({action:'publish_batch',visuals:variants}));assert.equal(retry.status,200);assert.equal(mock.catalog().length,4);
 });
+
+test('teen variants use Micah while younger variants retain Adventurer',async()=>{
+ const {getCharacter,micahReference}=await import('../cloud/visual-library/character.js');
+ for(const age of ['12-18','13+','13-18'])for(const face of ['default','blank'])assert.equal(getCharacter(face,age).reference.id,micahReference.id);
+ assert.equal(getCharacter('default','6-11').reference.style,'adventurer');
+ assert.match(getCharacter('blank','13+').instructions,/Remove all facial features/);
+ const {validateRecord}=await modulePromise;
+ assert.equal(validateRecord({...input,age_strand:'12-18',reference_id:micahReference.id,face_variant:'blank'},categories,ages).character_reference.style,'micah');
+ assert.throws(()=>validateRecord({...input,reference_id:micahReference.id,face_variant:'default'},categories,ages),/face and reference/);
+});

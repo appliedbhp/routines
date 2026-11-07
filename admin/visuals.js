@@ -11,7 +11,7 @@ if(host){
  <label>Category<select name="category" required></select></label>
  <label>Style<select name="style"><option value="illustration">Adventurer illustration</option><option value="simple-symbol">Simple symbol</option></select></label>
  </div>
- <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Standard character reference</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face removes all facial features. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><div data-matches class="visual-matches" aria-live="polite"></div>
+ <aside class="visual-character-reference"><img src="../assets/characters/adventurer-default.svg" alt="Default Adventurer character: bald, white skin, no glasses, with the selected eyes, eyebrows and mouth"><div><strong>Character references · Adventurer for younger ages, Micah for 13+</strong><p>Adventurer · no hair · transparent background · mouth 02 · eyes 24 · eyebrows 10 · no glasses · white skin.</p><p>Default face uses this expression. Blank face removes all facial features. Appearance selections below override the reference’s hairstyle and skin tone in the creation prompt.</p><img src="../assets/characters/adventurer-blank.svg" alt="Matching Adventurer character with a completely blank face"><a href="https://www.dicebear.com/styles/adventurer/" target="_blank" rel="noopener noreferrer">Adventurer by Lisa Wischofsky, via DiceBear</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></div></aside><aside class="visual-character-reference"><img src="../assets/characters/micah-reference.png" alt="Micah illustration reference for teen visuals"><p>13+ uses <a href="https://www.dicebear.com/styles/micah/" target="_blank" rel="noopener noreferrer">Micah by Micah Lanier, via DiceBear</a> · CC BY 4.0. Appearance selections still apply. The library’s existing 12–18 strand uses this teen reference.</p></aside><div data-matches class="visual-matches" aria-live="polite"></div>
  <fieldset data-appearance><legend>Character appearance</legend><div class="visual-fields"><label>Hairstyle<select name="hair_style"></select></label><p>Versions: male and female, in all seven skin tones (including the original white reference).</p></div><fieldset><legend>Clothing styles · choose any that apply</legend><div class="visual-appearance-options" data-clothing-styles></div></fieldset><fieldset><legend>Clothing colors · choose any that apply</legend><div class="visual-appearance-options" data-clothing-colors></div></fieldset><p>These choices are added when you build the creation prompt. Rebuild the prompt after changing them; existing previews stay unchanged until regenerated.</p></fieldset>
  <label>Action and essential props<textarea name="action" maxlength="3000" rows="3" placeholder="For example, a figure puts a homework folder into an open backpack."></textarea></label>
  <button type="button" data-prompt>Build creation prompt</button>
@@ -156,7 +156,7 @@ if(host){
   const isObject=objectMode();
   field('action').closest('label').firstChild.textContent=isObject?'Object and essential props':'Action and essential props';
   field('action').placeholder=isObject?'For example, one blue notebook with a blank cover.':'For example, a figure puts a homework folder into an open backpack.';
-  for(const selector of ['[data-appearance]','[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])q(selector).hidden=isObject;
+  for(const selector of ['[data-appearance]','[data-ages]','[data-faces]','.visual-character-reference','[data-select-all]'])for(const node of form.querySelectorAll(selector))node.hidden=isObject;
   field('style').options[0].text=isObject?'Flat outline illustration':'Adventurer illustration';
   q('[data-generation-note]').textContent=isObject?'Object mode creates one shared visual for all ages, without people or faces.':'Each age and face selection creates male and female versions in all seven skin tones: '+selected().length+' images. Generation uses your OpenAI account. Previews appear as they finish.';
   q('[data-review-all]').checked=false;render();matches();
@@ -188,21 +188,23 @@ if(host){
    return;
   }
   const appearance=appearancePrompt({hair:field('hair_style').value,skin:'{{skin_tone}}',styles:[...form.querySelectorAll('[name=clothing_styles]:checked')].map(x=>x.value),colors:[...form.querySelectorAll('[name=clothing_colors]:checked')].map(x=>x.value)});
-  field('generation_prompt').value=appearance+' Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached Adventurer character and the requested face version. Use clean flat shapes, dark contours, and no glasses.  Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
+  field('generation_prompt').value=appearance+' Create one standalone square visual support. Action: '+action+' Age strand: {{age_strand}}. Match the attached {{character_style}} character and the requested face version. Use clean flat shapes, dark contours, and no glasses.  Keep the action clear at small size with essential props and generous margins. Use a genuinely transparent background. No text, numbers, labels, logos, borders, gradients, or shadows. Use ink #24243B, white, lavender #A78BFA, blue #4C8DFF, teal #2CC6B0, yellow #FFD447, and coral #FF6B6B as needed.';
  }
  q('[data-prompt]').onclick=()=>{try{buildPrompt();invalidate();render();say('Prompt ready. You can edit it before generating.');}catch(error){say(error.message,true);}};
  function promptFor(row){
   const template=field('generation_prompt').value.trim();
   if(!template)throw Error('Enter or build a creation prompt.');
   if(row.mode==='object')return template+' Shared all-age object visual; no human character or face.';
-  const base=template.includes('{{age_strand}}')?template.replaceAll('{{age_strand}}',row.age):template+' Age strand: '+row.age+'.';
-  return base.replaceAll('{{skin_tone}}',row.skin)+' Character version: '+row.gender+'. Depict an age-appropriate '+row.gender+' character, without sexualization or stereotyped activities. Skin tone: '+row.skin+'. Preserve this skin tone across all visible skin. Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':'Use mouth variant02, eyes variant24, and eyebrows variant10.')+' Adapt proportions and context respectfully for ages '+row.age+'.';
+  const style=['13+','13-18','12-18'].includes(row.age)?'Micah':'Adventurer';
+  const styled=template.replaceAll('{{character_style}}',style).replaceAll('Adventurer',style);
+  const base=styled.includes('{{age_strand}}')?styled.replaceAll('{{age_strand}}',row.age):styled+' Age strand: '+row.age+'.';
+  return base.replaceAll('{{skin_tone}}',row.skin)+' Character version: '+row.gender+'. Depict an age-appropriate '+row.gender+' character, without sexualization or stereotyped activities. Skin tone: '+row.skin+'. Preserve this skin tone across all visible skin. Face version: '+row.face+'. '+(row.face==='blank'?'Keep the face completely blank, with no eyes, eyebrows, mouth or nose.':(style==='Micah'?'Use simple Micah-style facial features.':'Use mouth variant02, eyes variant24, and eyebrows variant10.'))+' Adapt proportions and context respectfully for ages '+row.age+'.';
  }
  async function generateOne(row,revision){
   q('[data-review-all]').checked=false;
   row.state='Generating';row.error='';row.started=Date.now();render();
   try{
-   const result=await call({action:'generate',prompt:promptFor(row),visual_mode:row.mode,...(row.face?{face_variant:row.face}:{})});
+   const result=await call({action:'generate',prompt:promptFor(row),age_strand:row.age,visual_mode:row.mode,...(row.face?{face_variant:row.face}:{})});
    if(revision!==sessionRevision)return;
    Object.assign(row,{image:result.image,prompt:result.prompt,source:result.source,referenceId:result.reference_id,state:'Ready to review',error:'',reviewed:false,ready:false});
    row.alt||=(field('action').value.trim()||field('title').value.trim())+(row.mode==='character'?' · '+row.gender+' · '+row.skin:'');

@@ -1,4 +1,4 @@
-import {characterReference,blankCharacterReference,getCharacter} from './character.js';
+import {characterReference,blankCharacterReference,micahReference,getMicah,getCharacter} from './character.js';
 const REPOSITORY='appliedbhp/visual-supports';
 const API='https://api.github.com/repos/'+REPOSITORY;
 export class VisualError extends Error {
@@ -38,9 +38,9 @@ export function validateRecord(input,categories,ages){
   record.face_variant=input.face_variant;
  }
  if(input.reference_id){
-  const reference=[characterReference,blankCharacterReference].find(row=>row.id===input.reference_id);
+  const reference=[characterReference,blankCharacterReference,micahReference].find(row=>row.id===input.reference_id);
   if(!reference)throw new VisualError('Unknown character reference.');
-  if(input.face_variant&&reference.id!==getCharacter(input.face_variant).reference.id)throw new VisualError('The face and reference do not match.');
+  if(input.face_variant&&reference.id!==getCharacter(input.face_variant,reference.id===micahReference.id?input.age_strand:"").reference.id)throw new VisualError('The face and reference do not match.');
   record.character_reference=reference;
   if(!record.usage_rights.includes(reference.attribution))record.usage_rights+=' '+reference.attribution;
  }
@@ -104,11 +104,12 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    const references=new Map(pending.filter(row=>row.record.character_reference).map(row=>[row.record.character_reference.id,row.record.character_reference]));
    for(const reference of references.values()){
-    const character=getCharacter(reference.id===blankCharacterReference.id?'blank':'default');
+    const character=reference.id===micahReference.id?getMicah():getCharacter(reference.id===blankCharacterReference.id?'blank':'default');
     const referenceBlob=await github('/git/blobs','POST',{content:character.image,encoding:'base64'});
     files.push({path:reference.asset,mode:'100644',type:'blob',sha:referenceBlob.sha},
      {path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
    }
+   if(references.has(micahReference.id))files.push({path:'references/MICAH-ATTRIBUTION.md',mode:'100644',type:'blob',content:micahReference.attribution+'\nSource: '+micahReference.source+'\n'});
    if(references.size)files.push({path:'references/ADVENTURER-ATTRIBUTION.md',mode:'100644',type:'blob',content:'# Adventurer character references\n\n'+characterReference.attribution+'\n\nSource: '+characterReference.source+'\n'});
    files.push({path:'catalog/visuals.json',mode:'100644',type:'blob',content:JSON.stringify([...state.catalog,...pending.map(row=>row.record)],null,2)+'\n'});
    const base=await github('/git/commits/'+state.sha);
@@ -142,7 +143,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     if(input.visual_mode!==undefined&&!['character','object'].includes(input.visual_mode))throw new VisualError('Choose character or object mode.');
     const objectMode=input.visual_mode==='object';
     if(input.face_variant!==undefined&&!['default','blank'].includes(input.face_variant))throw new VisualError('Choose a default or blank face.');
-    const character=objectMode?null:getCharacter(input.face_variant||'default');
+    const character=objectMode?null:getCharacter(input.face_variant||'default',input.age_strand);
     const objectInstructions='Create one nonhuman object visual for the shared all-age library. Show only the requested object and essential props. No people, body parts, faces, eyes, mouths, or anthropomorphism. Use clean flat closed shapes, medium rounded dark contours, and a palette of ink #24243B, white #FFFFFF, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. No gradients, shading, shadows, texture, 3D, scenery, borders, logos, letters or numbers. Center the complete object with ten percent safe margins. Keep white objects opaque and the surrounding canvas genuinely transparent. ';
     const prompt=(objectMode?objectInstructions:character.instructions)+'Requested visual: '+required(input.prompt,'an image prompt',12000);
     const options={model:imageModel,prompt,size:'1024x1024',background:'transparent',output_format:'png',n:1,quality:'medium'};
@@ -170,7 +171,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     }
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':' using the DiceBear Adventurer reference'),reference_id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':' using the DiceBear '+character.reference.style+' reference'),reference_id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
    }
    if(input.action==='publish'){
     const result=await publishMany([input]);return respond({...result,...result.visuals[0]});
