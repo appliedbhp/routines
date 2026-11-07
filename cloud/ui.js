@@ -1,3 +1,4 @@
+import {plan,planName} from '../beta/api.js';
 import {accountClient} from './client.js';
 import {cloudConfig} from './config.js';
 import './board-settings.js';
@@ -9,14 +10,14 @@ async function start(){
  const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('cloud/style.css',root);document.head.append(css);
  await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('cloud/adapter.js',root);script.onload=resolve;script.onerror=reject;document.head.append(script);});
  const editor=!!document.querySelector('#exportBoard,#exportChart,#exportRoutineBtn');
- const entry=document.createElement('button');entry.type='button';entry.className='cloud-entry no-print';entry.setAttribute('aria-label','My cloud boards · Free');entry.title='My cloud boards · Free';
+ const entry=document.createElement('button');entry.type='button';entry.className='cloud-entry no-print';entry.setAttribute('aria-label','My cloud boards');entry.title='My cloud boards';
  entry.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.9 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>';
  const header=document.querySelector('.workspace-header,.app-header');
  if(header){header.classList.add('has-cloud-entry');header.append(entry);}else document.body.append(entry);
  const accountHost=document.getElementById('cloudAccount');
  const dialog=document.createElement(accountHost?'section':'dialog');dialog.className='cloud-dialog no-print';dialog.setAttribute('aria-labelledby','cloudTitle');
  dialog.innerHTML=`<header><h2 id="cloudTitle">My cloud boards</h2><button type="button" data-close aria-label="Close cloud boards">Close</button></header>
- <p>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>
+ <p data-plan>Free account · two boards total across all visual tools.</p><p role="status" aria-live="polite" data-status></p>
  <form data-login>
  <div class="auth-options" aria-label="Sign-in options"><button type="button" data-auth-choice="password" aria-pressed="true">Email &amp; password</button><button type="button" data-auth-choice="link" aria-pressed="false">Email me a magic link</button></div><label>Account access<select data-auth-mode><option value="password">Sign in with a password</option><option value="signup">Create a password account</option><option value="link">Email me a sign-in link</option><option value="reset">Set or reset my password</option></select></label>
  <label>Your adult account email<input data-email type="email" autocomplete="username" required maxlength="254"></label>
@@ -28,6 +29,7 @@ async function start(){
  <section data-review hidden><h3>Review before saving</h3><p>Only settings will upload. Person/team names, dates, checkmarks, earned tokens, homework entries, custom images, and session results are excluded. Review all remaining text below. Go back to the editor to remove anything personal.</p><ul data-text></ul><details><summary>See every setting being uploaded</summary><pre data-preview></pre></details><label class="cloud-check"><input type="checkbox" data-attest> <span data-statement></span></label><div class="cloud-actions"><button type="button" data-save disabled>Confirm and save</button><button type="button" data-back>Back</button></div></section>`;
  if(accountHost){accountHost.replaceChildren(dialog);dialog.classList.add('cloud-account-page');dialog.showModal=()=>{};dialog.close=()=>{};dialog.querySelector('[data-close]').hidden=true;}else document.body.append(dialog);
  const q=s=>dialog.querySelector(s),status=q('[data-status]');q('[data-statement]').textContent=S.ATTESTATION;
+ let limit=2;
  let client,user,rows=[],pending=null,busy=false,authRevision=0,recovery=false;
  const message=t=>{status.textContent=t;};
  const accountNav=document.createElement('nav');accountNav.className='workspace-account';accountNav.setAttribute('aria-label','Account');
@@ -49,12 +51,13 @@ async function start(){
   const c=await sdk(),{data,error}=await c.auth.getUser();user=error?null:data.user;accountState(!!user);
   if(recovery){showRecovery();return;}
   q('[data-login]').hidden=!!user;q('[data-library]').hidden=!user;q('[data-slots]').replaceChildren();rows=[];
-  if(!user)return;
+  if(!user){limit=2;q('[data-plan]').textContent='Free account · two boards total across all visual tools.';return;}
+  const access=await plan();limit=access.boardLimit;q('[data-plan]').textContent=planName(access)+' · '+limit+' cloud board slots.';
   dispatchEvent(new Event('routines-account-signed-in'));
   const response=await c.from('routine_cloud_boards').select('slot,payload,revision,updated_at').order('slot');
   if(response.error)throw Error('Cloud boards could not be loaded. Try again.');rows=response.data;
-  q('[data-user]').textContent=`${user.email} · ${rows.length} of 2 boards saved`;
-  for(const slot of [1,2]){
+  q('[data-user]').textContent=`${user.email} · ${rows.length} saved · ${limit} available board slots`;
+  for(const slot of [...new Set([...Array.from({length:limit},(_,i)=>i+1),...rows.map(r=>r.slot)])].sort((a,b)=>a-b)){
    const row=rows.find(r=>r.slot===slot),card=document.createElement('article');card.className='cloud-slot';
    const h=document.createElement('h3');h.textContent=row?S.title(row.payload):`Empty board slot ${slot}`;card.append(h);
    if(row){const description=document.createElement('p');description.textContent=`${S.type(row.payload).replaceAll('-',' ')} · Updated ${new Date(row.updated_at).toLocaleString()}`;card.append(description);
@@ -62,11 +65,12 @@ async function start(){
     action(card,'Export settings',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(row.payload,null,2)],{type:'application/json'}));a.href=url;a.download='board-settings.abhp';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
     action(card,'Delete from cloud',async()=>{if(!confirm(`Delete “${S.title(row.payload)}” from the cloud? This cannot be undone. Export it first if you need a backup.`))return;const {data,error}=await client.from('routine_cloud_boards').delete().eq('slot',slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Refresh and try again.');await refresh();message('Cloud copy deleted. Local boards are unchanged.');});
    }
-   if(editor)action(card,row?'Replace with current board':'Save current board here',()=>review(row,slot));
+   if(editor&&slot<=limit)action(card,row?'Replace with current board':'Save current board here',()=>review(row,slot));
    q('[data-slots]').append(card);
   }
  }
  async function review(row,slot,override=null){
+  if(slot>limit)throw Error('This slot is above your current plan. You can still open or export it.');
   const original=override?null:await CloudBoardAdapter.current(),payload=S.clean(override||original);
   pending={payload,original,slot,revision:row?.revision??null,userId:user.id,authRevision};
   q('[data-text]').replaceChildren();for(const text of S.textFields(payload)){const li=document.createElement('li');li.textContent=text;q('[data-text]').append(li);}
@@ -74,10 +78,10 @@ async function start(){
   message(row?'Saving will replace the board in this slot.':'Review your settings-only cloud copy.');q('[data-attest]').focus();
  }
  globalThis.CloudBoardUI={
-  async list(){await refresh();return {rows:[...rows],signedIn:!!user};},
+  async list(){await refresh();return {rows:[...rows],signedIn:!!user,limit};},
   open:row=>{dialog.showModal();return run(()=>open(row));},
   account:()=>entry.click(),
-  async save(target=null,override=null){dialog.showModal();await run(async()=>{await refresh();if(!user){message('Sign in, then choose a cloud slot.');return;}if(target){const row=rows.find(r=>r.slot===target.slot);if(user.id!==target.userId||row?.revision!==target.revision)throw Error('This cloud board changed or your account changed. Reopen it or use Save as.');await review(row,target.slot,override);}else if(override){const slot=[1,2].find(n=>!rows.some(r=>r.slot===n));if(!slot)throw Error('Both cloud slots are full. Delete a copy you no longer need first.');await review(null,slot,override);}else message('Choose a slot for your settings-only cloud copy.');});},
+  async save(target=null,override=null){dialog.showModal();await run(async()=>{await refresh();if(!user){message('Sign in, then choose a cloud slot.');return;}if(target){const row=rows.find(r=>r.slot===target.slot);if(user.id!==target.userId||row?.revision!==target.revision)throw Error('This cloud board changed or your account changed. Reopen it or use Save as.');await review(row,target.slot,override);}else if(override){const slot=Array.from({length:limit},(_,i)=>i+1).find(n=>!rows.some(r=>r.slot===n));if(!slot)throw Error('Your cloud slots are full. Delete a copy you no longer need first.');await review(null,slot,override);}else message('Choose a slot for your settings-only cloud copy.');});},
   async rename(row,name){dialog.showModal();await run(async()=>{await refresh();const fresh=rows.find(r=>r.slot===row.slot);if(!fresh||fresh.revision!==row.revision)throw Error('This board changed. Reopen the library.');await review(fresh,row.slot,BoardFiles.rename(row.payload,name));});},
   async remove(row){const c=await sdk();const {data,error}=await c.from('routine_cloud_boards').delete().eq('slot',row.slot).eq('revision',row.revision).select('slot');if(error||!data.length)throw Error('This board changed or could not be deleted. Reopen the library.');dispatchEvent(new CustomEvent('board-cloud-deleted',{detail:{slot:row.slot}}));}
  };
@@ -88,7 +92,7 @@ async function start(){
   const path=new URL(S.path(row.payload),root),here=location.pathname.replace(/index\.html$/,'');
   if(path.pathname!==here){path.searchParams.set('cloudSlot',String(row.slot));location.assign(path);return;}
   if(!confirm('Open this cloud board? Unsaved edits in the current visual will be replaced.'))return;
-  CloudBoardAdapter.open(S.clean(row.payload));dispatchEvent(new CustomEvent('board-cloud-opened',{detail:{payload:S.clean(row.payload),slot:row.slot,revision:row.revision,userId:user.id,count:rows.length}}));dialog.close();
+  CloudBoardAdapter.open(S.clean(row.payload));dispatchEvent(new CustomEvent('board-cloud-opened',{detail:{payload:S.clean(row.payload),slot:row.slot,revision:row.revision,userId:user.id,count:rows.length,limit}}));dialog.close();
  }
  entry.onclick=()=>run(async()=>{dialog.showModal();message('Loading…');await refresh();if(!recovery)message(user?'Your cloud boards are private to this account.':'Sign in to save and open your two free boards.');});
  q('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{pending=null;q('[data-attest]').checked=false;q('[data-save]').disabled=true;q('[data-password]').value='';q('[data-new-password]').value='';entry.focus();});
@@ -153,7 +157,7 @@ async function start(){
   q('[data-attest]').checked=false;q('[data-save]').disabled=true;
   const response=await client.functions.invoke('cloud-board-save',{body:{slot:snapshot.slot,revision:snapshot.revision,payload:snapshot.payload,attested:true,attestationVersion:S.VERSION}});
   if(response.error){let details;try{details=await response.error.context?.json();}catch{}throw Error(details?.error||'Cloud save failed. Your local board is unchanged. Review and try again.');}
-  await refresh();const saved=rows.find(r=>r.slot===snapshot.slot);dispatchEvent(new CustomEvent('board-cloud-saved',{detail:{payload:snapshot.original,slot:snapshot.slot,revision:saved?.revision,userId:user.id,count:rows.length}}));message('Settings saved to the cloud. Session results remain on this device.');dialog.close();
+  await refresh();const saved=rows.find(r=>r.slot===snapshot.slot);dispatchEvent(new CustomEvent('board-cloud-saved',{detail:{payload:snapshot.original,slot:snapshot.slot,revision:saved?.revision,userId:user.id,count:rows.length,limit}}));message('Settings saved to the cloud. Session results remain on this device.');dialog.close();
  });
  // Sign-in return and cross-tool opening never auto-upload any local data.
  if(!accountHost){try{const c=await sdk();const {data}=await c.auth.getSession();accountState(!!data.session?.user);}catch{accountState(false);}}

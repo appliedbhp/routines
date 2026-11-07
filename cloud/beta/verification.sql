@@ -1,0 +1,36 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at) values('f1111111-1111-4111-8111-111111111111','beta-owner@example.invalid',now()),('f2222222-2222-4222-8222-222222222222','beta-friend@example.invalid',now());
+do $$
+declare p jsonb;o jsonb;again jsonb;
+begin
+ perform public.routine_beta_action(null,'request','{"email":"beta-owner@example.invalid","hash":"qa-owner","friends":[]}');
+ perform public.routine_beta_action(null,'verify','{"hash":"qa-owner","referralCode":"qa-owner-code-12345678"}');
+ p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');
+ assert (p->>'boardLimit')::int=15 and (p->>'betaActive')::boolean;
+ perform public.routine_beta_action(null,'request','{"email":"beta-friend@example.invalid","hash":"qa-friend","friends":[],"referral":"qa-owner-code-12345678"}');
+ perform public.routine_beta_action(null,'verify','{"hash":"qa-friend","referralCode":"qa-friend-code-12345678"}');
+ p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'referralMonths')::int=1;
+ perform public.routine_beta_action(null,'request','{"email":"beta-friend@example.invalid","hash":"qa-friend2","friends":[],"referral":"qa-owner-code-12345678"}');
+ perform public.routine_beta_action(null,'verify','{"hash":"qa-friend2","referralCode":"qa-friend-code-23456789"}');
+ p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'referralMonths')::int=1;
+ assert routines_private.beta_email('b.e.t.a+test@googlemail.com')='beta@gmail.com';
+ update public.routine_beta_config set value=jsonb_set(value,'{enabled}','true') where key='billing';
+ o:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','checkout','{"offer":"early"}');assert (o->>'amount')::int=1500;
+ again:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','checkout','{"offer":"early"}');assert o->>'id'=again->>'id';
+ perform public.routine_beta_action('f1111111-1111-4111-8111-111111111111','attach',jsonb_build_object('orderId',o->>'id','sessionId','cs_qa','url','https://checkout.stripe.com/test'));
+ perform public.routine_beta_payment('paid',jsonb_build_object('orderId',o->>'id','sessionId','cs_qa','userId','f1111111-1111-4111-8111-111111111111','amount',1500,'currency','usd','paymentIntent','pi_qa'));
+ p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'lifetimeTier')::int=1 and (p->>'boardLimit')::int=15;
+ update public.routine_beta_members set joined_at=now()-interval '5 months' where user_id='f1111111-1111-4111-8111-111111111111';
+ p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'boardLimit')::int=5 and not (p->>'betaActive')::boolean;
+ perform public.routine_beta_payment('risk','{"paymentIntent":"pi_qa","disputed":true,"eventTime":20}');p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'boardLimit')::int=2;
+ perform public.routine_beta_payment('risk','{"paymentIntent":"pi_qa","disputed":false,"eventTime":30}');
+ perform public.routine_beta_payment('risk','{"paymentIntent":"pi_qa","disputed":true,"eventTime":10}');p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'boardLimit')::int=5;
+ perform public.routine_beta_payment('risk','{"paymentIntent":"pi_qa","refunded":true,"eventTime":40}');p:=public.routine_beta_action('f1111111-1111-4111-8111-111111111111','state');assert (p->>'boardLimit')::int=2;
+ begin perform public.routine_beta_action('f2222222-2222-4222-8222-222222222222','bugs');raise exception 'FAIL: nonadmin allowed';exception when others then if sqlerrm<>'Administrator access required.' then raise;end if;end;
+ perform public.routine_beta_action(null,'bug','{"page":"/routine/","description":"QA report in rollback transaction","impact":"blocked"}');
+ assert exists(select 1 from public.routine_bug_reports where description='QA report in rollback transaction' and priority=1);
+ assert not has_function_privilege('authenticated','public.routine_beta_action(uuid,text,jsonb)','execute');
+ assert not has_function_privilege('anon','public.routine_beta_payment(text,jsonb)','execute');
+ assert not has_table_privilege('authenticated','public.routine_beta_members','select');
+end;$$;
+rollback;

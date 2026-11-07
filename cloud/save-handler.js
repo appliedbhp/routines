@@ -1,6 +1,6 @@
 /* Pure request handling, shared with tests. Authentication and persistence are injected. */
 (function(root){
- function createHandler({settings,authenticate,insert,replace,allowedOrigins}){
+ function createHandler({settings,authenticate,insert,replace,allowedOrigins,getLimit=async()=>2}){
   return async req=>{
    const origin=req.headers.get('Origin')||'';
    const headers={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin'};
@@ -18,7 +18,8 @@
     while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>131072){await reader.cancel();return reply(413,{error:'Board too large.'});}raw+=decoder.decode(value,{stream:true});}raw+=decoder.decode();
     const body=JSON.parse(raw);
     if(body.attested!==true||body.attestationVersion!==settings.VERSION)return reply(400,{error:'Confirm the privacy statement before every save.'});
-    if(![1,2].includes(body.slot))return reply(400,{error:'Free accounts have two board slots.'});
+    const limit=await getLimit(user);
+    if(!Number.isInteger(body.slot)||body.slot<1||body.slot>limit)return reply(400,{error:'This slot exceeds your current plan.'});
     const payload=settings.clean(body.payload);
     if(body.revision!==null&&!(typeof body.revision==='string'&&/^[0-9a-f-]{36}$/i.test(body.revision)))return reply(400,{error:'Refresh your cloud boards and try again.'});
     const row={user_id:user.id,slot:body.slot,payload,attestation_version:settings.VERSION,attested_at:new Date().toISOString(),updated_at:new Date().toISOString(),revision:crypto.randomUUID()};

@@ -23,7 +23,7 @@ async function refresh(){
  const cloud=async()=>{try{
   if(!globalThis.CloudBoardUI){el('cloudStatus').textContent='Cloud files are loading. If they do not appear, check your connection and select Refresh.';return;}
   const result=await CloudBoardUI.list();if(!valid())return;
-  el('cloudStatus').textContent=!result.signedIn?'Sign in again to see your cloud files.':result.rows.length?`${result.rows.length} of 2 free cloud boards`:'No cloud boards saved yet. Use File → Save as in a tool.';
+  el('cloudStatus').textContent=!result.signedIn?'Sign in again to see your cloud files.':result.rows.length?`${result.rows.length} of ${result.limit||2} cloud boards`:'No cloud boards saved yet. Use File → Save as in a tool.';
   for(const row of result.rows)item(el('cloudFiles'),row.payload.board?.title||row.payload.routine?.name||row.payload.chart?.name||'Untitled',async()=>{if(!valid())throw Error('Your account changed. Refresh your files.');await CloudBoardUI.open(row);});
  }catch(e){if(valid())el('cloudStatus').textContent='Cloud files are unavailable. Check your connection and try Refresh.';}};
  const computer=async()=>{try{

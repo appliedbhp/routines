@@ -7,7 +7,7 @@ export function mount(accountPanel){
  function render(){const s=Links.read();box.replaceChildren();box.append(make('h4','Linked accounts'));const status=make('p');status.setAttribute('role','status');
  const button=(label,fn,parent=box)=>{const b=make('button',label);b.type='button';b.onclick=async()=>{if(busy)return;busy=true;b.disabled=true;try{await fn();}catch(e){status.textContent=e.message;}finally{busy=false;b.disabled=false;}};parent.append(b);return b;};
  if(!s.signedIn){box.append(make('p',s.error||'Sign in to connect a family or classroom.'));return;}
- const owned=s.groups.find(g=>g.owner);document.querySelector('.settings-account-plan strong').textContent=owned?.kind==='classroom'?'Free educator plan':'Free family plan';
+ const owned=s.groups.find(g=>g.owner);
  box.append(make('p','Choose a free plan. Family groups include 2 accounts total; educator groups include 3. Each account keeps its own boards. Linking shares your account email and only dates and values you choose.'));
  const plans=make('div');plans.className='linked-actions';box.append(plans);for(const [kind,label] of [['family','Free family · 2 accounts'],['classroom','Free educator · 3 accounts']]){const b=button(label,async()=>{await Links.change('plan',{kind});render();},plans);b.setAttribute('aria-pressed',String(owned?.kind===kind));}
  const join=make('a','Enter a link code →');join.href=new URL('../link/',import.meta.url);box.append(join);

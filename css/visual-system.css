@@ -92,3 +92,5 @@
 .calm-ui .portal-dialog,.calm-ui .cloud-dialog{background:var(--ui-canvas);color:var(--ui-ink)}
 }
 @media screen{.calm-ui #visual-navigation>a[data-tool]{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:center;column-gap:10px;box-sizing:border-box;min-height:44px;padding:10px;line-height:20px}.calm-ui #visual-navigation .nav-icon{width:20px;height:20px;line-height:20px;display:grid;place-items:center}.calm-ui #visual-navigation .sidebar-heading{margin:20px 10px 5px;padding:0;line-height:14px}.calm-ui.sidebar-collapsed #visual-navigation>a[data-tool]{grid-template-columns:20px;justify-content:center;padding:10px 0}}
+/* The beta badge and report action wrap with the header on small screens. */
+@media(max-width:760px){.calm-ui .workspace-header,.calm-ui .app-header{flex-wrap:wrap;gap:8px}.calm-ui .workspace-header .routines-brand,.calm-ui .app-header .routines-brand{flex:1 1 150px;min-width:100px}.calm-ui .beta-badge{margin:0 4px}.calm-ui .bug-report-button{margin:0 2px!important}}

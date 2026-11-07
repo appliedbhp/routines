@@ -22,9 +22,11 @@
 <p id="searchStatus" role="status"></p>
 <div id="searchResult"></div>
 </div>
+<section id="bugLog" class="portal-panel"><h2>Bug-fixing log</h2><p>Reports are sorted by priority, then oldest first. “Can’t complete my task” starts as High.</p><label>Show <select id="bugFilter"><option value="open">Open reports</option><option value="closed">Fixed / closed</option><option value="all">All reports</option></select></label> <button id="bugRefresh" type="button">Refresh reports</button><p id="bugLogStatus" role="status"></p><div id="bugReports"></div><button id="bugMore" type="button" hidden>Load more reports</button></section><script type="module" src="bugs.js"></script>
 <section id="visualLibrary" class="portal-panel"></section>
-<div class="portal-panel"><h2>Billing</h2><p>Connect Stripe billing to track subscriptions, seat counts, and payouts here.</p></div>
+<div class="portal-panel"><h2>Billing</h2><p>Beta lifetime purchases are managed in Stripe. <a href="../beta/">View beta offers</a>.</p></div>
 </section>
 </main>
+<script type="module" src="../bugs/widget.js"></script>
 </body>
 </html>

@@ -12,6 +12,7 @@ const handler=globalThis.CloudBoardHandler.createHandler({
   const {data,error}=await admin.auth.getUser(header.slice(7));
   return error?null:data.user;
  },
+ getLimit:async(user:any)=>{const {data,error}=await admin.rpc('routine_beta_action',{caller:user.id,action:'state',args:{}});if(error)throw error;return data.boardLimit;},
  insert:async(row:unknown)=>{
   const {data,error}=await admin.from('routine_cloud_boards').insert(row).select().single();
   if(error?.code==='23505')return null;if(error)throw error;return data;
