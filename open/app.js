@@ -1,4 +1,8 @@
 import * as Local from '../js/local-files.js';
+let installPrompt;
+addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;document.getElementById('installRoutines').hidden=false;});
+document.getElementById('installRoutines').onclick=async()=>{if(!installPrompt)return;try{await installPrompt.prompt();const result=await installPrompt.userChoice;document.getElementById('installStatus').textContent=result.outcome==='accepted'?'Routines installation requested. Follow your browser’s prompts.':'You can install later from the browser menu.';}catch{document.getElementById('installStatus').textContent='Use your browser’s Install app option.';}finally{installPrompt=null;document.getElementById('installRoutines').hidden=true;}};
+addEventListener('appinstalled',()=>{document.getElementById('installRoutines').hidden=true;document.getElementById('installStatus').textContent='Routines is installed. Set it as the default app for .abhp files using the steps below.';});
 await import('../js/audience.js');
 globalThis.ABHPFileScriptURL=new URL('../js/abhp-files.js',import.meta.url).href;
 await import(globalThis.ABHPFileScriptURL);
@@ -10,7 +14,7 @@ globalThis.ABHPPageOpen=async files=>{
  try{await ABHPFiles.route(files[0]);}catch(e){status.textContent=e instanceof SyntaxError?'This is not a readable ABHP or JSON file.':e.message;}
 };
 el('openFile').onchange=e=>{if(e.target.files.length)ABHPPageOpen(e.target.files);e.target.value='';};
-if('launchQueue' in window)launchQueue.setConsumer(async p=>{try{if(p.files.length)await ABHPPageOpen([await p.files[0].getFile()]);}catch(e){el('openStatus').textContent=e.message;}});
+if('launchQueue' in window)launchQueue.setConsumer(async p=>{try{if(p.files?.length)await ABHPPageOpen([await p.files[0].getFile()]);}catch(e){el('openStatus').textContent=e.message;}});
 let revision=0,currentFolder=null,shownAccount=null;
 function item(list,title,action){const li=document.createElement('li'),name=document.createElement('span'),button=document.createElement('button');name.textContent=title;button.type='button';button.textContent='Open';button.setAttribute('aria-label','Open '+title);button.onclick=async()=>{button.disabled=true;try{await action();}catch(e){el('openStatus').textContent=e.message;}finally{button.disabled=false;}};li.append(name,button);list.append(li);}
 async function refresh(){

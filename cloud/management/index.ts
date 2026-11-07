@@ -1,6 +1,7 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.57.4';
 import Stripe from 'npm:stripe@23.0.0';
 import {uuid,sequence,discount,emailText,SITE} from './model.mjs';
+import {sendInvitationBatch} from './invitations.mjs';
 const db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const stripe=new Stripe(Deno.env.get('ROUTINES_API_KEY')||Deno.env.get('STRIPE_SECRET_KEY')||'missing',{apiVersion:'2026-09-30.endive',stripeContext:'acct_1UIYQeIiI1uuEHpt'});
 const prices=['price_1UZ0uaIiI1uuEHptwAaCOmr0','price_1UZ0ucIiI1uuEHptKqXXBbjp'];
@@ -60,8 +61,17 @@ Deno.serve(async req=>{
   const caller=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+bearer}},auth:{persistSession:false,autoRefreshToken:false}});
   const allowed=await caller.rpc('routines_is_administrator');if(allowed.error||allowed.data!==true)return reply(403,{error:'Administrator access required.'});
   const limit=checked(await db.rpc('routine_beta_action',{caller:null,action:'limit',args:{bucket:'management:'+user.id,max:120,seconds:3600}}));if(!limit.allowed)return reply(429,{error:'Please wait before trying again.'});
+  if(body.action==='invite-send'){
+   const store={
+    get:async(id:string)=>checked(await db.from('routine_admin_invitations').select().eq('id',id).maybeSingle()),
+    create:async(row:any)=>{checked(await db.from('routine_admin_invitations').upsert(row,{onConflict:'id',ignoreDuplicates:true}));},
+    update:async(id:string,patch:any)=>{checked(await db.from('routine_admin_invitations').update(patch).eq('id',id));}
+   };
+   const result=await sendInvitationBatch(body,user.id,{store,apiKey:Deno.env.get('RESEND_API_KEY')});
+   return reply(200,result);
+  }
   if(body.action==='list'){
-   const tables:Record<string,string>={sequences:'routine_admin_sequences',deliveries:'routine_admin_deliveries',discounts:'routine_admin_discounts',audit:'routine_admin_audit'};
+   const tables:Record<string,string>={invitations:'routine_admin_invitations',sequences:'routine_admin_sequences',deliveries:'routine_admin_deliveries',discounts:'routine_admin_discounts',audit:'routine_admin_audit'};
    const table=tables[body.section];if(!table)throw Error('Choose a valid section.');
    const order=body.section==='deliveries'?'due_at':'created_at';let query=db.from(table).select('*',{count:'exact'}).order(order,{ascending:false}).range(Math.max(0,Number(body.skip)||0),Math.max(0,Number(body.skip)||0)+49);
    const result=await query;checked(result);return reply(200,{rows:result.data,total:result.count});
