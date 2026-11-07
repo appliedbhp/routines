@@ -117,3 +117,20 @@
 /* Visitor links sit beside the brand; account tools stay at the right. */
 .calm-ui .workspace-header .visitor-nav,.calm-ui .app-header .visitor-nav{order:3;display:flex;flex-direction:row;align-items:center;gap:4px;margin:0;padding:0;border:0;flex-shrink:0}.calm-ui .workspace-header .visitor-nav[hidden],.calm-ui .app-header .visitor-nav[hidden]{display:none!important}.calm-ui .workspace-header .visitor-nav button,.calm-ui .app-header .visitor-nav button{width:auto;min-height:40px;padding:8px 12px;gap:7px;font-size:13px}.calm-ui .workspace-header .visitor-nav .nav-label,.calm-ui .app-header .visitor-nav .nav-label{display:inline}.calm-ui .workspace-header .visitor-nav svg,.calm-ui .app-header .visitor-nav svg{width:18px;height:18px;flex:0 0 18px}
 @media(max-width:760px){.calm-ui .workspace-header .visitor-nav,.calm-ui .app-header .visitor-nav{order:3;flex:1 0 100%;justify-content:center;padding:4px 0}.calm-ui .workspace-header .visitor-nav button,.calm-ui .app-header .visitor-nav button{flex:1;justify-content:center}.calm-ui .workspace-header:has(.visitor-nav:not([hidden]))::after,.calm-ui .app-header:has(.visitor-nav:not([hidden]))::after{display:none}}
+/* Quiet scrolling and a resizable desktop navigation edge. */
+@media screen {
+ .calm-ui .workspace-sidebar{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:transparent transparent;overscroll-behavior:contain}
+ .calm-ui .workspace-sidebar:hover,.calm-ui .workspace-sidebar:focus-within{scrollbar-color:color-mix(in srgb,var(--ui-muted,#65748a) 40%,transparent) transparent}
+ .workspace-sidebar::-webkit-scrollbar{width:5px}.workspace-sidebar::-webkit-scrollbar-track{background:transparent}.workspace-sidebar::-webkit-scrollbar-thumb{background:transparent;border-radius:8px}.workspace-sidebar:hover::-webkit-scrollbar-thumb,.workspace-sidebar:focus-within::-webkit-scrollbar-thumb{background:#94a3b866}
+ .sidebar-resize-handle{display:none}
+}
+@media screen and (min-width:761px){
+ body.visual-workspace.calm-ui:not(.sidebar-collapsed){--sidebar-width:clamp(200px,var(--preferred-sidebar-width,218px),min(420px,45vw))}
+ .calm-ui:not(.sidebar-collapsed) .sidebar-resize-handle{display:block;position:fixed;left:calc(var(--sidebar-width) - 1px);top:0;bottom:0;width:10px;z-index:35;cursor:col-resize;touch-action:none;outline:none}
+ .sidebar-resize-handle::after{content:'';position:absolute;left:0;top:calc(50% - 24px);width:3px;height:48px;border-radius:4px;background:var(--ui-muted,#65748a);opacity:.2;transition:opacity .15s,background .15s}
+ .sidebar-resize-handle:hover::after,.sidebar-resize-handle:focus-visible::after,.sidebar-resizing .sidebar-resize-handle::after{opacity:1;background:var(--ui-blue,#3185fc)}
+ .sidebar-resize-handle:focus-visible{background:color-mix(in srgb,var(--ui-blue,#3185fc) 12%,transparent)}
+ .sidebar-resizing,.sidebar-resizing *{cursor:col-resize!important;user-select:none!important}.sidebar-resizing .workspace-sidebar{transition:none}
+}
+@media(forced-colors:active){.calm-ui .workspace-sidebar{scrollbar-color:auto}.sidebar-resize-handle::after{background:CanvasText;opacity:1}}
+@media print{.sidebar-resize-handle{display:none!important}}

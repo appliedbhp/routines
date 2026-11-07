@@ -104,6 +104,7 @@
   document.addEventListener('keydown',event=>{if(event.key!=='Tab'||!mobile.matches||collapsed||document.querySelector('dialog[open]'))return;const controls=[...sidebar.querySelectorAll('a[href],button,input')].filter(node=>!node.hidden);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
   mobile.addEventListener('change',event=>{collapsed=event.matches;update();});
   update();
+  import(new URL('js/sidebar-size.js',root).href).then(m=>m.mountSidebarSize(sidebar));
   if(document.body.dataset.planner){const mindfulScript=document.createElement('script');mindfulScript.src=new URL('planning/mindful.js',root);document.head.append(mindfulScript);}
   const valuesScript=document.createElement('script');valuesScript.type='module';valuesScript.src=new URL('cloud/values.js',root).href;document.head.append(valuesScript);
   import(new URL('cloud/links.js',root).href);
