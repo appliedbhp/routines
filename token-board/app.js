@@ -95,7 +95,7 @@ function showChoices(icons){
 async function renderLibrary(){
  const revision=++searchRevision,source=$('pictureSource').value,search=$('pictureSearch').value.trim();
  const extended=!!globalThis.RoutinesPlan?.extendedLibrary;
- if(!['mulberry','abhp'].includes(source)&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose Mulberry or ABHP to browse free pictures, or see plans in Settings.';return;}
+ if(!search&&!['mulberry','abhp'].includes(source)&&!extended){$('iconChoices').replaceChildren();$('pickerStatus').textContent='The extended library is included with Family or Classroom. Choose Mulberry or ABHP to browse free pictures, or see plans in Settings.';return;}
  let failed=0;
  $('characterStyle').hidden=$('characterStyleLabel').hidden=source!=='dicebear';
  $('searchForm').hidden=false;$('moreCharacters').hidden=!!search||!['dicebear','pixabots'].includes(source);
@@ -118,7 +118,7 @@ async function renderLibrary(){
   if(search){$('pickerCredit').textContent=extended?'Results from Mulberry, ABHP, Google Material Symbols, and OpenMoji. Credits appear on your board.':'Mulberry and ABHP pictures. Extended libraries are included with Family or Classroom.';$('pickerCredit').removeAttribute('href');}
  }catch(error){if(revision===searchRevision)$('pickerStatus').textContent='Pictures could not load. Try again, or choose Characters for pictures available without a picture service.';}
 }
-async function openPicker(index){try{await (await import('../beta/api.js')).plan();}catch{globalThis.RoutinesPlan=null;}selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value='';renderLibrary();picker.showModal();}
+async function openPicker(index){try{await (await import('../beta/api.js')).plan();}catch{globalThis.RoutinesPlan=null;}selectedToken=index;$('applyAll').checked=false;$('applyAll').disabled=index===-1;$('pictureSearch').value=(index===-1?$('rewardText').value:tokenBoard.tokens[index]?.icon.label||'').trim();picker.showModal();renderLibrary();}
 function assign(value){const icon=TokenData.icon(value);if(selectedToken===-1)tokenBoard.rewardIcon=icon;else if($('applyAll').checked)tokenBoard.tokens.forEach(t=>t.icon={...icon});else tokenBoard.tokens[selectedToken].icon=icon;searchRevision++;picker.close();renderTokens(selectedToken);}
 $('pictureSource').onchange=()=>{$('pictureSearch').value='';renderLibrary();};$('iconCategory').onchange=()=>{$('pictureSearch').value='';renderLibrary();};
 $('searchForm').onsubmit=event=>{event.preventDefault();renderLibrary();};$('moreCharacters').onclick=()=>{characterPage++;renderLibrary();};$('closePicker').onclick=()=>{searchRevision++;picker.close();};

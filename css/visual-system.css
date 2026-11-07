@@ -152,3 +152,11 @@
  body[data-site-theme="eighties"] .workspace-header,body[data-site-theme="eighties"] .app-header{border-bottom:3px solid #f4ec42}
 }
 @media screen and (max-width:760px){.calm-ui #visual-navigation>a[data-tool],.calm-ui.sidebar-collapsed #visual-navigation>a[data-tool]{min-height:44px}}
+
+/* Picture searches use the same blurred backdrop on every visual tool. */
+@media screen{
+ body #iconModal{background:#192d4b66;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:300}
+ body #iconPicker::backdrop,body #tokenPicker::backdrop{background:#192d4b66;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+ .subject-image[role="button"]{cursor:pointer}
+ .subject-image[role="button"]:focus-visible{outline:3px solid var(--ui-blue,#3185fc);outline-offset:3px;border-radius:5px}
+}

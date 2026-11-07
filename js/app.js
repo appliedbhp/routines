@@ -281,17 +281,23 @@ function openIconPicker(stepId) {
   state.iconPickerTargetId = stepId;
   const modal = document.getElementById("iconModal");
   modal.hidden = false;
-  document.getElementById("iconSearchInput").value = "";
+  clearTimeout(iconSearchDebounce);
+  const term = state.steps.find(step => step.id === stepId)?.name.trim() || "";
+  document.getElementById("iconSearchInput").value = term;
   document.getElementById("iconResults").innerHTML = "";
   document.getElementById("iconSearchInput").focus();
+  runIconSearch(term);
 }
 
 function closeIconPicker() {
+  clearTimeout(iconSearchDebounce);
+  iconSearchRevision++;
   document.getElementById("iconModal").hidden = true;
   state.iconPickerTargetId = null;
 }
 
 let iconSearchDebounce = null;
+let iconSearchRevision = 0;
 function onIconSearchInput(e) {
   clearTimeout(iconSearchDebounce);
   const term = e.target.value;
@@ -299,6 +305,8 @@ function onIconSearchInput(e) {
 }
 
 async function runIconSearch(term) {
+  const revision = ++iconSearchRevision;
+  const targetId = state.iconPickerTargetId;
   const resultsEl = document.getElementById("iconResults");
   if (!term.trim()) {
     resultsEl.innerHTML = "";
@@ -306,6 +314,7 @@ async function runIconSearch(term) {
   }
   resultsEl.innerHTML = `<p class="icon-search-status">Searching…</p>`;
   const results = await SymbolLibrary.search(term);
+  if (revision !== iconSearchRevision || targetId !== state.iconPickerTargetId || document.getElementById("iconModal").hidden) return;
   resultsEl.innerHTML = "";
   if (!results.length) {
     resultsEl.innerHTML = `<p class="icon-search-status">No symbols found for "${escapeHTML(term)}".</p>`;
