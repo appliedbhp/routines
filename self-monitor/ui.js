@@ -44,9 +44,11 @@ const MonitorLayout = (() => {
   text('nextCheckin',state.stage==='finished'?'All check-ins complete.':state.stage==='student'?'Take a moment to check in.':state.stage==='adult'?'Waiting for the adult’s rating.':`${state.active?'Next':'First'} check-in ${state.stage==='paused'?'after resuming:':'in'} ${timeText(state.next)}`);
   $('sessionPrint').disabled=$('printExit').disabled;
   $('start').hidden=state.active;
+  $('reset').hidden=!['paused','finished'].includes(state.stage);
   projectionLayout();
  }
  const baseRender=render;render=function(){baseRender();update();};
+ $('useSystemTheme').onclick=()=>{const theme=globalThis.RoutineAudience?.read().theme||'classic';$('theme').value=theme;$('theme').dispatchEvent(new Event('change',{bubbles:true}));};
  $('startFullscreen').onclick=()=>$('project').click();
  $('sessionPrint').onclick=()=>$('printExit').click();
  document.addEventListener('input',update);document.addEventListener('change',update);

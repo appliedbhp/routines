@@ -186,7 +186,7 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
  .monitor-setup .section-heading h3{font-size:16px}
  .monitor-appearance>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:650;min-height:28px}
  .monitor-appearance[open]>summary{margin-bottom:16px}
- .monitor-appearance:not([open])>*:not(summary){display:none}
+ details.monitor-appearance:not([open])>*:not(summary){display:none}
  .monitor-setup .start-footer{padding:16px 0;margin-top:0;gap:12px}
  .monitor-setup .start-buttons{gap:10px}
  body[data-support=self-monitor]:not(.projection) .session{top:100px}
@@ -195,3 +195,5 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
  @media(max-width:1050px){.monitor-workspace{grid-template-columns:minmax(0,1fr)}body[data-support=self-monitor]:not(.projection) .session{position:relative;top:0}.monitor-workspace>#sessionView{margin-top:8px}.monitor-setup .start-buttons{flex-direction:row}}
  @media(max-width:540px){.monitor-workspace{gap:16px}.monitor-setup .start-buttons{flex-direction:column}.monitor-setup .setup-card{padding:14px}}
 }
+
+#sessionView #reset[hidden]{display:none!important}.monitor-appearance h3{margin:0 0 8px;font-size:16px}.monitor-appearance .appearance-fields{flex-wrap:wrap;gap:12px}.monitor-appearance #useSystemTheme{align-self:flex-end;min-height:40px}
