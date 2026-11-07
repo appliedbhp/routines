@@ -48,11 +48,11 @@ const audience=globalThis.RoutineAudience;
 import('../cloud/preferences.js');
 const layout=make('div');layout.className='settings-layout';
 const settingsNav=make('nav');settingsNav.setAttribute('aria-label','Settings sections');
-const accountPanel=make('section'),userPanel=make('section'),storagePanel=make('section');storagePanel.id='settingsStorage';accountPanel.id='settingsAccount';userPanel.id='settingsUser';
-const accountTab=make('button','Account'),userTab=make('button','User'),storageTab=make('button','Storage');
-const settingsPairs=[[accountTab,accountPanel],[userTab,userPanel],[storageTab,storagePanel]];
-for(const [button,panel] of settingsPairs){button.type='button';button.setAttribute('aria-controls',panel.id);button.onclick=()=>{for(const [b,p] of settingsPairs){p.hidden=p!==panel;b.setAttribute('aria-pressed',String(p===panel));}if(panel===storagePanel)globalThis.refreshStorageSettings?.();};settingsNav.append(button);}
-const panels=make('div');panels.append(accountPanel,userPanel,storagePanel);layout.append(settingsNav,panels);settingsDialog.append(layout);accountTab.click();
+const accountPanel=make('section'),securityPanel=make('section'),linksPanel=make('section'),themePanel=make('section'),userPanel=make('section'),cloudPanel=make('section'),computerPanel=make('section');
+const sections=[['Account',accountPanel],['Security',securityPanel],['Links',linksPanel],['Theme',themePanel],['User',userPanel],['Cloud',cloudPanel],['Computer',computerPanel]];
+const settingsPairs=sections.map(([name,panel])=>{panel.id='settings'+name;return [make('button',name),panel];});
+for(const [button,panel] of settingsPairs){button.type='button';button.setAttribute('aria-controls',panel.id);button.onclick=()=>{for(const [b,p] of settingsPairs){p.hidden=p!==panel;b.setAttribute('aria-pressed',String(p===panel));}if(panel===cloudPanel||panel===computerPanel)globalThis.refreshStorageSettings?.();if(panel===userPanel)globalThis.refreshCharacterSettings?.();};settingsNav.append(button);}
+const panels=make('div');panels.append(...sections.map(([,p])=>p));layout.append(settingsNav,panels);settingsDialog.append(layout);settingsPairs[0][0].click();
 accountPanel.append(make('h3','Account'));
 const identity=make('dl'),username=make('dd','Not signed in'),email=make('dd','Not signed in');identity.append(make('dt','Username'),username,make('dt','Email'),email);
 const password=make('a','Set or reset password');password.href=new URL('account/',root);password.onclick=()=>{try{sessionStorage.setItem('routines.account.mode','reset');}catch{}};
@@ -63,14 +63,18 @@ const accountStatus=make('p');accountStatus.setAttribute('role','status');
 logout.onclick=async()=>{logout.disabled=true;try{const client=await accountClient();const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;await loadAccount();accountStatus.textContent='Logged out on this device.';}catch{accountStatus.textContent='Could not log out. Check your connection and try again.';}finally{logout.disabled=false;}};
 const planCard=make('section');planCard.className='settings-account-plan';planCard.setAttribute('aria-label','Account plan');
 const planName=make('strong','Sign in to view your plan'),planDetails=make('p','Free accounts include 2 links and 2 each: cloud boards, goals, dates, and values.');
-const upgrade=make('a','View beta & lifetime offers');upgrade.href=new URL('beta/',root);upgrade.setAttribute('aria-describedby','accountUpgradeNote');
+const upgrade=make('a','Upgrade · view plans');upgrade.href=new URL('beta/',root);upgrade.setAttribute('aria-describedby','accountUpgradeNote');
 const upgradeNote=make('p','Family and Classroom are $15 lifetime each. Classroom requires educator approval. No recurring charges.');upgradeNote.id='accountUpgradeNote';upgradeNote.className='portal-note';
 planCard.append(make('h4','Your plan'),planName,planDetails,upgrade,upgradeNote);
-accountPanel.append(identity,planCard,make('h4','Password'),make('p','Passwords are never displayed. Use the secure email link to set or reset yours.'),password,make('h4','Privacy'),privacy,make('hr'),login,logout,accountStatus);
-async function loadAccount(){try{const client=await accountClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;let user=null;if(sessionData.session){const {data,error}=await client.auth.getUser();if(error)throw error;user=data.user;}username.textContent=user?(user.user_metadata?.username||user.user_metadata?.display_name||'Not set (sign in with email)'):'Not signed in';email.textContent=user?.email||'Not signed in';login.hidden=!!user;logout.hidden=!user;const access=user?await plan():null;planName.textContent=access?betaPlanName(access):'Sign in to view your plan';planDetails.textContent=access?access.linkLimit+' links; '+access.boardLimit+' each: cloud boards, goals, dates, and values. '+(access.betaActive?'Free beta access through '+new Date(access.expiresAt).toLocaleDateString()+'.':''):'Free accounts include 2 links and 2 each: cloud boards, goals, dates, and values.';}catch{planName.textContent='Reconnect to view your plan';username.textContent='Unavailable';email.textContent='Sign in or reconnect to view your account';login.hidden=false;logout.hidden=true;}}
-import('./linked-settings.js').then(m=>m.mount(accountPanel));
-import('./email-preferences.js').then(m=>m.mount(accountPanel));
-import('./praise-settings.js').then(m=>m.mount(userPanel));
+accountPanel.append(identity,planCard,make('h4','Privacy'),privacy,make('hr'),login,logout,accountStatus);
+securityPanel.append(make('h3','Security'),make('h4','Password'),make('p','Passwords are never displayed. Use the secure email link to set or reset yours.'),password);
+linksPanel.append(make('h3','Links'));themePanel.append(make('h3','Theme'));
+const downgrade=make('button','Request downgrade');downgrade.type='button';downgrade.hidden=true;planCard.append(downgrade);
+downgrade.onclick=async()=>{if(!confirm('Send a request to move your account to Free? Your plan stays unchanged until the request is reviewed. This does not request a refund.'))return;downgrade.disabled=true;try{const {betaRequest}=await import('../beta/api.js');await betaRequest('bug',{page:'/account/',description:'[Plan change request] Please review my request to downgrade to Free. I understand my current plan remains active until reviewed and this is not a refund request.',impact:'workaround'});accountStatus.textContent='Downgrade request sent. Your current access is unchanged.';}catch(e){accountStatus.textContent=e.message;}finally{downgrade.disabled=false;}};
+async function loadAccount(){try{const client=await accountClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;let user=null;if(sessionData.session){const {data,error}=await client.auth.getUser();if(error)throw error;user=data.user;}username.textContent=user?(user.user_metadata?.username||user.user_metadata?.display_name||'Not set (sign in with email)'):'Not signed in';email.textContent=user?.email||'Not signed in';login.hidden=!!user;logout.hidden=!user;const access=user?await plan():null;downgrade.hidden=!access||access.plan==='free';planName.textContent=access?betaPlanName(access):'Sign in to view your plan';planDetails.textContent=access?access.linkLimit+' links; '+access.boardLimit+' each: cloud boards, goals, dates, and values. '+(access.betaActive?'Free beta access through '+new Date(access.expiresAt).toLocaleDateString()+'.':''):'Free accounts include 2 links and 2 each: cloud boards, goals, dates, and values.';}catch{planName.textContent='Reconnect to view your plan';username.textContent='Unavailable';email.textContent='Sign in or reconnect to view your account';login.hidden=false;logout.hidden=true;}}
+import('./linked-settings.js').then(m=>m.mount(linksPanel));
+import('./email-preferences.js').then(m=>m.mount(securityPanel));
+import('./praise-settings.js').then(m=>m.mount(themePanel));
 userPanel.append(make('h3','User'));
 const ageLabel=make('label','Default age group'),age=make('select');age.id='audienceAge';
 for(const [value,profile] of Object.entries(audience.profiles))age.add(new Option(profile.label,value));ageLabel.append(age);
@@ -83,9 +87,9 @@ function savePreferences(){audience.save({...audience.read(),age:age.value,textO
 textOnly.onchange=theme.onchange=savePreferences;
 age.onchange=async()=>{savePreferences();try{if(await globalThis.RoutineAccountPreferences?.saveAge(age.value))saved.textContent='Age preference saved to your account.';}catch{saved.textContent='Saved on this browser. Could not update your account; try again when connected.';}};
 addEventListener('routines-audience-change',syncPreferences);addEventListener('storage',event=>{if(event.key===audience.key||event.key===null)syncPreferences();});syncPreferences();
-userPanel.append(ageLabel,themeLabel,textLabel,note,saved);
+themePanel.append(ageLabel,themeLabel,textLabel,note,saved);
 settings.onclick=()=>{settingsDialog.showModal();loadAccount();globalThis.refreshCharacterSettings?.();globalThis.refreshStorageSettings?.();};
-import('./settings-extras.js').then(m=>m.mount({userPanel,storagePanel,settingsDialog,root}));
+import('./settings-extras.js').then(m=>m.mount({userPanel,themePanel,cloudPanel,computerPanel,settingsDialog,root}));
 
 const preview=modal('Portal preview');
 const context=make('p');context.className='portal-note';
