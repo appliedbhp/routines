@@ -40,21 +40,24 @@ if(host){
  field('usage_rights').defaultValue='Original ABHP artwork: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/deed.en). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice; link https://getadhd.care and https://appliedbehavioral.health. Indicate changes and share adaptations under the same license. Third-party source materials retain their original licenses and attribution.';
  let catalog=[],variants=new Map(),busy=false,sessionRevision=0,canWrite=false,canGenerate=false,timer;
  const ages=()=>[...q('[data-age-options]').querySelectorAll('input:checked')].map(input=>input.value);
+ let savedCharacter=null;
+ function readCharacter(){try{const raw=localStorage.getItem('routines.my-character.v1');return raw&&globalThis.CharacterModel?CharacterModel.normalize(JSON.parse(raw)):null;}catch{return null;}}
+ savedCharacter=readCharacter();
  const faces=()=>['default'];
- const selectionFor=(age,skin=field('skin_tone').value,gender=field('gender_variant').value)=>({reference_style:field('reference_style').value,skin_tone:skin,gender_variant:gender,grid_position:gridPosition(field('reference_style').value,skin,gender,age),age_strand:age,background_mode:field('background_mode').value,setting:field('setting').value});
- const setupKey=()=>JSON.stringify([field('reference_style').value,field('action').value,field('title').value,field('background_mode').value,field('setting').value,field('generation_prompt').value]);
+ const selectionFor=(age,skin=field('skin_tone').value,gender=field('gender_variant').value)=>({reference_style:field('reference_style').value,...(field('reference_style').value==='my-character'?{}:{skin_tone:skin,gender_variant:gender}),grid_position:gridPosition(field('reference_style').value,skin,gender,age),age_strand:age,background_mode:field('background_mode').value,setting:field('setting').value});
+ const setupKey=()=>JSON.stringify([field('reference_style').value,field('action').value,field('title').value,field('background_mode').value,field('setting').value,field('generation_prompt').value,field('reference_style').value==='my-character'?savedCharacter:null]);
  const objectMode=()=>field('visual_mode').value==='object';
  const selected=()=>{
   if(objectMode()){
    if(!variants.has('object'))variants.set('object',{key:'object',age:'shared',face:null,mode:'object',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
    return [variants.get('object')];
   }
-  return ages().flatMap(age=>faces().flatMap(face=>(field('all_characters').checked?genderChoices:[field('gender_variant').value]).flatMap(gender=>(field('all_characters').checked?toneChoices:[field('skin_tone').value]).map(skin=>{
+  return ages().flatMap(age=>faces().flatMap(face=>(field('reference_style').value==='my-character'?['saved']:(field('all_characters').checked?genderChoices:[field('gender_variant').value])).flatMap(gender=>(field('reference_style').value==='my-character'?['reference']:(field('all_characters').checked?toneChoices:[field('skin_tone').value])).map(skin=>{
   const key=[age,face,gender,skin,setupKey()].join(':');
-  if(!variants.has(key))variants.set(key,{key,age,face,gender,skin,selection:selectionFor(age,skin,gender),mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
+  if(!variants.has(key))variants.set(key,{key,age,face,gender,skin,selection:selectionFor(age,skin,gender),savedCharacter:field('reference_style').value==='my-character'?savedCharacter:null,mode:'character',id:crypto.randomUUID(),image:null,prompt:'',alt:'',source:'',reviewed:false,ready:false,published:false,url:'',referenceId:null,state:'Waiting',error:'',started:0});
   return variants.get(key);
  }))));};
- const label=row=>row.mode==='object'?'Object · All ages':sheetFor(row.selection.reference_style).name+' · Ages '+row.age+' · '+row.gender+' · '+row.skin;
+ const label=row=>row.mode==='object'?'Object · All ages':row.selection.reference_style==='my-character'?'My Character · Ages '+row.age:sheetFor(row.selection.reference_style).name+' · Ages '+row.age+' · '+row.gender+' · '+row.skin;
  const el=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
  function say(text,error=false){
   q('[data-status]').textContent=text;q('[data-feedback]').dataset.error=String(error);
@@ -128,6 +131,13 @@ if(host){
     if(size[0]!==size[1]||size[0]>4096)throw Error('Choose a square PNG up to 4096 × 4096.');
     if(revision!==sessionRevision)return;
     Object.assign(row,{image:String(data).split(',')[1],source:'Uploaded original artwork',prompt:promptFor(row),referenceId:null,state:'Ready to review',error:'',reviewed:false});
+    if(row.selection?.reference_style==='my-character'){
+     const ref=await personalReference(row);
+     const bytes=Uint8Array.from(atob(ref.image),c=>c.charCodeAt(0));
+     const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+     row.referenceId='my-character-'+ref.style+'-'+hash;
+    }
+    if(revision!==sessionRevision)return;
     render();say('Artwork loaded for '+label(row)+'.');
    });card.append(labeled('Or upload a square PNG',upload));
    if(row.url){const link=el('a','View saved visual ↗');link.href=row.url;link.target='_blank';link.rel='noopener noreferrer';card.append(link);}
@@ -163,10 +173,12 @@ if(host){
  }
  function updateReference(){
   const sheet=sheetFor(field('reference_style').value),age=ages()[0]||'12-18',position=gridPosition(sheet.id,field('skin_tone').value,field('gender_variant').value,age);
-  q('[data-reference-preview]').src=sheet.url;q('[data-reference-preview]').alt=sheet.name+' character stylesheet';q('[data-reference-link]').href=sheet.url;
+  for(const name of ['skin_tone','gender_variant','all_characters'])field(name).closest('label').hidden=!!sheet.personal;
+  const personalSVG=sheet.personal&&savedCharacter?CharacterRenderer.render({...savedCharacter,backgroundColor:'transparent'}):'';
+  q('[data-reference-preview]').src=personalSVG?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(personalSVG):sheet.url;q('[data-reference-preview]').alt=sheet.name+' character stylesheet';q('[data-reference-link]').href=sheet.personal?'../my-character/':sheet.url;q('[data-reference-link]').textContent=sheet.personal?'Edit My Character ↗':'Open full stylesheet ↗';
   q('[data-position]').textContent='Grid position: '+position.replaceAll('-',' ')+(ages().length>1&&sheet.classic?' (Classic column follows each selected age)':'');
-  q('[data-reference-note]').textContent=sheet.classic?'Classic uses age columns and boy/girl rows. Skin tone is adapted; nonbinary uses the style without claiming a matching portrait.':'Rows: light, medium, dark. Columns: male, female, nonbinary. Click a figure or use the selectors.';
-  q('[data-character-grid]').hidden=!!sheet.classic;
+  q('[data-reference-note]').textContent=sheet.personal?'Uses your character saved on this device. '+CharacterRenderer.credit(savedCharacter?.style):sheet.classic?'Classic uses age columns and boy/girl rows. Skin tone is adapted; nonbinary uses the style without claiming a matching portrait.':'Rows: light, medium, dark. Columns: male, female, nonbinary. Click a figure or use the selectors.';
+  q('[data-character-grid]').hidden=!!sheet.classic||!!sheet.personal;
   for(const button of q('[data-character-grid]').children)button.setAttribute('aria-pressed',String(button.dataset.position===position));
   for(const button of q('[data-style-choices]').children)button.setAttribute('aria-pressed',String(button.dataset.style===sheet.id));
  }
@@ -176,8 +188,8 @@ if(host){
  }
  for(const sheet of styleSheets){
   const button=el('button');button.type='button';button.dataset.style=sheet.id;button.setAttribute('aria-label',sheet.name+' stylesheet');
-  const image=el('img');image.src=sheet.url;image.alt='';image.loading='lazy';button.append(image,el('strong',sheet.name),el('small',sheet.description));
-  button.onclick=()=>{field('reference_style').value=sheet.id;optionsChanged();};q('[data-style-choices]').append(button);
+  const image=el('img');if(sheet.personal&&savedCharacter)image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(CharacterRenderer.render(savedCharacter));else if(sheet.url)image.src=sheet.url;else image.hidden=true;image.alt='';image.loading='lazy';button.append(image,el('strong',sheet.name),el('small',sheet.description));
+  button.onclick=()=>{if(sheet.personal){savedCharacter=readCharacter();if(!savedCharacter){say('Open My Character, create a character, and save it on this device first.',true);return;}image.hidden=false;image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(CharacterRenderer.render(savedCharacter));}field('reference_style').value=sheet.id;optionsChanged();};q('[data-style-choices]').append(button);
  }
  for(const tone of toneChoices)for(const gender of genderChoices){
   const position=gridPosition('2000s',tone,gender),button=el('button');button.type='button';button.dataset.position=position;button.setAttribute('aria-label',position.replace('-',' ')+': '+tone+' skin, '+gender);button.title=button.getAttribute('aria-label');
@@ -233,11 +245,21 @@ if(host){
   if(row.mode==='object')return template+' Shared all-age object visual; no human character or face.';
   return selectionInstructions(row.selection)+template;
  }
+ async function personalReference(row){
+  if(!row.savedCharacter)throw Error('Save a character in My Character on this device first.');
+  if(row.personalReference)return row.personalReference;
+  const svg=CharacterRenderer.render({...row.savedCharacter,backgroundColor:'transparent'}),img=new Image();
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Could not render your character reference.'));img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=1024;canvas.getContext('2d').drawImage(img,0,0,1024,1024);
+  row.personalReference={image:canvas.toDataURL('image/png').split(',')[1],style:row.savedCharacter.style||'adventurer'};
+  return row.personalReference;
+ }
  async function generateOne(row,revision){
   q('[data-review-all]').checked=false;
   row.state='Generating';row.error='';row.started=Date.now();render();
   try{
-   const result=await call({action:'generate',prompt:promptFor(row),age_strand:row.age,visual_mode:row.mode,...(row.selection||{}),...(row.face?{face_variant:row.face}:{})});
+   const personal=row.selection?.reference_style==='my-character'?await personalReference(row):null;
+   const result=await call({action:'generate',...(personal?{personal_reference:personal}:{}),prompt:promptFor(row),age_strand:row.age,visual_mode:row.mode,...(row.selection||{}),...(row.face?{face_variant:row.face}:{})});
    if(revision!==sessionRevision)return;
    Object.assign(row,{image:result.image,prompt:result.prompt,source:result.source,referenceId:result.reference_id,state:'Ready to review',error:'',reviewed:false,ready:false});
    row.alt||=(field('action').value.trim()||field('title').value.trim())+(row.mode==='character'?' · '+row.gender+' · '+row.skin:'');
@@ -282,7 +304,7 @@ if(host){
    for(const row of pending)if(!row.image||!row.alt.trim()||!row.source.trim()||!row.reviewed)throw Error('Finish the image, description, source and review for '+label(row)+'.');
    if(!q('[data-review-all]').checked)throw Error('Confirm the usage rights before saving.');
    if(!pending.length){say('All selected previews are already saved.');return;}
-   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.mode==='character'?row.selection:{}),...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,reviewed:true,rights_confirmed:true,ready:row.ready}));
+   const visuals=pending.map(row=>({id:row.id,title:field('title').value,category:field('category').value,style:field('style').value,keywords:field('keywords').value,usage_rights:field('usage_rights').value,age_strand:row.age,visual_mode:row.mode,...(row.mode==='character'?row.selection:{}),...(row.face?{face_variant:row.face}:{}),image:row.image,generation_prompt:row.prompt||promptFor(row),alt_text:row.alt,source:row.source,reference_id:row.referenceId,...(row.personalReference?{personal_reference:row.personalReference}:{}),reviewed:true,rights_confirmed:true,ready:row.ready}));
    for(const row of pending)row.state='Saving';render();
    say('Saving all '+pending.length+' previews together in small batches…');
    try{

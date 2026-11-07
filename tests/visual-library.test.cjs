@@ -209,3 +209,19 @@ test('large GitHub catalogs load through the pinned raw URL without forwarding c
  }});
  const response=await handle(request({action:'status'}));assert.equal(response.status,200);assert.equal(raw,true);
 });
+
+test('My Character generation uses supplied PNG only and retains an exact reference on publish',async()=>{
+ const {createVisualHandler}=await modulePromise;let supplied=false;
+ const personal_reference={image:png,style:'micah'};
+ const select={reference_style:'my-character',age_strand:'12-18',background_mode:'transparent'};
+ const generate=createVisualHandler({authenticate:async()=>true,openaiKey:'test',fetch:async(url,{body})=>{
+  assert.equal(url,'https://api.openai.com/v1/images/edits');assert.equal(Buffer.from(await body.get('image[]').arrayBuffer()).toString('base64'),png);assert.match(body.get('prompt'),/single saved character/);supplied=true;return new Response(JSON.stringify({data:[{b64_json:png}]}));
+ }});
+ const response=await generate(request({action:'generate',prompt:'Read a book.',...select,personal_reference}));assert.equal(response.status,200);const data=await response.json();assert.equal(supplied,true);assert.match(data.reference_id,/^my-character-micah-[a-f0-9]{64}$/);
+ const mock=githubMock(),publish=createVisualHandler({authenticate:async()=>true,githubToken:'test',fetch:mock.fetch});
+ const payload={...input,...select,personal_reference,reference_id:data.reference_id};
+ assert.equal((await publish(request(payload))).status,200);assert.equal((await publish(request(payload))).status,200);
+ assert.equal(mock.catalog()[0].character_reference.style,'micah');assert.match(mock.catalog()[0].usage_rights,/Micah Lanier/);assert.ok(mock.tree().some(f=>f.path==='references/'+data.reference_id+'.png'));
+ assert.equal((await publish(request({...payload,reference_id:'my-character-fake'}))).status,400);
+});
+test('My Character rejects unsupported reference sources before contacting image API',async()=>{const {createVisualHandler}=await modulePromise;const handler=createVisualHandler({authenticate:async()=>true,openaiKey:'test',fetch:()=>{throw Error('Should not call API');}});for(const personal_reference of [{style:'unknown',image:png},{style:'micah',image:'https://evil.test/image'}])assert.equal((await handler(request({action:'generate',reference_style:'my-character',age_strand:'12-18',prompt:'Read',personal_reference}))).status,400);});

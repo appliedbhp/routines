@@ -9,7 +9,7 @@ const required=(value,label,max=100)=>{
  if(typeof value!=='string'||!value.trim()||value.length>max)throw new VisualError('Enter '+label+'.');
  return value.trim();
 };
-export function validateRecord(input,categories,ages){
+export function validateRecord(input,categories,ages,personalReference=null){
  const title=required(input.title,'a title');
  const category=categories.find(row=>row.id===input.category);
  if(input.visual_mode!==undefined&&!['character','object'].includes(input.visual_mode))throw new VisualError('Choose character or object mode.');
@@ -43,13 +43,14 @@ export function validateRecord(input,categories,ages){
   let selection;try{selection=cleanSelection(input);}catch(error){throw new VisualError(error.message);}
   Object.assign(record,selection);
   if(input.face_variant==='blank')throw new VisualError('Stylesheet characters use expressive faces.');
-  if(input.reference_id&&input.reference_id!==referenceFor(input.reference_style).id)throw new VisualError('The stylesheet and reference do not match.');
+  if(input.reference_style!=='my-character'&&input.reference_id&&input.reference_id!==referenceFor(input.reference_style).id)throw new VisualError('The stylesheet and reference do not match.');
  }
+ if(input.reference_style==='my-character'&&(!personalReference||input.reference_id!==personalReference.id))throw new VisualError('Include the saved character used for this image.');
  if(input.reference_id){
-  const reference=[characterReference,blankCharacterReference,micahReference,...styleSheets.map(s=>referenceFor(s.id))].find(row=>row.id===input.reference_id);
+  const reference=[characterReference,blankCharacterReference,micahReference,...styleSheets.filter(s=>!s.personal).map(s=>referenceFor(s.id)),...(personalReference?[personalReference]:[])].find(row=>row.id===input.reference_id);
   if(!reference)throw new VisualError('Unknown character reference.');
   if(reference.repository_commit&&!input.reference_style)throw new VisualError('Include the stylesheet selection.');
-  if(!reference.repository_commit&&input.face_variant&&reference.id!==getCharacter(input.face_variant,reference.id===micahReference.id?input.age_strand:"").reference.id)throw new VisualError('The face and reference do not match.');
+  if(!reference.repository_commit&&!reference.personal&&input.face_variant&&reference.id!==getCharacter(input.face_variant,reference.id===micahReference.id?input.age_strand:"").reference.id)throw new VisualError('The face and reference do not match.');
   record.character_reference=reference;
   if(!record.usage_rights.includes(reference.attribution))record.usage_rights+=' '+reference.attribution;
  }
@@ -64,6 +65,15 @@ export function pngBytes(base64){
  if(!width||width!==height||width>4096)throw new VisualError('Use a square PNG up to 4096 × 4096.');
  return bytes;
 }
+
+const personalCredits={adventurer:'Adventurer by Lisa Wischofsky / DiceBear / CC BY 4.0. Custom colors and optional hair gradient by ABHP.',micah:'Micah by Micah Lanier / DiceBear / CC BY 4.0.',notionists:'Notionists by Zoish / DiceBear / CC0 1.0.','open-peeps':'Open Peeps by Pablo Stanley / DiceBear / CC0 1.0.'};
+async function personalCharacter(input){
+ if(!input||!Object.hasOwn(personalCredits,input.style))throw new VisualError('Choose and save a supported My Character first.');
+ const bytes=pngBytes(input.image),digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+ const id='my-character-'+input.style+'-'+digest;
+ return {bytes,image:input.image,reference:{id,personal:true,style:input.style,asset:'references/'+id+'.png',image_sha256:digest,source:'My Character / DiceBear',attribution:personalCredits[input.style]}};
+}
+
 export function createVisualHandler({authenticate,fetch:request=fetch,githubToken,openaiKey,imageModel='gpt-image-1.5'}){
  async function github(path,method='GET',body){
   if(!githubToken)throw new VisualError('Add VISUALS_GITHUB_TOKEN to the server secrets to connect the library.',503);
@@ -93,11 +103,12 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
   const images=await Promise.all(inputs.map(async input=>{
    const bytes=pngBytes(input.image);
    const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
-   return {input,digest};
+   const personal=input.reference_style==='my-character'?await personalCharacter(input.personal_reference):null;
+   return {input,digest,personal};
   }));
   for(let attempt=0;attempt<3;attempt++){
    const state=await snapshot();
-   const records=images.map(({input,digest})=>({input,digest,record:validateRecord(input,state.categories,state.ages)}));
+   const records=images.map(({input,digest,personal})=>({input,digest,personal,record:validateRecord(input,state.categories,state.ages,personal?.reference)}));
    if(new Set(records.map(row=>row.record.id)).size!==records.length||new Set(records.map(row=>[row.record.age_strand,row.record.face_variant||'default',row.record.gender_variant||'',row.record.skin_tone||''].join(':'))).size!==records.length)throw new VisualError('Each selected strand needs its own visual ID.');
    const pending=[];
    for(const row of records){
@@ -118,6 +129,12 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
    }
    const references=new Map(pending.filter(row=>row.record.character_reference).map(row=>[row.record.character_reference.id,row.record.character_reference]));
    for(const reference of references.values()){
+    if(reference.personal){
+     const personal=pending.find(row=>row.personal?.reference.id===reference.id).personal;
+     const blob=await github('/git/blobs','POST',{content:personal.image,encoding:'base64'});
+     files.push({path:reference.asset,mode:'100644',type:'blob',sha:blob.sha},{path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
+     continue;
+    }
     if(reference.repository_commit){
      files.push({path:'references/'+reference.id+'.json',mode:'100644',type:'blob',content:JSON.stringify(reference,null,2)+'\n'});
      continue;
@@ -168,6 +185,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     }
     const character=objectMode||selection?null:getCharacter(input.face_variant||'default',input.age_strand);
     const sheet=selection?sheetFor(selection.reference_style):null;
+    const personal=sheet?.personal?await personalCharacter(input.personal_reference):null;
     const objectInstructions='Create one nonhuman object visual for the shared all-age library. Show only the requested object and essential props. No people, body parts, faces, eyes, mouths, or anthropomorphism. Use clean flat closed shapes, medium rounded dark contours, and a palette of ink #24243B, white #FFFFFF, blue #4C8DFF, teal #2CC6B0, lavender #A78BFA, yellow #FFD447 and coral #FF6B6B as needed. No gradients, shading, shadows, texture, 3D, scenery, borders, logos, letters or numbers. Center the complete object with ten percent safe margins. Keep white objects opaque and the surrounding canvas genuinely transparent. ';
     const prompt=(objectMode?objectInstructions:selection?selectionInstructions(selection):character.instructions)+'Requested visual: '+required(input.prompt,'an image prompt',12000);
     const options={model:imageModel,prompt,size:'1024x1024',background:selection?.background_mode==='setting'?'opaque':'transparent',output_format:'png',n:1,quality:'medium'};
@@ -178,7 +196,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
      body=new FormData();
      for(const [key,value] of Object.entries({...options,input_fidelity:'high'}))body.set(key,String(value));
      let bytes;
-     if(sheet){
+     if(personal){bytes=personal.bytes;}else if(sheet){
       const referenceResponse=await request(sheet.url,{signal:AbortSignal.timeout(20000)});
       if(!referenceResponse.ok)throw new VisualError('Could not load the selected stylesheet. Try again.',502);
       bytes=new Uint8Array(await referenceResponse.arrayBuffer());
@@ -202,7 +220,7 @@ export function createVisualHandler({authenticate,fetch:request=fetch,githubToke
     }
     const data=await response.json(),image=data.data?.[0]?.b64_json;
     pngBytes(image);
-    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':sheet?' using the ABHP '+sheet.name+' stylesheet':' using the DiceBear '+character.reference.style+' reference'),reference_id:sheet?referenceFor(sheet.id).id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
+    return respond({image,prompt,source:'Generated with OpenAI '+imageModel+(objectMode?' · shared object visual':sheet?' using the ABHP '+sheet.name+' stylesheet':' using the DiceBear '+character.reference.style+' reference'),reference_id:personal?personal.reference.id:sheet?referenceFor(sheet.id).id:character?.reference.id||null,face_variant:objectMode?null:input.face_variant||'default',visual_mode:objectMode?'object':'character'});
    }
    if(input.action==='publish'){
     const result=await publishMany([input]);return respond({...result,...result.visuals[0]});

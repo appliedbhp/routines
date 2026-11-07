@@ -5,3 +5,15 @@ Artwork license: Creative Commons Attribution 4.0 International
 https://creativecommons.org/licenses/by/4.0/
 Modifications: ABHP hair-only gradient and character studio integration.
 DiceBear core and package code: MIT. See DICEBEAR-MIT.txt.
+
+Micah artwork by Micah Lanier, via DiceBear 9.2.4.
+Artwork license: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Source: https://www.dicebear.com/styles/micah/
+
+Notionists artwork by Zoish, via DiceBear 9.2.4.
+Artwork license: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://www.dicebear.com/styles/notionists/
+
+Open Peeps artwork by Pablo Stanley, via DiceBear 9.2.4.
+Artwork license: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://www.openpeeps.com/

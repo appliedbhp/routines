@@ -1,5 +1,18 @@
 (function(root){
- const defaults={seed:'KaelenVane',hair:'short04',isOmbre:true,hairColor:'592454',hairTipColor:'85c2c6',skinColor:'ecad80',eyes:'variant02',eyebrows:'variant04',mouth:'variant02',glassesEnabled:true,glasses:'variant05',backgroundColor:'1e1b4b'};
- function normalize(input={}){const s={...defaults},schema=root.CharacterRenderer.schema.properties;for(const key of ['hair','eyes','eyebrows','mouth','glasses'])if(schema[key].items.enum.includes(input[key]))s[key]=input[key];for(const key of ['hairColor','hairTipColor','skinColor','backgroundColor'])if(typeof input[key]==='string'&&(/^[0-9a-f]{6}$/i.test(input[key])||key==='backgroundColor'&&input[key]==='transparent'))s[key]=input[key];for(const key of ['isOmbre','glassesEnabled'])if(typeof input[key]==='boolean')s[key]=input[key];if(typeof input.seed==='string')s.seed=input.seed.trim().slice(0,60)||'Adventurer';return s;}
+ const defaults={style:'adventurer',seed:'KaelenVane',hair:'short04',isOmbre:true,hairColor:'592454',hairTipColor:'85c2c6',skinColor:'ecad80',eyes:'variant02',eyebrows:'variant04',mouth:'variant02',glassesEnabled:true,glasses:'variant05',backgroundColor:'1e1b4b'};
+ function normalize(input={}){if(input.style&&input.style!=='adventurer'&&Object.hasOwn(root.CharacterRenderer.styles,input.style))return normalizeOther(input);const s={...defaults},schema=root.CharacterRenderer.schema.properties;for(const key of ['hair','eyes','eyebrows','mouth','glasses'])if(schema[key].items.enum.includes(input[key]))s[key]=input[key];for(const key of ['hairColor','hairTipColor','skinColor','backgroundColor'])if(typeof input[key]==='string'&&(/^[0-9a-f]{6}$/i.test(input[key])||key==='backgroundColor'&&input[key]==='transparent'))s[key]=input[key];for(const key of ['isOmbre','glassesEnabled'])if(typeof input[key]==='boolean')s[key]=input[key];if(typeof input.seed==='string')s.seed=input.seed.trim().slice(0,60)||'Adventurer';return s;}
+ function normalizeOther(input){
+  const R=root.CharacterRenderer,style=input.style,s={style,seed:style==='micah'?R.micahRules.seed:'My character',backgroundColor:'transparent',glassesEnabled:false};
+  for(const [key,d] of Object.entries(R.schemas[style].properties))if(d.type==='array'){
+   const allowed=d.items.enum;
+   if(allowed)s[key]=allowed.includes(input[key])?input[key]:d.default?.[0]||allowed[0];
+   else if(/Color$/.test(key))s[key]=typeof input[key]==='string'&&/^[0-9a-f]{6}$/i.test(input[key])?input[key].toLowerCase():d.default?.[0];
+  }
+  if(typeof input.seed==='string')s.seed=input.seed.trim().slice(0,60)||s.seed;
+  if(typeof input.backgroundColor==='string'&&(/^[0-9a-f]{6}$/i.test(input.backgroundColor)||input.backgroundColor==='transparent'))s.backgroundColor=input.backgroundColor;
+  s.glassesEnabled=style!=='micah'&&input.glassesEnabled===true;
+  if(style==='micah'){for(const key of ['mouth','baseColor','shirtColor'])s[key]=R.micahRules[key].includes(input[key])?input[key]:R.micahRules[key][0];s.eyes='round';s.eyebrows='up';}
+  return s;
+ }
  root.CharacterModel={defaults,normalize};
 })(globalThis);
