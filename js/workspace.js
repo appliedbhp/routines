@@ -43,7 +43,7 @@
     link.dataset.tool=path.replace(/\/$/,'');link.dataset.toolGroup=group;link.classList.toggle('category-collapsed',!!collapsedGroups[group]);
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
-    if(['timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all','calendar_year','calendar_quarter','calendar_month','restaurant','person'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
+    if(['sports_esports','timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all','calendar_year','calendar_quarter','calendar_month','restaurant','person'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
     if(symbol==='edit_document'){icon.style.fontFamily='Material Symbols Outlined';icon.style.fontWeight='normal';icon.style.fontStyle='normal';icon.style.fontSize='24px';icon.style.letterSpacing='normal';icon.style.textTransform='none';icon.style.fontFeatureSettings='"liga"';}
     const label = document.createElement('span'); label.className = 'nav-label'; label.textContent = name;
     link.append(icon, label);
