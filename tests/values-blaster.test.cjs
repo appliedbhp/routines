@@ -16,3 +16,55 @@ test('cloud values use separate allowances, survive reload, and clear on sign-ou
  user=null;callbacks[0]();await new Promise(setImmediate);assert.equal(c.RoutineValues.read().signedIn,false);assert.equal(c.RoutineValues.read().values.length,0);await assert.rejects(c.RoutineValues.save(['Peace']),/Sign in/);
  user={id:'b'};await c.RoutineValues.refresh();assert.deepEqual(Array.from(c.RoutineValues.read().values),['Balance']);assert.ok(calls.every(a=>['resources','values-save'].includes(a)));
 });
+
+test('Explore has a home and school example for each value',()=>{
+ assert.deepEqual(Object.keys(V.examples).sort(),[...V.values].sort());
+ for(const example of Object.values(V.examples)){
+  assert.equal(example.length,3);
+  assert.ok(example.every(text=>typeof text==='string'&&text.trim()));
+ }
+});
+
+test('Explore waits for a choice and shooting an ad does not sort a value',async()=>{
+ const {safeImage,safeUrl}=await import('../js/ads-model.mjs');
+ const nodes=new Map(),events={};
+ function element(){
+  const handlers={};
+  return {classList:{add(){},remove(){},toggle(){}},setAttribute(){},addEventListener(name,fn){handlers[name]=fn;},
+   append(){},appendChild(){},replaceChildren(){},insertBefore(){},focus(){},
+   showModal(){this.open=true;},close(){this.open=false;handlers.close?.();},
+   getContext(){return {scale(){},measureText(){return {width:40};}}}};
+ }
+ const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);},createElement:element,addEventListener(){}};
+ const parent={postMessage(){}}, location={origin:'https://example.test'};
+ const window={innerWidth:1000,innerHeight:700,devicePixelRatio:1,addEventListener(){}};
+ const context=vm.createContext({document,window,parent,location,ValuesBlaster:V,Image:class{},safeImage,safeUrl,card:ad=>({ad}),addEventListener:(name,fn)=>events[name]=fn,performance:{now:()=>1000}});
+ const source=fs.readFileSync('values-blaster/game.js','utf8').replace(/^import .*;$/m,'');
+ vm.runInContext(source,context);
+ const run=code=>vm.runInContext(code,context);
+ run(`startNewGame();
+ const target=new DynamicValueAsteroid('Kindness',300,300);
+ asteroids=[target];
+ lasers=[{x:300,y:300,type:'EXPLORE',update(){}}];
+ update();`);
+ assert.equal(nodes.get('valueDialog').open,true);
+ assert.match(nodes.get('valueHome').textContent,/glass of water/);
+ assert.match(nodes.get('valueSchool').textContent,/join your game/);
+ assert.equal(run('collectedValues.length + releasedValues.length'),0);
+ nodes.get('exploreCollect').onclick();
+ assert.deepEqual(Array.from(run('collectedValues')),['Kindness']);
+ assert.equal(nodes.get('valueDialog').open,false);
+ events.message({origin:location.origin,source:parent,data:{type:'values-blaster-ads',ads:[
+  {id:'test',image:'https://example.test/ad.png',url:'https://example.test/product'}
+ ]}});
+ run(`nextAdAt=1;
+ spawnAd();
+ const adTarget=asteroids.find(asteroid=>asteroid.adId);
+ lasers=[{x:adTarget.x,y:adTarget.y,type:'EXPLORE',update(){}}];
+ update();`);
+ assert.equal(nodes.get('adDialog').open,true);
+ assert.equal(run('collectedValues.length + releasedValues.length'),1);
+ events.message({origin:location.origin,source:parent,data:{type:'values-blaster-ads',ads:[]}});
+ assert.equal(nodes.get('adDialog').open,false);
+ assert.equal(run('gameAds.length'),0);
+});

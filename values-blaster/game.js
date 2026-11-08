@@ -1,3 +1,5 @@
+import {card, safeImage, safeUrl} from '../js/ads-model.mjs';
+
 
     /* ==========================================================================
        1. SYNTHESIS ENGINE (Web Audio API)
@@ -129,7 +131,16 @@
        ========================================================================== */
     const VALUES_POOL = ValuesBlaster.values;
 
-    let activeWeapon = 'COLLECT'; // 'COLLECT' (Weapon 1) or 'RELEASE' (Weapon 2)
+    let activeWeapon = 'COLLECT';
+    const weaponColors = {COLLECT:'#10b981', RELEASE:'#f43f5e', EXPLORE:'#a78bfa'};
+    const valueDialog = document.getElementById('valueDialog');
+    const adDialog = document.getElementById('adDialog');
+    const gameAdCard = document.getElementById('gameAdCard');
+    let pendingValue = null;
+    let gameAds = [];
+    let nextAdAt = 4;
+    let adIndex = 0;
+    let shownAdId = null;
     let collectedValues = [];
     let releasedValues = [];
     let totalTargetValues = VALUES_POOL.length;
@@ -308,7 +319,7 @@
         // Emit particle trail from dual engines
         const engineOffsetX = -this.radius * 0.9;
         const engineOffsetY = 6;
-        const color = activeWeapon === 'COLLECT' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(244, 63, 94, 0.8)';
+        const color = weaponColors[activeWeapon] + 'cc';
 
         // Transform engine locations
         const leftExhaustX = this.x + Math.cos(this.angle) * engineOffsetX - Math.sin(this.angle) * engineOffsetY;
@@ -342,7 +353,7 @@
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
 
-        const themeColor = activeWeapon === 'COLLECT' ? '#10b981' : '#f43f5e';
+        const themeColor = weaponColors[activeWeapon];
 
         // 1. Sleek Outer Wings & Forward Split Blades
         ctx.beginPath();
@@ -433,7 +444,7 @@
       constructor(x, y, angle, type) {
         this.x = x;
         this.y = y;
-        this.type = type; // 'COLLECT' or 'RELEASE'
+        this.type = type;
         this.speed = 11.5;
         this.vx = Math.cos(angle) * this.speed;
         this.vy = Math.sin(angle) * this.speed;
@@ -455,7 +466,7 @@
       draw() {
         ctx.save();
         ctx.translate(this.x, this.y);
-        const color = this.type === 'COLLECT' ? '#10b981' : '#f43f5e';
+        const color = weaponColors[this.type];
 
         ctx.shadowColor = color;
         ctx.shadowBlur = 14;
@@ -619,26 +630,24 @@
     };
 
     /* Weapon Switching System */
+    const weaponButtons = {COLLECT:'weapon1Btn', RELEASE:'weapon2Btn', EXPLORE:'weapon3Btn'};
     function selectWeapon(type) {
       activeWeapon = type;
-      const w1Btn = document.getElementById('weapon1Btn');
-      const w2Btn = document.getElementById('weapon2Btn');
-
-      if (type === 'COLLECT') {
-        w1Btn.classList.add('active-w1');
-        w2Btn.classList.remove('active-w2');
-      } else {
-        w2Btn.classList.add('active-w2');
-        w1Btn.classList.remove('active-w1');
-      }
+      Object.entries(weaponButtons).forEach(([weapon, id], index) => {
+        const button = document.getElementById(id);
+        button.classList.toggle('active-w' + (index + 1), type === weapon);
+        button.setAttribute('aria-pressed', String(type === weapon));
+      });
     }
 
-    document.getElementById('weapon1Btn').addEventListener('click', () => {selectWeapon('COLLECT');canvas.focus();});
-    document.getElementById('weapon2Btn').addEventListener('click', () => {selectWeapon('RELEASE');canvas.focus();});
+    for (const [type, id] of Object.entries(weaponButtons)) {
+      document.getElementById(id).addEventListener('click', () => {selectWeapon(type);canvas.focus();});
+    }
+    selectWeapon(activeWeapon);
 
     /* Keyboard Controls */
     window.addEventListener('keydown', (e) => {
-      if((e.target.closest('button')&&['Space','Enter'].includes(e.code))||!isGameRunning||isGameOver||paused)return;
+      if((e.target.closest('button, a')&&['Space','Enter'].includes(e.code))||!isGameRunning||isGameOver||paused)return;
       audio.init();
       if (keys.hasOwnProperty(e.code)) {
         keys[e.code] = true;e.preventDefault();
@@ -649,6 +658,8 @@
         selectWeapon('COLLECT');
       } else if (e.code === 'Digit2' || e.code === 'KeyE') {
         selectWeapon('RELEASE');
+      } else if (e.code === 'Digit3') {
+        selectWeapon('EXPLORE');
       }
 
       if (e.code === 'Space') {
@@ -666,17 +677,17 @@
       }
     });
 
-    /* Mouse / Pointer Controls: Left-Click = Weapon 1, Right-Click = Weapon 2 */
+    /* Mouse controls */
     window.addEventListener('mousedown', (e) => {
       // Don't fire if clicking interactive UI elements
-      if (e.target.closest('button') || e.target.closest('aside') || e.target.closest('#introModal') || e.target.closest('#resultsModal')) {
+      if (e.target.closest('button') || e.target.closest('aside') || e.target.closest('#introModal') || e.target.closest('#resultsModal') || e.target.closest('dialog')) {
         return;
       }
       audio.init();
       if (e.button === 0) {
-        // Left click = Collect
-        selectWeapon('COLLECT');
-        fireLaser('COLLECT');
+        const type = activeWeapon === 'EXPLORE' ? 'EXPLORE' : 'COLLECT';
+        selectWeapon(type);
+        fireLaser(type);
       } else if (e.button === 2) {
         // Right click = Release
         e.preventDefault();
@@ -701,8 +712,9 @@
 
     /* Spawning Strategy */
     function maintainAsteroidField() {
-      const targetOnScreen = Math.min(5, remainingPool.length + asteroids.length);
-      while (asteroids.length < targetOnScreen && remainingPool.length > 0) {
+      const activeValues = asteroids.filter(asteroid => !asteroid.adId).length;
+      const spawnCount = Math.min(5 - activeValues, remainingPool.length);
+      for (let i = 0; i < spawnCount; i++) {
         const nextValue = remainingPool.shift();
         asteroids.push(new DynamicValueAsteroid(nextValue));
       }
@@ -722,6 +734,8 @@
       releasedValues = [];
       asteroids = [];
       lasers = [];
+      nextAdAt = 4;
+      adIndex = 0;
       isGameOver = false;
       isGameRunning = true;paused=false;document.getElementById('pauseBtn').textContent='Pause';
       ship.reset();
@@ -734,6 +748,90 @@
 
       maintainAsteroidField();
     }
+
+    function exploreValue(asteroid) {
+      pendingValue = asteroid;
+      const [meaning, home, school] = ValuesBlaster.examples[asteroid.value];
+      document.getElementById('valueTitle').textContent = asteroid.value;
+      document.getElementById('valueMeaning').textContent = meaning;
+      document.getElementById('valueHome').textContent = home;
+      document.getElementById('valueSchool').textContent = school;
+      setPaused(true);
+      valueDialog.showModal();
+      document.getElementById('valueTitle').focus();
+    }
+
+    function finishExplore(type) {
+      const asteroid = pendingValue;
+      pendingValue = null;
+      valueDialog.close();
+      setPaused(false);
+      if (type) handleAsteroidHit(asteroid, type);
+      else asteroids.push(asteroid);
+      if (!isGameOver) canvas.focus();
+    }
+
+    document.getElementById('exploreCollect').onclick = () => finishExplore('COLLECT');
+    document.getElementById('exploreRelease').onclick = () => finishExplore('RELEASE');
+    valueDialog.addEventListener('cancel', event => {
+      event.preventDefault();
+      finishExplore();
+    });
+
+    function spawnAd() {
+      const sorted = collectedValues.length + releasedValues.length;
+      if (!gameAds.length || sorted < nextAdAt || asteroids.some(asteroid => asteroid.adId)) return;
+      const ad = gameAds[adIndex++ % gameAds.length];
+      const image = new Image();
+      image.referrerPolicy = 'no-referrer';
+      image.src = safeImage(ad.image);
+      const target = new DynamicValueAsteroid('Ad');
+      target.adId = ad.id;
+      target.draw = function() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#172554';
+        ctx.fill();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.clip();
+        if (image.complete && image.naturalWidth) {
+          const scale = 2 * this.radius / Math.min(image.naturalWidth, image.naturalHeight);
+          const width = image.naturalWidth * scale, height = image.naturalHeight * scale;
+          ctx.drawImage(image, -width / 2, -height / 2, width, height);
+        }
+        ctx.font = 'bold 12px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#172554';
+        ctx.fillRect(-16, this.radius / 3 - 12, 32, 17);
+        ctx.fillStyle = '#fff';
+        ctx.fillText('AD', 0, this.radius / 3);
+        ctx.restore();
+      };
+      asteroids.push(target);
+      nextAdAt = sorted + 6;
+    }
+
+    function openAd(adId) {
+      const ad = gameAds.find(item => item.id === adId);
+      if (!ad) return;
+      nextAdAt = collectedValues.length + releasedValues.length + 6;
+      shownAdId = adId;
+      gameAdCard.replaceChildren(card(ad));
+      setPaused(true);
+      adDialog.showModal();
+    }
+
+    document.getElementById('closeAd').onclick = () => adDialog.close();
+    adDialog.addEventListener('close', () => {
+      shownAdId = null;
+      gameAdCard.replaceChildren();
+      setPaused(false);
+      canvas.focus();
+    });
 
     /* Value Sorting Handler */
     function handleAsteroidHit(asteroid, weaponType) {
@@ -933,6 +1031,12 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
       fireLaser('RELEASE');
     });
 
+    document.getElementById('touchFireExploreBtn').addEventListener('click', () => {
+      audio.init();
+      selectWeapon('EXPLORE');
+      fireLaser('EXPLORE');
+    });
+
     /* ==========================================================================
        9. MAIN ENGINE RUNTIME LOOP
        ========================================================================== */
@@ -960,9 +1064,11 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
 
           const lx=dx*Math.cos(ast.angle)+dy*Math.sin(ast.angle),ly=-dx*Math.sin(ast.angle)+dy*Math.cos(ast.angle);
           let inside=false;for(let a=0,b=ast.corners.length-1;a<ast.corners.length;b=a++){const p=ast.corners[a],q=ast.corners[b];if((p.y>ly)!==(q.y>ly)&&lx<(q.x-p.x)*(ly-p.y)/(q.y-p.y)+p.x)inside=!inside;}
-          if (inside) {
-            handleAsteroidHit(ast, laser.type);
+          if (ast.adId ? dist <= ast.radius : inside) {
             asteroids.splice(j, 1);
+            if (ast.adId) openAd(ast.adId);
+            else if (laser.type === 'EXPLORE') exploreValue(ast);
+            else handleAsteroidHit(ast, laser.type);
             hit = true;
             break;
           }
@@ -971,6 +1077,7 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
         if (hit || laser.isDead()) {
           lasers.splice(i, 1);
         }
+        if (paused || isGameOver) return;
       }
 
       // Asteroids drift
@@ -980,6 +1087,7 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
 
       if (isGameRunning && !isGameOver) {
         maintainAsteroidField();
+        spawnAd();
       }
 
       particles.update();
@@ -1026,7 +1134,15 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
     document.getElementById('finishBtn').onclick=()=>parent.postMessage({type:'values-blaster-close'},location.origin);
     addEventListener('blur',()=>setPaused(true));
     document.addEventListener('visibilitychange',()=>{if(document.hidden)setPaused(true);});
-    addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==parent)return;if(e.data?.type==='values-blaster-pause')setPaused(true);});
+    addEventListener('message', event => {
+      if (event.origin !== location.origin || event.source !== parent || parent === window) return;
+      if (event.data?.type === 'values-blaster-pause') setPaused(true);
+      if (event.data?.type === 'values-blaster-ads') {
+        gameAds = event.data.ads.filter(ad => safeImage(ad.image) && safeUrl(ad.url));
+        asteroids = asteroids.filter(asteroid => !asteroid.adId || gameAds.some(ad => ad.id === asteroid.adId));
+        if (shownAdId && !gameAds.some(ad => ad.id === shownAdId)) adDialog.close();
+      }
+    });
     canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
 addEventListener('resize',()=>{starfield.stars=new DeepSpaceStars(130).stars;for(const a of asteroids){a.x=Math.max(a.radius,Math.min(screenWidth-a.radius,a.x));a.y=Math.max(a.radius+80,Math.min(screenHeight-a.radius-90,a.y));}});
