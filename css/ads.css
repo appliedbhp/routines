@@ -3,3 +3,5 @@
 body.projection .routine-ad,body.in-board-session .routine-ad,body:has(.planner-running) .routine-ad,body:has(.stage-full-window) .routine-ad,body.board-print-preview .routine-ad{display:none!important}
 
 .routine-ad-image{display:block;max-width:100%;width:auto;height:auto;max-height:240px;object-fit:contain;border-radius:10px;justify-self:start}.routine-ad-image[hidden]{display:none}
+
+.routine-ad-copy{display:grid;gap:8px;min-width:0;overflow-wrap:anywhere}.routine-ad-with-image{grid-template-columns:minmax(120px,220px) minmax(0,1fr);align-items:center;gap:24px}.routine-ad-with-image>.routine-ad-image{width:100%;max-height:220px;justify-self:center}@media(max-width:600px){.routine-ad-with-image{grid-template-columns:1fr;gap:16px}.routine-ad-with-image>.routine-ad-image{width:auto;max-width:220px;max-height:200px}.routine-ad{padding:18px}}
