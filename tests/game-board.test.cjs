@@ -1,0 +1,2 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+test('all supported task counts have ordered, distinct in-bounds spaces',async()=>{const {pathLayout}=await import('../js/game-board-renderer.mjs');for(let n=0;n<=12;n++){const {points,width,height,path}=pathLayout(n);assert.equal(points.length,n+2);assert.equal(new Set(points.map(p=>`${p.x},${p.y}`)).size,n+2);for(const p of points){assert.ok(p.x-103>=0&&p.x+103<=width);assert.ok(p.y-72>=0&&p.y+72<=height);}if(n>2)assert.match(path,/ C /);}});
