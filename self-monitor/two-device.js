@@ -3,7 +3,8 @@
  const mode=$('deviceMode'),linkStatus=$('linkStatus'),pair=$('pairPanel'),inviteKey='routines.selfMonitor.invite.v1';
  let link=null,inv=null,adult=null,candidate=null,remote=null,lastSeen=0,connecting=false,ending=false,generation=0,shortInvite=null;
  try{mode.value=sessionStorage.getItem('routines.selfMonitor.mode')==='two'?'two':'one';}catch{}
- const enabled=()=>mode.value==='two';
+ let paidAccess=false,accessRevision=0;
+ const enabled=()=>mode.value==='two'&&paidAccess;
  const praise=()=>globalThis.RoutinePraise?.read()||'playful';
  const allowReaction=MonitorReactions.gate();let reactionTimer;
  function showReaction(m){if(!session||!$('showReactions').checked||!MonitorReactions.allowed(m.kind,praise())||!allowReaction(m))return false;
@@ -53,7 +54,7 @@
    if(attempt!==generation)return;
    $('pairLink').value=url.href;dispatchEvent(new Event('self-monitor-invite-ready'));
    const qr=qrcode(0,'M');qr.addData(url.href);qr.make();$('pairQR').innerHTML=qr.createSvgTag({cellSize:4,margin:4,scalable:true});pair.hidden=!!adult;if(adult)removeCode();
-  }catch(e){say(e.message);}finally{if(attempt===generation)connecting=false;}
+  }catch(e){if(e.upgrade){paidAccess=false;mode.value='one';resetLink();if(session?.stage==='adult')reopenCheckin();try{sessionStorage.setItem('routines.selfMonitor.mode','one');}catch{}MonitorPaidAccess.prompt();}say(e.message);}finally{if(attempt===generation)connecting=false;}
  }
  let approving=false;
  async function approve(startOnJoin=false){if(!candidate||!link||approving)return;approving=true;const approved=candidate,current=link,attempt=generation;try{await current.setPeer(approved.publicKey);if(attempt!==generation||current!==link)return;adult=approved.sender;candidate=null;lastSeen=Date.now();$('approveAdult').hidden=true;pair.hidden=true;$('showPair').hidden=true;removeCode();if(startOnJoin&&!session)$('settings').requestSubmit();say(session?'Adult connected. Each of you will rate on your own screen.':'Adult connected. Check your settings, then start the session.');publish();}finally{approving=false;}}
@@ -62,9 +63,16 @@
  $('enlargeQR').onclick=()=>{const large=$('pairQR').classList.toggle('large');$('enlargeQR').textContent=large?'Make QR code smaller':'Enlarge QR code';$('enlargeQR').setAttribute('aria-pressed',String(large));};
  $('showPair').onclick=()=>{if(!enabled()){mode.value='two';mode.onchange();return;}if(!link){connect();return;}pair.hidden=!pair.hidden;};
  $('copyPair').onclick=async()=>{try{await navigator.clipboard.writeText($('pairLink').value);say('Private invitation copied. Share it only with the adult joining this session.');}catch{$('pairLink').select();say('Select and copy the invitation link.');}};
- mode.onchange=()=>{if(!enabled()){resetLink();if(session?.stage==='adult')reopenCheckin();say('One device: take turns on this screen.');}else{if(session?.stage==='adult')showWaiting();connect();}try{sessionStorage.setItem('routines.selfMonitor.mode',mode.value);}catch{}};
+ mode.onchange=async()=>{
+  const revision=++accessRevision;
+  if(mode.value!=='two'){paidAccess=false;mode.disabled=false;resetLink();if(session?.stage==='adult')reopenCheckin();say('One device: take turns on this screen.');try{sessionStorage.setItem('routines.selfMonitor.mode','one');}catch{}return;}
+  mode.disabled=true;say('Checking two-device access…');
+  try{await ShortCode.request({action:'access'});if(revision!==accessRevision)return;paidAccess=true;try{sessionStorage.setItem('routines.selfMonitor.mode','two');}catch{}if(session?.stage==='adult')showWaiting();await connect();}
+  catch(e){if(revision!==accessRevision)return;paidAccess=false;mode.value='one';resetLink();if(session?.stage==='adult')reopenCheckin();try{sessionStorage.setItem('routines.selfMonitor.mode','one');}catch{}say(e.message);if(e.upgrade)MonitorPaidAccess.prompt();}
+  finally{if(revision===accessRevision)mode.disabled=false;}
+ };
  const originalAnswer=answer;answer=function(value){if(!enabled())return originalAnswer(value);if(session?.stage!=='student')return;session.student=value;session.stage='adult';persistSession(true);showWaiting();finish();publish();};
- const originalSubmit=$('settings').onsubmit;$('settings').onsubmit=e=>{if(enabled()&&!navigator.onLine){e.preventDefault();say('Two-device mode needs internet. Choose One device to start offline.');return;}originalSubmit(e);if(session&&enabled())connect();};
+ const originalSubmit=$('settings').onsubmit;$('settings').onsubmit=e=>{if(mode.value==='two'&&!paidAccess){e.preventDefault();say('Wait for the access check, or choose One device.');return;}if(enabled()&&!navigator.onLine){e.preventDefault();say('Two-device mode needs internet. Choose One device to start offline.');return;}originalSubmit(e);if(session&&enabled())connect();};
  const originalReset=$('reset').onclick;$('reset').onclick=()=>{originalReset();if(!session){MonitorReactions.renderHistory($('encouragementList'),[]);resetLink();if(enabled())connect();else say('One device: take turns on this screen.');}};
  const originalTick=tick;tick=function(){originalTick();if(enabled()&&session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers on their phone.';};
  setInterval(()=>{if(!enabled())return;if(session?.stage==='student')$('answerHelp').textContent='Give your own rating. The adult answers independently on their phone.';if(!session){if(!link&&!connecting)connect();return;}if(session.stage==='adult'){showWaiting();finish();}if(!link){if(inv&&Date.now()<inv.expires)connect();return;}if(adult&&Date.now()-lastSeen>15000)link.recover?.(true);publish();if(adult&&Date.now()-lastSeen>90000)say('Adult connection lost. Keep both screens open; check-ins wait for both ratings.');else if(adult&&session.stage!=='adult')say(session.stage==='finished'?'Session complete. The adult has a copy of the results.':'Adult connected.');},2000);
@@ -72,5 +80,7 @@
  addEventListener('self-monitor-presentation',()=>{link?.recover?.();publish();});
  addEventListener('online',()=>{if(enabled())connect();});
  MonitorReactions.renderHistory($('encouragementList'),session?.encouragement);
- if(enabled()){if(session?.stage==='adult')showWaiting();connect();}else say('One device: take turns on this screen.');
+ addEventListener('routines-plan-change',e=>{if(mode.value==='two'&&!MonitorPaidAccess.allowed(e.detail)){mode.value='one';mode.onchange();}});
+ addEventListener('board-cloud-signedout',()=>{if(mode.value==='two'){mode.value='one';mode.onchange();}});
+ if(mode.value==='two')mode.onchange();else say('One device: take turns on this screen.');
 })();

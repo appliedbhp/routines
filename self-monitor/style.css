@@ -204,3 +204,5 @@ body[data-theme=classroom]{--accent:#245ac4;--reward:#db453a}body[data-theme=aut
 #sessionView #tokens:has(.token:nth-child(61)){--point-icon-size:18px;gap:3px}
 #sessionView #tokens .token,#sessionView #tokens .token svg,#sessionView #tokens .token img{width:var(--point-icon-size,28px);height:var(--point-icon-size,28px)}
 @media(max-width:600px){#sessionView #tokens{--point-icon-size:24px}}
+
+.two-device-upgrade{max-width:520px;width:calc(100% - 48px);padding:28px;border:1px solid var(--ui-border,#dbe3ee);border-radius:20px;background:var(--ui-surface,#fff);color:var(--ui-ink,#243247)}.two-device-upgrade::backdrop{background:#15223c77;backdrop-filter:blur(7px)}.two-device-upgrade h2{margin:0 0 16px}.two-device-upgrade p{line-height:1.6}.upgrade-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;align-items:center}.upgrade-actions a,.upgrade-actions button{padding:12px;border-radius:10px}.upgrade-actions a:first-child{background:var(--brand,#2459d3);color:#fff;text-decoration:none}

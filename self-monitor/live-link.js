@@ -1,4 +1,4 @@
-/* Temporary, encrypted browser-to-browser messages. No database writes. */
+/* Encrypted live messages; only expiring paid-session authorization is stored. */
 const LiveLink=(()=>{
  const encode=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
  const decode=text=>Uint8Array.from(atob(text.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));
@@ -18,6 +18,7 @@ const LiveLink=(()=>{
   async function setPeer(pub){if(typeof pub!=='string'||pub.length!==87)throw Error('Invalid pairing key');const peer=await crypto.subtle.importKey('raw',decode(pub),{name:'ECDH',namedCurve:'P-256'},false,[]);peerKey=await crypto.subtle.deriveKey({name:'ECDH',public:peer},keys.privateKey,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
   if(role==='adult')await setPeer(inv.publicKey);
   const digest=await crypto.subtle.digest('SHA-256',decode(inv.key));const topic='routine-live-'+encode(new Uint8Array(digest));
+  if(role==='child'){await ShortCode.request({action:'authorize',topic,expires:inv.expires});}
   const [{createClient},{cloudConfig}]=await Promise.all([import('https://esm.sh/@supabase/supabase-js@2.57.4'),import('../cloud/config.js')]);
   let open=false,closed=false,counter=0,lastRecovery=0,retryTimer=null,rebuilding=false,channelGeneration=0,channel;const seen=new Map();
   const client=createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{worker:typeof Worker!=='undefined',heartbeatCallback:status=>{console.debug('Self-monitor heartbeat:',status);if(status==='disconnected')recover();}}});
@@ -25,7 +26,7 @@ const LiveLink=(()=>{
   const visible=()=>{if(typeof document==='undefined'||document.visibilityState==='visible')recover();};
   globalThis.addEventListener?.('online',recover);globalThis.addEventListener?.('focus',visible);globalThis.document?.addEventListener('visibilitychange',visible);
 
-  function subscribe(){const generation=++channelGeneration;channel=client.channel(topic,{config:{broadcast:{ack:true,self:false}}});
+  function subscribe(){const generation=++channelGeneration;channel=client.channel(topic,{config:{private:true,broadcast:{ack:true,self:false}}});
   channel.on('broadcast',{event:'sealed'},async({payload})=>{try{if(closed||generation!==channelGeneration||Date.now()>=inv.expires)return;const m=await unseal(key,payload);if(m.sender===sender||!['child','adult'].includes(m.role)||m.role===role||typeof m.sender!=='string'||m.sender.length>50||!Number.isSafeInteger(m.seq)||m.seq<=(seen.get(m.sender)||0)||m.role==='child'&&m.sender!==inv.host)return;if(m.secure){if(!peerKey)return;const inner=await unseal(peerKey,m.body);if(inner.seq!==m.seq||inner.sender!==m.sender||inner.role!==m.role)return;seen.set(m.sender,m.seq);onMessage(inner.body,m.sender,true);}else if(role==='child'&&m.body?.type==='hello'&&await fingerprint(m.body.publicKey)===m.sender){if(seen.size>=32&&!seen.has(m.sender))return;seen.set(m.sender,m.seq);onMessage(m.body,m.sender,false);}}catch{/* Ignore unauthenticated or malformed packets. */}});
   channel.subscribe(status=>{console.debug('Self-monitor channel:',status);if(closed||generation!==channelGeneration)return;open=status==='SUBSCRIBED';onStatus(open?'connected':'connecting');if(open){clearTimeout(retryTimer);retryTimer=null;}else if(!retryTimer)retryTimer=setTimeout(()=>{retryTimer=null;rebuild();},3000);});
   }

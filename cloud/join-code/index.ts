@@ -11,7 +11,7 @@ async function open(s:string){const [iv,data]=s.split('.');return new TextDecode
 Deno.serve(async req=>{
  const origin=req.headers.get('origin')||'';
  const allowed=origin==='https://routines.getadhd.care'||/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
- const headers={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':allowed?origin:'https://routines.getadhd.care','Access-Control-Allow-Headers':'content-type,apikey','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
+ const headers={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':allowed?origin:'https://routines.getadhd.care','Access-Control-Allow-Headers':'content-type,apikey,authorization','Access-Control-Allow-Methods':'POST,OPTIONS','Vary':'Origin'};
  const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
  if(origin&&!allowed)return reply({error:'Origin not allowed'},403);
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers});
@@ -24,6 +24,20 @@ Deno.serve(async req=>{
   const bucket=await hash(secret+':'+window+':'+ip);
   const {data:hits,error:limitError}=await admin.rpc('routine_join_limit',{p_bucket:bucket,p_expires:new Date((window+2)*600000).toISOString()});
   if(limitError)throw limitError;if(hits>60)return reply({error:'Too many attempts. Please wait a few minutes.'},429);
+  if(['access','authorize','create'].includes(b.action)){
+   const token=req.headers.get('Authorization')?.replace(/^Bearer /i,'')||'';
+   const {data,error}=await admin.auth.getUser(token);const user=data?.user;
+   if(error||!user?.email_confirmed_at||user.is_anonymous)return reply({error:'Sign in to a paid account to use two devices.',upgrade:true},401);
+   const {data:access,error:accessError}=await admin.rpc('routine_two_device_access',{caller:user.id});
+   if(accessError)throw accessError;
+   if(!access)return reply({error:'Two-device self-monitoring requires a paid plan. One device is always free.',upgrade:true},403);
+   if(b.action==='access')return reply({allowed:true});
+   if(b.action==='authorize'){
+    if(typeof b.topic!=='string'||!/^routine-live-[A-Za-z0-9_-]{43}$/.test(b.topic)||!Number.isFinite(b.expires))return reply({error:'Invalid pairing'},400);
+    const {data:authorized,error:authorizeError}=await admin.rpc('routine_live_authorize',{caller:user.id,p_topic:b.topic,p_expires:new Date(b.expires).toISOString()});if(authorizeError)throw authorizeError;
+    return authorized?reply({allowed:true}):reply({error:'Two-device access is unavailable.',upgrade:true},403);
+   }
+  }
   if(b.action==='create'){
    if(typeof b.invitation!=='string'||!/^1\.[\w-]{43}\.[\w-]{36}\.[a-z0-9]+\.[\w-]{87}$/.test(b.invitation)||!/^[-\w]{43}$/.test(b.owner))return reply({error:'Invalid invitation'},400);
    const expires=parseInt(b.invitation.split('.')[3],36);if(expires<=Date.now()||expires>Date.now()+7500000)return reply({error:'Invalid expiry'},400);
