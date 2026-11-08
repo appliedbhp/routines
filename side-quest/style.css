@@ -3,3 +3,14 @@ main{padding:24px}#trailer video{width:100%;max-width:900px;border-radius:16px;b
 #trailer video{max-height:420px;object-fit:contain}
 
 #publicReview,#leaderboard{margin-top:24px;padding:20px;border:1px solid #becde0;border-radius:14px}#leaders{padding-left:30px}#leaders li{padding:10px;border-bottom:1px solid #dce3eb}#leaders img,#leaders .avatar-missing{width:48px;height:48px;object-fit:contain;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:12px;border-radius:50%;background:#edf3fb}#leaders strong{margin-right:15px}#noAvatar{font-size:36px}#publicStatus{font-weight:600}
+
+/* Compact score rows: crown, character, level, points. */
+#leaders{list-style:none;padding:0;margin:16px 0;max-width:640px}
+#leaders li{display:grid;grid-template-columns:32px 48px 1fr auto;align-items:center;gap:12px;padding:12px 0}
+#leaders img,#leaders .avatar-missing{margin:0;width:48px;height:48px}
+#leaders .avatar-missing{font-size:28px;font-weight:700;color:#475569}
+#leaders .leader-points{margin:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leader-crown{display:inline-flex;width:32px;height:28px}
+.leader-crown svg{width:100%;height:100%;fill:currentColor;stroke:#574626;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
+.leader-crown.gold{color:#edbd38}.leader-crown.silver{color:#bdc7d2}.leader-crown.copper{color:#b87333}
+@media(max-width:420px){#leaderboard{padding:12px}#leaders li{gap:8px;grid-template-columns:26px 40px 1fr auto;font-size:14px}#leaders img,#leaders .avatar-missing{width:40px;height:40px}.leader-crown{width:26px}}
