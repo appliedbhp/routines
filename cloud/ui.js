@@ -90,6 +90,7 @@ async function start(){
  function action(parent,label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>run(fn);parent.append(b);}
  async function run(fn){if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');const submit=q('[data-auth-submit]'),label=submit.textContent;submit.disabled=true;submit.textContent='Please wait…';try{await fn();}catch(e){message(e.message||'That action could not be completed. Try again.','error');}finally{busy=false;submit.disabled=false;submit.textContent=label;dialog.removeAttribute('aria-busy');}}
  async function open(row){
+  if(row.payload.format==='side-quest'){location.assign(new URL('side-quest/?saved='+row.slot,root));return;}
   const path=new URL(S.path(row.payload),root),here=location.pathname.replace(/index\.html$/,'');
   if(path.pathname!==here){path.searchParams.set('cloudSlot',String(row.slot));location.assign(path);return;}
   if(!confirm('Open this cloud board? Unsaved edits in the current visual will be replaced.'))return;

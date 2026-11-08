@@ -14,7 +14,7 @@
     ['token-board/', 'Token board', '★'],
     ['yearly-planner/', 'Yearly', 'calendar_year'], ['quarterly-planner/', 'Quarterly', 'calendar_quarter'], ['monthly-planner/', 'Monthly', 'calendar_month'], ['weekly-planner/', 'Weekly', 'calendar_month'], ['daily-planner/', 'Daily', 'calendar_month'], ['committed-action-tracker/', 'Commitments', '✓'],
     ['meal-planner/', 'Meal planning', 'restaurant'], ['implementation-intentions/', 'Intentions', '◎'],
-    ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
+    ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['side-quest/', 'Side Quest', 'sports_esports'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
   document.body.classList.add('visual-workspace', 'calm-ui');
@@ -32,7 +32,7 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly':'Planning','Quarterly':'Planning','Monthly':'Planning','Weekly':'Planning','Daily':'Planning','Commitments':'Values and actions','Meal planning':'Planning','Intentions':'Values and actions','Maintenance':'Memory','Touchpoints':'Memory','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
+  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly':'Planning','Quarterly':'Planning','Monthly':'Planning','Weekly':'Planning','Daily':'Planning','Commitments':'Values and actions','Meal planning':'Planning','Intentions':'Values and actions','Maintenance':'Memory','Touchpoints':'Memory','Side Quest':'Arcade','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
   globalThis.RoutineToolCatalog=tools.filter(t=>t[0]!=='whats-new/').map(t=>({id:t[0].replace('/',''),label:t[1],group:groupFor[t[1]]}));
   let collapsedGroups={};try{collapsedGroups=JSON.parse(localStorage.getItem('routines.collapsedGroups.v1')||'{}');}catch{}
   const order=['Daily routines','Choices & transitions','Learning & focus','Planning','Values and actions','Memory','Arcade','Resources'];

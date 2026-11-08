@@ -2,6 +2,7 @@
 (function(root){
  const skills={planning:'Planning',memory:'Working memory',start:'Getting started',time:'Time management',flexibility:'Flexible thinking',regulation:'Self-regulation',monitor:'Self-monitoring',organization:'Organization'};
  const tools={
+ 'side-quest':['Side Quest',['flexibility','monitor'],'Explore distractions and returning to a task through a platform game.','Play a short round, then reflect on what helped you return to your goal.'],
  routine:['Routine timer',['time','start','memory'],'See each step and how much time is left.','Choose a short routine and practice moving to the next step.'],
  'chore-chart':['Chore chart',['organization','start','monitor'],'Keep shared responsibilities visible.','Choose one manageable job and check it off together.'],
  'task-strip':['Task strip',['memory','start','planning'],'Break a task into small steps you can follow.','Point to one step, do it, then move to the next.'],
