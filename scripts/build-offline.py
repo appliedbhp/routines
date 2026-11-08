@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib,json
 root=Path(__file__).resolve().parents[1]
-files=sorted(p for p in root.rglob('*') if p.is_file() and p.suffix in {'.html','.css','.js','.svg','.png','.mp3','.webmanifest'} and not any(x in p.relative_to(root).parts for x in {'.git','tests','scripts','vendor-src','node_modules'}) and p.name not in {'sw.js','offline-assets.js','save-handler.js'})
+files=sorted(p for p in root.rglob('*') if p.is_file() and (p.suffix in {'.html','.css','.js','.svg','.png','.mp3','.webmanifest'} or p.name=='ads-model.mjs') and not any(x in p.relative_to(root).parts for x in {'.git','tests','scripts','vendor-src','node_modules'}) and p.name not in {'sw.js','offline-assets.js','save-handler.js'})
 h=hashlib.sha256()
 for p in files:h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
 h.update((root/'sw.js').read_bytes())
