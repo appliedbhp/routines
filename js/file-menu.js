@@ -90,8 +90,6 @@
  quickAction('Save','<path d="M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M7 3v6h9V3M7 21v-8h10v8"/>',save);
  if(!printOnly)quickAction('Save to cloud','<path d="M7 18H6a4 4 0 0 1-.5-8 6.5 6.5 0 0 1 12.6-1A4.5 4.5 0 0 1 18 18h-1M12 20v-8m-3 3 3-3 3 3"/>',saveToCloud);
  quickAction('New board','<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8m-4-4h8"/>',newBoard);
- const tourTool=location.pathname.split('/').filter(Boolean).find(part=>['self-monitor','homework-planner','routine'].includes(part));
- if(tourTool)quickAction('Help · tool tour','<circle cx="12" cy="12" r="9"/><path d="M9.5 8.5a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 16h.01"/>',async()=>{const tour=await import(new URL('js/tool-tour.js',root).href);tour.openTour(tourTool);});
  if(globalThis.PlanningHelp)quickAction('Help & walkthrough','<circle cx="12" cy="12" r="9"/><path d="M9.5 8.5a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 16h.01"/>',()=>PlanningHelp());
  const addButton=document.querySelector('#addCard,#add,#addSubject');if(addButton){addButton.classList.add('file-legacy');const addQuick=button(menuRow,addButton.textContent,()=>addButton.click());addQuick.className='file-quick-add';const mirror=()=>{addQuick.disabled=addButton.disabled;addQuick.hidden=addButton.hidden;};new MutationObserver(mirror).observe(addButton,{attributes:true,attributeFilter:['disabled','hidden']});mirror();}
  const hints=[...main.querySelectorAll(':scope > .hint')];if(hints.length){const tips=document.createElement('details');tips.className='workspace-tips no-print';const summary=document.createElement('summary');summary.textContent='Using this tool';tips.append(summary,...hints);main.append(tips);}
