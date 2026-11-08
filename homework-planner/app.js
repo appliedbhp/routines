@@ -45,3 +45,6 @@ function preparePlannerPDF(landscape){
  }catch{say('Could not create the PDF. Reload the planner and try again.');}
 }
 $('printPortrait').onclick=()=>preparePlannerPDF(false);$('printBoard').onclick=()=>preparePlannerPDF(true);sync();refresh();
+
+// Read a fresh snapshot when opening a homework game, including imported planners.
+window.HomeworkGameBoard={read:()=>currentPayload().board};
