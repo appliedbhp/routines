@@ -66,8 +66,12 @@ Deno.serve(async req=>{
   if(action==='checkout'){
    await limit('checkout:'+user.id,12);
    const order=await rpc(user.id,'checkout',{offer:body.offer});if(order.url)return reply(200,{url:order.url});
+   const {data:assigned,error:discountError}=await admin.from('routine_account_discounts').select('coupon_id').eq('user_id',user.id).gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(1);
+   if(discountError)throw Error('Please try checkout again.');
+   let accountCoupon=null;
+   if(assigned?.[0]){const coupon=await stripe.coupons.retrieve(assigned[0].coupon_id);if(coupon.valid)accountCoupon=coupon.id;}
    const metadata={app:'routines_beta',orderId:order.id,userId:user.id};
-   const session=await stripe.checkout.sessions.create({mode:'payment',allow_promotion_codes:true,line_items:[{price:order.price_id||PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
+   const session=await stripe.checkout.sessions.create({mode:'payment',...(accountCoupon?{discounts:[{coupon:accountCoupon}]}:{allow_promotion_codes:true}),line_items:[{price:order.price_id||PRICES[order.offer],quantity:1}],customer_email:user.email,client_reference_id:user.id,metadata,payment_intent_data:{metadata},success_url:SITE+'/beta/?checkout=success',cancel_url:SITE+'/beta/?checkout=cancelled',expires_at:Math.floor(Date.now()/1000)+1800,integration_identifier:'routines_beta_bhfpmqaz',custom_text:{submit:{message:'One-time payment. Lifetime means the lifetime of the Routines service. No recurring charges.'}}},{idempotencyKey:'routines-beta-'+order.id});
    await rpc(user.id,'attach',{orderId:order.id,sessionId:session.id,url:session.url});return reply(200,{url:session.url});
   }
   return reply(400,{error:'Unknown request.'});

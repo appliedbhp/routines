@@ -61,6 +61,28 @@ Deno.serve(async req=>{
   const caller=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+bearer}},auth:{persistSession:false,autoRefreshToken:false}});
   const allowed=await caller.rpc('routines_is_administrator');if(allowed.error||allowed.data!==true)return reply(403,{error:'Administrator access required.'});
   const limit=checked(await db.rpc('routine_beta_action',{caller:null,action:'limit',args:{bucket:'management:'+user.id,max:120,seconds:3600}}));if(!limit.allowed)return reply(429,{error:'Please wait before trying again.'});
+
+  if(['account-detail','account-grant','account-revoke-grant','account-discount'].includes(body.action)){
+   const target=uuid(body.userId);
+   const detail=checked(await db.rpc('routines_admin_account',{caller:user.id,target,action:'detail',args:{}}));
+   if(body.action==='account-detail')return reply(200,detail);
+   if(body.confirmed!==true)throw Error('Review and confirm this account action first.');
+   if(body.action==='account-grant'||body.action==='account-revoke-grant'){
+    const result=checked(await db.rpc('routines_admin_account',{caller:user.id,target,action:body.action==='account-grant'?'grant':'revoke-grant',args:{id:uuid(body.id),plan:body.plan,reason:body.reason}}));return reply(200,result);
+   }
+   const id=uuid(body.id),percent=Number(body.percent);
+   if(!Number.isInteger(percent)||percent<1||percent>99)throw Error('Choose a discount from 1 to 99 percent.');
+   const existing=checked(await db.from('routine_account_discounts').select().eq('id',id).maybeSingle());
+   if(existing){if(existing.user_id!==target)throw Error('Could not use this request.');return reply(200,existing);}
+   const expires=Math.floor(new Date(body.expires).getTime()/1000);if(!Number.isFinite(expires)||expires<=Date.now()/1000||expires>Date.now()/1000+31*86400)throw Error('Choose a valid discount expiry.');
+   const products=[...new Set(await Promise.all(prices.map(async p=>String((await stripe.prices.retrieve(p)).product))))];
+   const coupon=await stripe.coupons.create({name:'Routines account discount',duration:'once',percent_off:percent,max_redemptions:1,redeem_by:expires,applies_to:{products},metadata:{app:'routines',userId:target,request:id}},{idempotencyKey:'routines-account-discount-'+id});
+   const row={id,user_id:target,coupon_id:coupon.id,percent_off:percent,expires_at:new Date(expires*1000).toISOString()};
+   checked(await db.from('routine_account_discounts').insert(row));
+   await audit(user.id,'account-discount',{userId:target,id,percent,expiresAt:row.expires_at});
+   return reply(200,row);
+  }
+
   if(body.action==='invite-send'){
    const store={
     get:async(id:string)=>checked(await db.from('routine_admin_invitations').select().eq('id',id).maybeSingle()),
