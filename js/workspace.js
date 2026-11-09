@@ -15,7 +15,7 @@
     ['token-board/', 'Token board', '★'],
     ['yearly-planner/', 'Yearly', 'calendar_year'], ['quarterly-planner/', 'Quarterly', 'calendar_quarter'], ['monthly-planner/', 'Monthly', 'calendar_month'], ['weekly-planner/', 'Weekly', 'calendar_month'], ['daily-planner/', 'Daily', 'calendar_month'], ['committed-action-tracker/', 'Commitments', '✓'],
     ['meal-planner/', 'Meal planning', 'restaurant'], ['implementation-intentions/', 'Intentions', '◎'],
-    ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['side-quest/', 'Side Quest', 'sports_esports'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
+    ['maintenance/', 'Maintenance', '▣'], ['touchpoints/', 'Touchpoints', '♡'], ['side-quest/', 'Side Quest', 'joystick'], ['values-blaster/', 'Values Blaster', '✧'], ['my-character/', 'My Character', 'person'], ['whats-new/', 'What’s New', '✦']
   ];
   const iconFont=document.createElement('link');iconFont.rel='stylesheet';iconFont.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=edit_document&display=block';document.head.append(iconFont);
   document.body.classList.add('visual-workspace', 'calm-ui');
@@ -44,7 +44,7 @@
     link.dataset.tool=path.replace(/\/$/,'');link.dataset.toolGroup=group;link.classList.toggle('category-collapsed',!!collapsedGroups[group]);
     link.title = name; link.setAttribute('aria-label', name);
     const icon = document.createElement('span'); icon.className = 'nav-icon'; icon.textContent = symbol; icon.setAttribute('aria-hidden','true');
-    if(['sports_esports','timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all','calendar_year','calendar_quarter','calendar_month','restaurant','person'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
+    if(['joystick','sports_esports','timer','mop','checklist_rtl','developer_board','ballot','steppers','done_all','calendar_year','calendar_quarter','calendar_month','restaurant','person'].includes(symbol)){icon.textContent='';icon.classList.add('nav-material-icon');const image=`url("${new URL('assets/navigation/'+symbol+'.svg',root).href}")`;icon.style.maskImage=image;icon.style.webkitMaskImage=image;}
     if(symbol==='edit_document'){icon.style.fontFamily='Material Symbols Outlined';icon.style.fontWeight='normal';icon.style.fontStyle='normal';icon.style.fontSize='24px';icon.style.letterSpacing='normal';icon.style.textTransform='none';icon.style.fontFeatureSettings='"liga"';}
     const label = document.createElement('span'); label.className = 'nav-label'; label.textContent = name;
     link.append(icon, label);
