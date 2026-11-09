@@ -3,13 +3,13 @@ import json, hashlib
 from pathlib import Path
 source=json.loads(Path('scripts/symbol-sources.json').read_text())
 rows=[];seen=set()
-def add(provider,key,label,path,words,age='all'):
+def add(provider,key,label,path,words,age='all',revision=None):
  ident=700000000+int(hashlib.sha256((provider+':'+key).encode()).hexdigest()[:12],16)%299000000
  if ident in seen:raise ValueError('Symbol ID collision')
  seen.add(ident)
  repo={'mulberry':'mulberrysymbols/mulberry-symbols','abhp':'appliedbhp/visual-supports','tawasol':'madainnovation/Tawasol-Symbols-by-Mada-Center'}[provider]
  from urllib.parse import quote
- url='https://raw.githubusercontent.com/'+repo+'/'+source[provider]['sha']+'/'+quote(path,safe='/')
+ url='https://raw.githubusercontent.com/'+repo+'/'+(revision or source[provider]['sha'])+'/'+quote(path,safe='/')
  rows.append([ident,provider,label,url,' '.join(words),age])
 for path in source['mulberry']['paths']:
  label=Path(path).stem.replace('_',' ').replace(' , to','')
@@ -17,7 +17,7 @@ for path in source['mulberry']['paths']:
 for entry in source['abhp']['entries']:
  for path in entry['assets']:
   if path.lower().endswith(('.png','.svg','.webp')):
-   add('abhp',path,entry['title'],path,[entry['title'],entry['category'],*entry.get('keywords',[])],entry.get('age_strand','all'))
+   add('abhp',path,entry['title'],path,[entry['title'],entry['category'],*entry.get('keywords',[])],entry.get('age_strand','all'),entry.get('revision'))
 for path in source['tawasol']['paths']:
  label=Path(path).parent.name.replace('-', ' ').replace('_', ' ')
  add('tawasol',path,label,path,[label])

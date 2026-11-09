@@ -896,6 +896,9 @@ function fitProjection() {
 }
 
 const PRESETS = {
+  "teen-school-morning": {"name": "Teen School Morning", "category": "morning", "steps": [["Brush teeth", 2, 769287449], ["Pack lunch", 5, 965585066], ["Pack backpack", 3, 878358764]]},
+  "teen-after-school": {"name": "Teen After School", "category": "tasks", "steps": [["Pour a glass of water", 2, 715997589], ["Do homework", 20, 923334057], ["Put clothes in hamper", 3, 849278898]]},
+  "teen-evening-reset": {"name": "Teen Evening Reset", "category": "evening", "steps": [["Wipe kitchen counter", 4, 869066753], ["Charge phone", 2, 815752317], ["Set an alarm", 1, 908855720]]},
   "after-school": {"name": "After School Routine", "category": "tasks", "steps": [["Put Away Backpack", 3], ["Snack", 10], ["Movement Break", 10], ["Homework", 15], ["Pack for Tomorrow", 5]]},
   "homework": {"name": "Homework Routine", "category": "tasks", "steps": [["Gather Supplies", 3], ["Choose a Task", 2], ["Work", 15], ["Stretch Break", 5], ["Check Work", 5], ["Put Away Supplies", 3]]},
   "preschool": {"name": "Preschool Morning", "category": "morning", "steps": [["Use Toilet", 3], ["Get Dressed", 5], ["Breakfast", 10], ["Brush Teeth", 3], ["Shoes", 4]]},
@@ -1003,11 +1006,12 @@ function openRoutine(record) {
 async function usePreset(key, announce = true) {
   const preset = PRESETS[key];
   if (!preset) return;
-  openRoutine({ ...preset, totalMinutes: 0, autoTotal: true, steps: preset.steps.map(([name, minutes]) => ({ name, minutes, imageUrl: null, pictogramId: null })) });
+  openRoutine({ ...preset, totalMinutes: 0, autoTotal: true, steps: preset.steps.map(([name, minutes, pictogramId = null]) => ({ name, minutes, imageUrl: pictogramId ? SymbolLibrary.imageUrl(pictogramId) : null, pictogramId })) });
   if (announce) showSaveStatus(`Opened ${preset.name}. Customize the steps below.`);
   // Create all steps immediately. Late icon responses cannot repopulate a replaced routine.
   const steps = [...state.steps];
   await Promise.all(steps.map(async (step) => {
+    if (step.pictogramId) return;
     const results = await SymbolLibrary.search(step.name);
     if (!state.steps.includes(step) || !results[0]) return;
     step.pictogramId = results[0]._id;
