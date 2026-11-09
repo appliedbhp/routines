@@ -5,9 +5,6 @@
 .character-style-label{display:flex;align-items:center;gap:12px;margin:16px 0}.character-style-label select{padding:10px 14px;font:inherit;border:1px solid #cad5e5;border-radius:8px}
 
 #micahPreview svg{display:block;width:100%;height:auto;max-width:400px;margin:auto;border-radius:16px;background:repeating-conic-gradient(#eee 0% 25%,white 0% 50%) 0/24px 24px}
-#micahMotion{text-align:left;margin-top:12px}#micahMotion label{display:block;margin-top:8px;font-weight:600}
-#micahMotion textarea,#micahMotion select,#micahMotion input,#micahMotion audio{width:100%;max-width:100%}
-#micahMotion textarea{resize:vertical}
-.micah-buttons{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.character-preview:has(#micahMotion:not([hidden])){position:static}
+#micahMotion{margin-top:12px}
+#micah-status:empty{display:none}
 @media print{#micahMotion{display:none}}
