@@ -35,3 +35,10 @@ test('background gradients survive saving for every character style',()=>{
  const state=M.normalize({style,backgroundGradient});assert.equal(M.normalize(JSON.parse(JSON.stringify(state))).backgroundGradient,backgroundGradient);assert.match(R.render(state),/id="character-background"/);
  }
 });
+test('gradient finishes use the selected color and change with the palette',()=>{
+ for(const backgroundGradient of ['blue-diagonal','blue-radial','blue-dawn']){
+ const a=R.render(M.normalize({style:'micah',backgroundGradient,backgroundColor:'f20775'}));
+ const b=R.render(M.normalize({style:'micah',backgroundGradient,backgroundColor:'646658'}));
+ assert.match(a,/stop-color="#f20775"/);assert.match(b,/stop-color="#646658"/);assert.notEqual(a,b);
+ }
+});

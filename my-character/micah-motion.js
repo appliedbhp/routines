@@ -17,7 +17,7 @@ document.getElementById('micah-laugh').addEventListener('click', () => {
 
 function animate(now) {
   if (!rig) return;
-  const {head,shadow,shoulders,jaw,restingJaw,restMouth,laughMouth,brows,eyes,eyeCenter} = rig;
+  const {head,shadow,shoulders,jaw,restingJaw,restMouth,laughMouth,brows,lids} = rig;
   let chuckle = 0, bounce = 0;
   if (laughStart !== null) {
     const progress = Math.max(0,(now-laughStart)/laughDuration);
@@ -40,18 +40,18 @@ function animate(now) {
   laughMouth.setAttribute('transform', `translate(0 ${(1-mouthScale)*204}) scale(1 ${mouthScale})`);
 
   const motion = reduceMotion.matches ? 0 : 1;
-  const sway = motion*(1.25*Math.sin(now/830)+2*bounce);
-  const breath = motion*(.5-.5*Math.cos(now/690))*(1-.7*chuckle);
-  const headRise = breath*.75;
-  head.setAttribute('transform', `translate(0 ${-headRise}) rotate(${sway} 172 262)`);
-  // The shadow uses the same pivot, expressed in the neck's local coordinates.
-  shadow.setAttribute('transform', `translate(0 ${jawDrop*.72-headRise}) rotate(${sway} 92 239)`);
-  shoulders.setAttribute('transform', `translate(0 360) scale(1 ${1+.032*breath}) translate(0 -360)`);
+  const sway = motion*(1.1*Math.sin(now/1200));
+  head.setAttribute('transform', `rotate(${sway} 172 262)`);
+  shadow.setAttribute('transform', `translate(0 ${jawDrop*.72}) rotate(${sway} 92 239)`);
   brows.setAttribute('transform', `translate(0 ${-chuckle*3*motion})`);
   if (now > nextBlink + 150) nextBlink = now + 2300 + Math.random()*1700;
-  const blink = !motion || now < nextBlink ? 1 : 1-.94*Math.sin(Math.PI*(now-nextBlink)/150)**2;
-  const eyeScale = blink*(1-.4*chuckle*motion);
-  eyes.setAttribute('transform', `translate(0 ${eyeCenter*(1-eyeScale)}) scale(1 ${eyeScale})`);
+  const blink = !motion || now < nextBlink ? 1 : 1-Math.sin(Math.PI*(now-nextBlink)/150)**2;
+  const open = blink;
+  for(const {rect,line,cx,cy,ry} of lids){
+    rect.setAttribute('y',cy-ry*open);rect.setAttribute('height',2*ry*open);
+    line.setAttribute('d',`M${cx-10} ${cy-ry*open} Q${cx} ${cy-ry*open+3} ${cx+10} ${cy-ry*open}`);
+    line.setAttribute('opacity',1-open);
+  }
   frameRequest = requestAnimationFrame(animate);
 }
 
@@ -99,7 +99,13 @@ function buildRig(svg, state) {
   const movingHead = wrap(headParts);
   movingHead.prepend(face);
   const movingShirt = wrap([shirt]);
-  const blink = wrap([eyeArt]);
+  const eyeClip=element('clipPath',{id:'micah-eyelids'}),lids=[];
+  for(const [cx,cy] of [[16.5,29],[80.5,19]]){
+    const ry=16,rect=element('rect',{x:cx-15,y:cy-ry,width:30,height:ry*2});eyeClip.append(rect);
+    const line=element('path',{fill:'none',stroke:'#000','stroke-width':2,'stroke-linecap':'round',opacity:0});
+    lids.push({rect,line,cx,cy,ry});
+  }
+  const eyeInk=element('g',{'clip-path':'url(#micah-eyelids)'});eyeInk.append(...eyeArt.children);eyeArt.append(eyeClip,eyeInk,...lids.map(l=>l.line));
 
   const laughing = translated(parse(CharacterRenderer.render({...state,mouth:'laughing'})),170,183);
   if (!laughing) return null;
@@ -112,7 +118,7 @@ function buildRig(svg, state) {
   image.setAttribute('aria-label','Your Micah character');
   return {image, head:movingHead, shoulders:movingShirt, shadow:neckShadow,
     jaw:chin, restingJaw:chin.getAttribute('d'), restMouth:mouth,
-    laughMouth:laughLayer, brows:movingBrows, eyes:blink};
+    laughMouth:laughLayer, brows:movingBrows, lids};
 }
 
 window.MicahMotion = {
@@ -134,8 +140,6 @@ window.MicahMotion = {
     const wasRunning = Boolean(rig);
     rig = next;
     host.replaceChildren(next.image);
-    const box = next.eyes.getBBox();
-    next.eyeCenter = box.y + box.height/2;
     if (!wasRunning) frameRequest = requestAnimationFrame(animate);
   }
 };

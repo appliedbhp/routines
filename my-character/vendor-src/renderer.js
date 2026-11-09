@@ -35,6 +35,13 @@ export function render(state){
  svg=renderBase({...state,backgroundColor:'transparent'});
  const radial=kind==='blue-radial',tag=radial?'radialGradient':'linearGradient';
  const attrs=radial?'cx=".3" cy=".25" r=".85"':'x1="0" y1="0" x2="1" y2="1"';
- const stops=kind==='blue-dawn'?'<stop stop-color="#475f79"/><stop offset=".6" stop-color="#96bbcd"/><stop offset="1" stop-color="#f1e8db"/>':radial?'<stop stop-color="#96bbcd"/><stop offset="1" stop-color="#475f79"/>':'<stop stop-color="#475f79"/><stop offset="1" stop-color="#96bbcd"/>';
+ const base=/^[0-9a-f]{6}$/i.test(state.backgroundColor)?state.backgroundColor:'475f79';
+ const rgb=base.match(/../g).map(v=>parseInt(v,16));
+ // A softened opposite hue adds contrast while retaining the chosen color.
+ const companion=rgb.map(v=>Math.round((255-v)*.55+v*.15+255*.30));
+ const hex=a=>a.map(v=>v.toString(16).padStart(2,'0')).join('');
+ const accent=hex(companion),light=hex(rgb.map(v=>Math.round(v*.25+255*.75)));
+ const stops=kind==='blue-dawn'?`<stop stop-color="#${base}"/><stop offset=".65" stop-color="#${accent}"/><stop offset="1" stop-color="#${light}"/>`:radial?`<stop stop-color="#${accent}"/><stop offset="1" stop-color="#${base}"/>`:`<stop stop-color="#${base}"/><stop offset="1" stop-color="#${accent}"/>`;
+
  return svg.replace(/(<svg[^>]*>)/,`$1<defs><${tag} id="character-background" ${attrs}>${stops}</${tag}></defs><rect width="100%" height="100%" fill="url(#character-background)"/>`);
 }
