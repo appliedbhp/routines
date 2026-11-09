@@ -106,6 +106,15 @@
         { id: 'variant05', label: 'Aviator Goggles' }
       ],
       backgrounds: [
+        {hex:'f20775',label:'Hot pink'},
+        {hex:'f2865e',label:'Peach'},
+        {hex:'f2ab27',label:'Golden yellow'},
+        {hex:'646658',label:'Olive gray'},
+        {hex:'b7aea9',label:'Warm gray'},
+        {hex:'cebeaf',label:'Sand'},
+        {hex:'995b6a',label:'Dusty rose'},
+
+        {hex:'475f79',label:'Slate blue'}, {hex:'96bbcd',label:'Soft blue'},
         { id: 'transparent', label: 'Void Translucent', color: 'transparent' },
         { id: '1e1b4b', label: 'Night Twilight', color: '#1e1b4b' },
         { id: '0f172a', label: 'Abyssal Slate', color: '#0f172a' },

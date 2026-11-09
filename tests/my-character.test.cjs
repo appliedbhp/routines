@@ -20,3 +20,18 @@ test('Micah eye and eyebrow selections change the generated art and survive savi
   }
  }
 });
+
+test('Adventurer outfits survive saving and never appear on Micah',()=>{
+ for(const outfit of Object.keys(R.outfits)){
+  const state=M.normalize({style:'adventurer',outfit,skinColor:'ecad80'});
+  assert.equal(M.normalize(JSON.parse(JSON.stringify(state))).outfit,outfit);
+  assert.ok(R.render(state).includes('data-outfit="'+outfit+'"'));
+  assert.ok(!R.render(M.normalize({style:'micah',outfit})).includes('data-outfit'));
+ }
+ assert.equal(M.normalize({outfit:'unknown'}).outfit,'none');
+});
+test('background gradients survive saving for every character style',()=>{
+ for(const style of Object.keys(R.styles)) for(const backgroundGradient of ['blue-diagonal','blue-radial','blue-dawn']){
+ const state=M.normalize({style,backgroundGradient});assert.equal(M.normalize(JSON.parse(JSON.stringify(state))).backgroundGradient,backgroundGradient);assert.match(R.render(state),/id="character-background"/);
+ }
+});

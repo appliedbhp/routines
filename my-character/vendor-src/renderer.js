@@ -1,3 +1,5 @@
+import {outfits,applyOutfit} from './outfits.js';
+export {outfits};
 import * as micah from '@dicebear/micah';
 import * as notionists from '@dicebear/notionists';
 import * as openPeeps from '@dicebear/open-peeps';
@@ -8,7 +10,7 @@ function renderAdventurer(state){
  const options={seed:state.seed,hair:[state.hair],hairProbability:100,hairColor:[state.isOmbre?marker:state.hairColor],skinColor:[state.skinColor],eyes:[state.eyes],eyebrows:[state.eyebrows],mouth:[state.mouth],glasses:[state.glasses],glassesProbability:state.glassesEnabled?100:0,earringsProbability:0,featuresProbability:0,backgroundColor:[state.backgroundColor],randomizeIds:false};
  let svg=createAvatar(adventurer,options).toString();
  if(state.isOmbre){const gradient=`<defs><linearGradient id="abhp-hair-ombre" gradientUnits="userSpaceOnUse" x1="0" y1="140" x2="0" y2="780"><stop offset="0" stop-color="#${state.hairColor}"/><stop offset=".35" stop-color="#${state.hairColor}"/><stop offset="1" stop-color="#${state.hairTipColor}"/></linearGradient></defs>`;svg=svg.replace(/(<svg[^>]*>)/,`$1${gradient}`).replaceAll(`fill="#${marker}"`,'fill="url(#abhp-hair-ombre)"');}
- return svg;
+ return applyOutfit(svg,state);
 }
 export const schema=adventurer.schema;
 
@@ -23,5 +25,16 @@ export function optionsFor(state){
  if(state.style==='open-peeps')Object.assign(options,{accessoriesProbability:state.glassesEnabled?100:0,facialHairProbability:0,maskProbability:0});
  return options;
 }
-export function render(state){if(!state.style||state.style==='adventurer')return renderAdventurer(state);return createAvatar({micah,notionists,'open-peeps':openPeeps}[state.style]||adventurer,optionsFor(state)).toString();}
+function renderBase(state){if(!state.style||state.style==='adventurer')return renderAdventurer(state);const svg=createAvatar({micah,notionists,'open-peeps':openPeeps}[state.style]||adventurer,optionsFor(state)).toString();return svg;}
 export function credit(style='adventurer'){const s=styles[style]||styles.adventurer;return s.name+' by '+s.creator+' / '+s.license+' / DiceBear';}
+
+export function render(state){
+ let svg=renderBase(state);
+ const kind=state.backgroundGradient;
+ if(!['blue-diagonal','blue-radial','blue-dawn'].includes(kind))return svg;
+ svg=renderBase({...state,backgroundColor:'transparent'});
+ const radial=kind==='blue-radial',tag=radial?'radialGradient':'linearGradient';
+ const attrs=radial?'cx=".3" cy=".25" r=".85"':'x1="0" y1="0" x2="1" y2="1"';
+ const stops=kind==='blue-dawn'?'<stop stop-color="#475f79"/><stop offset=".6" stop-color="#96bbcd"/><stop offset="1" stop-color="#f1e8db"/>':radial?'<stop stop-color="#96bbcd"/><stop offset="1" stop-color="#475f79"/>':'<stop stop-color="#475f79"/><stop offset="1" stop-color="#96bbcd"/>';
+ return svg.replace(/(<svg[^>]*>)/,`$1<defs><${tag} id="character-background" ${attrs}>${stops}</${tag}></defs><rect width="100%" height="100%" fill="url(#character-background)"/>`);
+}

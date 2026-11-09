@@ -8,3 +8,14 @@
 #micahMotion{margin-top:12px}
 #micah-status:empty{display:none}
 @media print{#micahMotion{display:none}}
+#notionistPreview svg{display:block;width:100%;height:auto;border-radius:18px}
+#notionistPreview[hidden]{display:none}
+.notionist-sway{transform-origin:854px 1138px;animation:notionist-sway 4.8s ease-in-out infinite}
+.notionist-breathe{transform-origin:850px 1744px;animation:notionist-breathe 4.8s ease-in-out infinite}
+.notionist-blink{animation:notionist-blink 4.8s linear infinite}
+.notionist-brows{animation:notionist-brows 4.8s ease-in-out infinite}
+@keyframes notionist-sway{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-4px) rotate(1.14deg)}65%{transform:translateY(-2px) rotate(-1.5deg)}}
+@keyframes notionist-breathe{50%{transform:scale(1.008,1.018)}}
+@keyframes notionist-blink{0%,14%,20%,76%,83%,100%{transform:scaleY(1)}17%,79%{transform:scaleY(.11)}}
+@keyframes notionist-brows{45%,55%{transform:translate(-4px,-8px)}0%,100%{transform:translate(0,0)}}
+@media(prefers-reduced-motion:reduce){.notionist-sway,.notionist-breathe,.notionist-blink,.notionist-brows{animation:none}}
