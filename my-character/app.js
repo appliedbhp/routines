@@ -3,7 +3,7 @@
  const status=text=>$('characterStatus').textContent=text;
  try{const shared=new URLSearchParams(location.hash.slice(1)).get('character');const local=localStorage.getItem(key);if(shared&&shared.length<5000)state=M.normalize(JSON.parse(shared));else if(local)state=M.normalize(JSON.parse(local));}catch{status('That saved character could not be opened. A starting character is ready.');}
  const button=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;return b;};
- function preview(){svg=CharacterRenderer.render(state);$('avatarImage').src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);$('currentHeroName').textContent=state.seed;$('characterStyle').value=state.style||'adventurer';$('avatarImage').alt='Your '+CharacterRenderer.styles[state.style||'adventurer'].name+' character';$('characterCredit').textContent=CharacterRenderer.credit(state.style)+(state.style==='adventurer'?' · Hair gradient by ABHP.':'');$('heroClassBadge').textContent=CharacterPresets.heroes.find(h=>h.id===heroId)?.classTitle||'Your character';}
+ function preview(){svg=CharacterRenderer.render(state);$('avatarImage').src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);window.MicahMotion?.preview(state,svg);$('currentHeroName').textContent=state.seed;$('characterStyle').value=state.style||'adventurer';$('avatarImage').alt='Your '+CharacterRenderer.styles[state.style||'adventurer'].name+' character';$('characterCredit').textContent=CharacterRenderer.credit(state.style)+(state.style==='adventurer'?' · Hair gradient by ABHP.':'');$('heroClassBadge').textContent=CharacterPresets.heroes.find(h=>h.id===heroId)?.classTitle||'Your character';}
  function change(key,value){const focusKey=document.activeElement?.dataset.focusKey;state=M.normalize({...state,[key]:value});heroId='';preview();presets();controls();if(focusKey)[...document.querySelectorAll('[data-focus-key]')].find(e=>e.dataset.focusKey===focusKey)?.focus();}
  function presets(){const host=$('premadeBar');host.closest('section').hidden=state.style!=='adventurer';host.replaceChildren();for(const hero of CharacterPresets.heroes){const b=button(hero.name,()=>{state=M.normalize(hero);heroId=hero.id;preview();presets();controls();});b.setAttribute('aria-pressed',String(heroId===hero.id));const small=document.createElement('small');small.textContent=hero.classTitle;b.append(small);host.append(b);}}
  function group(title){const f=document.createElement('fieldset'),l=document.createElement('legend');l.textContent=title;f.append(l);$('characterControls').append(f);return f;}
@@ -28,7 +28,7 @@
    if(style==='open-peeps')palette('headContrastColor',schema.headContrastColor.default);
   }
   if(tab==='face'){
-   if(style==='micah'){choices('Mouth','mouth',CharacterRenderer.micahRules.mouth.map(id=>({id})));const note=document.createElement('p');note.textContent='Micah uses round eyes and raised eyebrows.';$('characterControls').append(note);}
+   if(style==='micah'){choices('Eyes','eyes',items('eyes'));choices('Eyebrows','eyebrows',items('eyebrows'));choices('Mouth','mouth',CharacterRenderer.micahRules.mouth.map(id=>({id})));}
    else if(style==='notionists'){choices('Eyes','eyes',items('eyes'));choices('Eyebrows','brows',items('brows'));choices('Mouth','lips',items('lips'));}
    else choices('Expression','face',items('face'));
   }

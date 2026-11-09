@@ -11,7 +11,7 @@
   if(typeof input.seed==='string')s.seed=input.seed.trim().slice(0,60)||s.seed;
   if(typeof input.backgroundColor==='string'&&(/^[0-9a-f]{6}$/i.test(input.backgroundColor)||input.backgroundColor==='transparent'))s.backgroundColor=input.backgroundColor;
   s.glassesEnabled=style!=='micah'&&input.glassesEnabled===true;
-  if(style==='micah'){for(const key of ['mouth','baseColor','shirtColor'])s[key]=R.micahRules[key].includes(input[key])?input[key]:R.micahRules[key][0];s.eyes='round';s.eyebrows='up';}
+  if(style==='micah'){for(const key of ['mouth','baseColor','shirtColor'])s[key]=R.micahRules[key].includes(input[key])?input[key]:R.micahRules[key][0];const schema=R.schemas.micah.properties;s.eyes=schema.eyes.items.enum.includes(input.eyes)?input.eyes:'round';s.eyebrows=schema.eyebrows.items.enum.includes(input.eyebrows)?input.eyebrows:'up';}
   return s;
  }
  root.CharacterModel={defaults,normalize};
