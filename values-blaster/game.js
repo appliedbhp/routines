@@ -1,4 +1,4 @@
-import {card, safeImage, safeUrl} from '../js/ads-model.mjs';
+import {card, safeImage, safeUrl, safeVideo} from '../js/ads-model.mjs';
 
 
     /* ==========================================================================
@@ -784,7 +784,8 @@ import {card, safeImage, safeUrl} from '../js/ads-model.mjs';
       const ad = gameAds[adIndex++ % gameAds.length];
       const image = new Image();
       image.referrerPolicy = 'no-referrer';
-      image.src = safeImage(ad.image);
+      const poster = safeImage(ad.image);
+      if (poster) image.src = poster;
       const target = new DynamicValueAsteroid('Ad');
       target.adId = ad.id;
       target.draw = function() {
@@ -1138,7 +1139,7 @@ ${releasedValues.map(v => ` • ${v}`).join('\n')}
       if (event.origin !== location.origin || event.source !== parent || parent === window) return;
       if (event.data?.type === 'values-blaster-pause') setPaused(true);
       if (event.data?.type === 'values-blaster-ads') {
-        gameAds = event.data.ads.filter(ad => safeImage(ad.image) && safeUrl(ad.url));
+        gameAds = event.data.ads.filter(ad => (safeImage(ad.image) || safeVideo(ad.video)) && safeUrl(ad.url));
         asteroids = asteroids.filter(asteroid => !asteroid.adId || gameAds.some(ad => ad.id === asteroid.adId));
         if (shownAdId && !gameAds.some(ad => ad.id === shownAdId)) adDialog.close();
       }
