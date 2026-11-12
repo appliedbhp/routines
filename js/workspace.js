@@ -1,6 +1,7 @@
 /* Shared visual-tool navigation; existing editors keep their own state and events. */
 (async () => {
   const root = new URL('../', document.currentScript.src);
+  import(new URL('js/print-qr.js',root).href);
   import(new URL('js/tool-tour.js',root).href);
   await import(new URL('js/audience.js',root).href);
   const audience=globalThis.RoutineAudience;

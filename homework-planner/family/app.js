@@ -1,3 +1,4 @@
+import '../../js/print-qr.js';
 import {cloudConfig} from '../../cloud/config.js';
 import {dateKey,dayDate,days,displayDate,element,familyURL,statusText,visibleDay} from '../sharing.js';
 
@@ -41,11 +42,12 @@ function render(week=false){
  }
 }
 function chartQR(url){
- if(typeof qrcode!=='function')return null;
+ if(globalThis.RoutinesPrintQR?.show===false||typeof qrcode!=='function')return null;
  const qr=qrcode(0,'M');qr.addData(url.href);qr.make();return qr;
 }
-function prepareCopyPDF(student){
+async function prepareCopyPDF(student){
  try{
+  await globalThis.RoutinesPrintQR.ready;
   preparePrintCopy(student);
   const count=chart.weekends?7:5,url=familyURL(linkId);
   const rows=chart.subjects.map(subject=>({writing:student,cells:[subject.name,...subject.entries.slice(0,count).map(entry=>
@@ -55,7 +57,7 @@ function prepareCopyPDF(student){
    title:chart.title,
    details:[byId('week').textContent,student?studentInstructions:'Family copy · Mark Verified after comparing with the student’s copy.',...(!student?[byId('updated').textContent]:[])],
    headers:['Subject',...Array.from({length:count},(_,day)=>dayLabel(day))],rows,
-   footer:'Scan to check this week’s homework.\n'+url.href,qr:chartQR(url)
+   footer:(globalThis.RoutinesPrintQR?.show===false?'Check this week’s homework.\n':'Scan to check this week’s homework.\n')+url.href,qr:chartQR(url)
   },student?'homework-student-copy.pdf':'homework-family-copy.pdf',byId('familyPDF'));
   byId('pdfStatus').textContent='Your PDF is ready. Select Save homework PDF, then open the saved file to print.';
  }catch{byId('pdfStatus').textContent='Could not create the PDF. Reload the chart and try again.';}

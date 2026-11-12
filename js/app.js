@@ -428,7 +428,7 @@ function renderPrintView() {
     outlineOnly: true,
     labelFontScale: state.printFontScale,
     iconScale: state.printIconScale,
-    centerMode: "qr",
+    centerMode: globalThis.RoutinesPrintQR?.show === false ? "none" : "qr",
     qrImageUrl: QR_IMAGE_URL,
     qrSize: 1.65,
     qrCaptionLines: ["Works best with TimeTimer TWIST"],
@@ -840,6 +840,7 @@ function bindStaticControls() {
     };
   });
   window.addEventListener("beforeprint", renderPrintView);
+  window.addEventListener("routines-print-qr-change", renderPrintView);
   document.fonts.ready.then(() => document.querySelectorAll(".wheel-holder").forEach(fitWheelLabels));
   document.getElementById("printBtn").onclick = () => window.print();
   document.getElementById("startTimerBtn").onclick = startTimer;
