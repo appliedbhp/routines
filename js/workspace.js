@@ -7,7 +7,7 @@
   const audience=globalThis.RoutineAudience;
   globalThis.ABHPFileScriptURL=new URL('js/abhp-files.js',root).href;await import(globalThis.ABHPFileScriptURL);
   const tools = [
-    ['routine/', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
+    ['my-home/', 'My Home', '🔒'], ['routine/', 'Routine timer', 'timer'], ['chore-chart/', 'Chore chart', 'mop'],
     ['first-then/', 'First–Then board', 'checklist_rtl'], ['choice-board/', 'Choice board', 'developer_board'],
     ['task-strip/', 'Task strip', 'ballot'], ['now-next-later/', 'Now–Next–Later', 'steppers'],
     ['calm-down/', 'Calm-down board', '♡'],
@@ -34,7 +34,7 @@
   const homeName=document.createElement('span');homeName.className='nav-label';homeName.textContent='Tools';home.append(homeMark,homeName);
   const overview=document.createElement('a');overview.href=root.href;overview.className='tools-overview';overview.textContent='All tools';overview.setAttribute('aria-label','All visual support tools');if(location.pathname.replace(/index\.html$/, '')===overview.pathname)overview.setAttribute('aria-current','page');
   nav.append(overview);
-  const groupFor = {'Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly':'Planning','Quarterly':'Planning','Monthly':'Planning','Weekly':'Planning','Daily':'Planning','Commitments':'Values and actions','Meal planning':'Planning','Intentions':'Values and actions','Maintenance':'Memory','Touchpoints':'Memory','Side Quest':'Arcade','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
+  const groupFor = {'My Home':'Daily routines','Routine timer':'Daily routines','Chore chart':'Daily routines','Task strip':'Daily routines','Now–Next–Later':'Daily routines','First–Then board':'Choices & transitions','Choice board':'Choices & transitions','Calm-down board':'Choices & transitions','Self-monitor':'Learning & focus','Homework planner':'Learning & focus','Token board':'Learning & focus','Yearly':'Planning','Quarterly':'Planning','Monthly':'Planning','Weekly':'Planning','Daily':'Planning','Commitments':'Values and actions','Meal planning':'Planning','Intentions':'Values and actions','Maintenance':'Memory','Touchpoints':'Memory','Side Quest':'Arcade','Values Blaster':'Arcade','My Character':'Arcade','What’s New':'Resources'};
   globalThis.RoutineToolCatalog=tools.filter(t=>t[0]!=='whats-new/').map(t=>({id:t[0].replace('/',''),label:t[1],group:groupFor[t[1]]}));
   let collapsedGroups={};try{collapsedGroups=JSON.parse(localStorage.getItem('routines.collapsedGroups.v1')||'{}');}catch{}
   const order=['Daily routines','Choices & transitions','Learning & focus','Planning','Values and actions','Memory','Arcade','Resources'];
@@ -52,6 +52,7 @@
     if (new URL(link.href).pathname === location.pathname.replace(/index\.html$/, '')) link.setAttribute('aria-current', 'page');
     nav.append(link);
   }
+  import(new URL('js/my-home-access.js',root).href).then(module=>module.syncMyHomeIcons());
   function applyAudience(preference=audience.read()){
     for(const link of nav.querySelectorAll('[data-tool]'))link.hidden=link.dataset.tool!=='whats-new'&&!audience.allows(preference.age,link.dataset.tool,preference.tools);
     for(const heading of nav.querySelectorAll('p[data-tool-group]'))heading.hidden=![...nav.querySelectorAll('a[data-tool-group]')].some(link=>link.dataset.toolGroup===heading.dataset.toolGroup&&!link.hidden);

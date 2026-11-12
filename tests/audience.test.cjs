@@ -1,10 +1,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const audience=require('../js/audience.js');
 test('age profiles contain exactly the requested tool sets',()=>{
- assert.deepEqual(audience.profiles.young.tools,['routine','chore-chart','task-strip','now-next-later','first-then','choice-board','token-board']);
- assert.deepEqual(audience.profiles.child.tools,['routine','chore-chart','task-strip','now-next-later','choice-board','token-board','self-monitor','homework-planner']);
- assert.deepEqual(audience.profiles.teen.tools,['routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','weekly-planner','daily-planner','meal-planner','committed-action-tracker','values-blaster','my-character','maintenance','touchpoints']);
- assert.deepEqual(audience.profiles.adult.tools,['implementation-intentions',...audience.profiles.teen.tools.filter(tool=>tool!=='routine')]);
+ assert.deepEqual(audience.profiles.young.tools,['my-home','routine','chore-chart','task-strip','now-next-later','first-then','choice-board','token-board']);
+ assert.deepEqual(audience.profiles.child.tools,['my-home','routine','chore-chart','task-strip','now-next-later','choice-board','token-board','self-monitor','homework-planner','side-quest']);
+ assert.deepEqual(audience.profiles.teen.tools,['my-home','routine','homework-planner','self-monitor','yearly-planner','quarterly-planner','monthly-planner','weekly-planner','daily-planner','meal-planner','committed-action-tracker','side-quest','values-blaster','my-character','maintenance','touchpoints']);
+ assert.deepEqual(audience.profiles.adult.tools,['my-home','implementation-intentions',...audience.profiles.teen.tools.filter(tool=>!['routine','my-home'].includes(tool))]);
  assert.equal(audience.allows('child','first-then'),false);assert.equal(audience.allows('all','future-tool'),true);
 });
 test('missing or invalid local preferences keep all tools visible',()=>{

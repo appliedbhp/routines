@@ -281,3 +281,11 @@ Values Blaster lives under Arcade for teen/adult menus. It adapts the supplied c
 
 My Character adapts the supplied Adventurer studio. Pinned DiceBear 9.2.4 renders locally, with ombré applied only to hair fills in the final SVG; every preview/export uses that same SVG. Source and exact dependency lock are in my-character/vendor-src (build with esbuild --bundle --format=iife --global-name=CharacterRenderer --minify). Art attribution appears on the page, in SVG metadata, and in the PNG footer. Character settings save locally; share links carry settings in their URL fragment.
 Planning pages load the YouTube playlist iframe only when the mindful widget opens, remove it on close, and exclude it from printing.
+
+## My Home
+
+`/my-home/` is a paid Family/Classroom (and administrator) tool for parent setup checklists and prompting plans. Shared navigation renders a padlock until current server-returned account entitlements verify access, then a home icon. Direct navigation, editing, imports, exports, and printing use the same gate; errors and sign-out close the editor. Verification requires an internet connection.
+
+Plans and the current draft are stored per signed-in user ID in browser localStorage (`routines.myHome.v1.<user-id>`), not uploaded to cloud board storage. Version-1 `my-home` .abhp backups are validated and supported by the common Open-file router. This first release links to existing child-facing editors without copying parent setup items into those boards.
+
+Validate with `node --test tests/my-home.test.cjs tests/audience.test.cjs tests/print-qr.test.cjs tests/file-store.test.cjs`. Local paid-editor QA uses a separate, untracked test server with a simulated entitlement; no test bypass is shipped.
