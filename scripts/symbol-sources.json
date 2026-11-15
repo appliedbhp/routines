@@ -6488,6 +6488,204 @@
         ],
         "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
         "revision": "1912bf23f46bd796a223dc5a42369def6ea1cb29"
+      },
+      {
+        "id": "teen-field-guide-organize-binder",
+        "title": "Put a worksheet in a binder",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "organize binder",
+          "file worksheet",
+          "school papers",
+          "three ring binder",
+          "teen routine",
+          "field guide",
+          "male",
+          "light skin tone",
+          "A blond teen puts a worksheet into an open three-ring binder."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-organize-binder.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-rinse-blueberries",
+        "title": "Rinse blueberries",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "wash berries",
+          "rinse fruit",
+          "colander",
+          "snack prep",
+          "teen routine",
+          "field guide",
+          "female",
+          "light skin tone",
+          "A teen with crimped blonde hair rinses blueberries in a colander at the sink."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-rinse-blueberries.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-check-out-library-book",
+        "title": "Check out a library book",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "borrow a book",
+          "library checkout",
+          "book scanner",
+          "self checkout",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "light skin tone",
+          "A teen with round glasses scans a book at a library self-checkout station."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-check-out-library-book.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-close-travel-mug",
+        "title": "Put the lid on a travel mug",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "close mug",
+          "travel cup",
+          "drink lid",
+          "take a drink to go",
+          "teen routine",
+          "field guide",
+          "male",
+          "medium skin tone",
+          "A teen in a denim jacket screws a lid onto a reusable travel mug."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-close-travel-mug.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-replace-toilet-paper",
+        "title": "Replace the toilet paper roll",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "refill toilet paper",
+          "toilet roll",
+          "bathroom supplies",
+          "bathroom chore",
+          "teen routine",
+          "field guide",
+          "female",
+          "medium skin tone",
+          "A teen with ringlets places a fresh toilet paper roll on its holder."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-replace-toilet-paper.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-check-off-task",
+        "title": "Check off a task",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "check off checklist",
+          "mark done",
+          "to do list",
+          "checkmark",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "medium skin tone",
+          "A teen in a slate sweatshirt marks a task complete on a paper checklist."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-check-off-task.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-save-loose-change",
+        "title": "Put loose change in a jar",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "coin jar",
+          "save coins",
+          "loose change",
+          "save money",
+          "teen routine",
+          "field guide",
+          "male",
+          "dark skin tone",
+          "A teen in a cream shirt drops coins into a jar."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-save-loose-change.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-bag-groceries",
+        "title": "Pack groceries in a reusable bag",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "bag groceries",
+          "shopping bag",
+          "reusable tote",
+          "grocery store",
+          "teen routine",
+          "field guide",
+          "female",
+          "dark skin tone",
+          "A teen with long braids puts groceries into a reusable tote."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-bag-groceries.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-turn-off-lamp",
+        "title": "Turn off the bedside lamp",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "switch off light",
+          "lights out",
+          "lamp pull chain",
+          "bedtime routine",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "dark skin tone",
+          "A teen with side-swept twists pulls the chain on a bedside lamp."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-turn-off-lamp.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
       }
     ]
   },
