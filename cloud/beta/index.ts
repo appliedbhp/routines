@@ -62,7 +62,7 @@ Deno.serve(async req=>{
    const {data:result,error}=await admin.rpc('routine_confirm_beta_account',{caller:user.id,request_id:body.requestId||null,referral_code:token().slice(0,24)});if(error)throw Error(error.message);
    return reply(200,{alreadyMember:!!result.alreadyMember,noPendingSignup:!!result.noPendingSignup,failedInvites:await inviteFriends(result)});
   }
-  if(['state','bugs','bug-update'].includes(action))return reply(200,await rpc(user.id,action,body));
+  if(['state','bugs','bug-update','plan-approve-free','plan-decline','plan-restore'].includes(action))return reply(200,await rpc(user.id,action,body));
   if(action==='checkout'){
    await limit('checkout:'+user.id,12);
    const order=await rpc(user.id,'checkout',{offer:body.offer});if(order.url)return reply(200,{url:order.url});
