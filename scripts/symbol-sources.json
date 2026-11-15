@@ -6686,6 +6686,411 @@
         ],
         "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
         "revision": "dda448332d3ff4c1343027e60798d0bdab0f64e7"
+      },
+      {
+        "id": "teen-field-guide-untangle-earbuds",
+        "title": "Untangle earbuds",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "untangle headphones",
+          "wired earbuds",
+          "knotted cord",
+          "headphone cable",
+          "teen routine",
+          "field guide",
+          "male",
+          "light skin tone",
+          "A blond teen separates tangled earbud wires with both hands."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-untangle-earbuds.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-spread-peanut-butter",
+        "title": "Spread peanut butter on toast",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "peanut butter toast",
+          "spread topping",
+          "make breakfast",
+          "snack prep",
+          "teen routine",
+          "field guide",
+          "female",
+          "light skin tone",
+          "A teen with crimped blond hair spreads peanut butter on toast with a butter knife."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-spread-peanut-butter.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-plug-in-laptop",
+        "title": "Plug in a laptop",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "laptop charger",
+          "charge computer",
+          "plug in computer",
+          "power cable",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "light skin tone",
+          "A teen wearing round glasses connects a charging cable to a laptop."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-plug-in-laptop.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-match-socks",
+        "title": "Match clean socks",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "pair socks",
+          "sort socks",
+          "clean laundry",
+          "fold laundry",
+          "teen routine",
+          "field guide",
+          "male",
+          "medium skin tone",
+          "A teen in a denim jacket holds two matching socks together."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-match-socks.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-wipe-spill",
+        "title": "Wipe up a spill",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "clean spill",
+          "wipe table",
+          "paper towel",
+          "clean up mess",
+          "teen routine",
+          "field guide",
+          "female",
+          "medium skin tone",
+          "A teen with ringlets wipes a spill on a table with a paper towel."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-wipe-spill.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-open-blinds",
+        "title": "Open the blinds",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "raise blinds",
+          "window shade",
+          "let in daylight",
+          "morning routine",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "medium skin tone",
+          "A teen in a slate sweatshirt pulls the cord on a window blind."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-open-blinds.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-zip-hoodie",
+        "title": "Zip up a hoodie",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "zip jacket",
+          "fasten zipper",
+          "put on hoodie",
+          "get dressed",
+          "teen routine",
+          "field guide",
+          "male",
+          "dark skin tone",
+          "A teen with short coils pulls up the zipper on a hoodie."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-zip-hoodie.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-wash-lunchbox",
+        "title": "Wash a lunchbox",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "clean lunch box",
+          "wash food container",
+          "scrub lunchbox",
+          "kitchen cleanup",
+          "teen routine",
+          "field guide",
+          "female",
+          "dark skin tone",
+          "A teen with long braids scrubs a reusable lunchbox with a sponge at the sink."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-wash-lunchbox.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-post-reminder",
+        "title": "Put up a reminder note",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "sticky note",
+          "visual reminder",
+          "post a note",
+          "remember a task",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "dark skin tone",
+          "A teen with side-swept twists posts a sticky note on a door."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-post-reminder.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-light-male",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "male",
+          "light skin tone",
+          "A blond teen in red flannel sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-light-male.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-light-female",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "female",
+          "light skin tone",
+          "A teen with crimped blond hair sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-light-female.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-light-nonbinary",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "light skin tone",
+          "A teen wearing round glasses sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-light-nonbinary.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-medium-male",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "male",
+          "medium skin tone",
+          "A teen in a denim jacket sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-medium-male.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-medium-female",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "female",
+          "medium skin tone",
+          "A teen with ringlets sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-medium-female.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-medium-nonbinary",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "medium skin tone",
+          "A teen in a slate sweatshirt sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-medium-nonbinary.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-dark-male",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "male",
+          "dark skin tone",
+          "A teen with short coils sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-dark-male.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-dark-female",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "female",
+          "dark skin tone",
+          "A teen with long braids sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-dark-female.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
+      },
+      {
+        "id": "teen-field-guide-put-on-shoes-dark-nonbinary",
+        "title": "Put on shoes",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "put on shoes",
+          "putting on shoes",
+          "put on sneakers",
+          "get dressed",
+          "footwear",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "dark skin tone",
+          "A teen with side-swept twists sits and pulls a sneaker onto a sock-covered foot."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-shoes-dark-nonbinary.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "71a62374e1a9ac2ead7bb93e30f08f60d48735b2"
       }
     ]
   },
