@@ -5696,6 +5696,204 @@
         ],
         "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
         "revision": "81c53739f72816b579323360d7b01a64895967c5"
+      },
+      {
+        "id": "teen-field-guide-lock-bike",
+        "title": "Lock bicycle",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "bike lock",
+          "bike rack",
+          "lock bike",
+          "bike parking",
+          "teen routine",
+          "field guide",
+          "male",
+          "light skin tone",
+          "A blond teen secures a bicycle to a rack with a U-lock."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-lock-bike.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-get-locker-book",
+        "title": "Get a book from locker",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "school locker",
+          "get textbook",
+          "class supplies",
+          "between classes",
+          "teen routine",
+          "field guide",
+          "female",
+          "light skin tone",
+          "A teen takes a textbook from an open school locker."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-get-locker-book.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-raise-hand",
+        "title": "Raise hand in class",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "ask teacher",
+          "raise my hand",
+          "class participation",
+          "classroom",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "light skin tone",
+          "A teen with round glasses raises a hand at a classroom desk."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-raise-hand.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-return-library-book",
+        "title": "Return library book",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "book return",
+          "return a book",
+          "school library",
+          "borrowed book",
+          "teen routine",
+          "field guide",
+          "male",
+          "medium skin tone",
+          "A teen in a denim jacket places a book on a library return counter."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-return-library-book.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-prepare-apple-snack",
+        "title": "Prepare an apple snack",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "apple slices",
+          "prepare snack",
+          "fruit snack",
+          "after school snack",
+          "teen routine",
+          "field guide",
+          "female",
+          "medium skin tone",
+          "A teen with ringlets puts apple slices on a snack plate."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-prepare-apple-snack.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-put-on-headphones",
+        "title": "Put on headphones",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "headphones",
+          "listen to music",
+          "quiet time",
+          "earphones",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "medium skin tone",
+          "A teen in a slate sweatshirt puts headphones over their ears."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-put-on-headphones.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-take-out-trash",
+        "title": "Take out trash",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "empty trash",
+          "garbage bag",
+          "take out rubbish",
+          "household chore",
+          "teen routine",
+          "field guide",
+          "male",
+          "dark skin tone",
+          "A teen carries a tied trash bag to an open bin."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-take-out-trash.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-water-houseplant",
+        "title": "Water a houseplant",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "water plants",
+          "plant care",
+          "watering can",
+          "indoor plant",
+          "teen routine",
+          "field guide",
+          "female",
+          "dark skin tone",
+          "A teen with long braids waters a potted plant with a watering can."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-water-houseplant.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
+      },
+      {
+        "id": "teen-field-guide-lay-out-clothes",
+        "title": "Lay out clothes for tomorrow",
+        "age_strand": "12-18",
+        "category": "daily-routines",
+        "keywords": [
+          "choose outfit",
+          "set out clothes",
+          "prepare for tomorrow",
+          "bedtime prep",
+          "teen routine",
+          "field guide",
+          "nonbinary",
+          "dark skin tone",
+          "A teen with side-swept twists sets a folded shirt and pants on the bed."
+        ],
+        "assets": [
+          "visuals/12-18/daily-routines/field-guide-lay-out-clothes.png"
+        ],
+        "usage_rights": "Original ABHP artwork, adapted from the character stylesheet. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Attribute Ryan Baker-Barrett of Applied Behavioral Health Practice. Character stylesheet by Ryan Baker-Barrett of Applied Behavioral Health Practice · CC BY-SA 4.0 · https://getadhd.care · https://appliedbehavioral.health.",
+        "revision": "4d787fbe29f23035e33a9b29d4418b9902420a21"
       }
     ]
   },
